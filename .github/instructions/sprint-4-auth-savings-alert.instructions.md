@@ -5,6 +5,7 @@ applyTo:
   - "backend/src/**/*.js"
   - "frontend/src/**/*.{js,jsx,ts,tsx}"
 ---
+
 # Sprint 4 Delivery Rules (Week 4)
 
 Use this instruction for all Sprint 4 implementation work.
@@ -12,7 +13,7 @@ Use this instruction for all Sprint 4 implementation work.
 ## Scope and goals
 
 - Sprint focus: database readiness, backend-database connectivity, auth security, savings runway alerts, and CRUD feature delivery.
-- Work on branch context: `feat/zhr/auth-savings-alert`.
+- Work on branch context: `feat/auth-savings-alert`.
 
 ## Mandatory backend rules
 
