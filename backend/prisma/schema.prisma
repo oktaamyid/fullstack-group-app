@@ -1,0 +1,143 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id           Int           @id @default(autoincrement()) @map("user_id")
+  name         String        @db.VarChar(45)
+  email        String        @unique @db.VarChar(45)
+  password     String        @db.VarChar(255)
+  avatarUrl    String?       @map("avatar_url") @db.VarChar(255)
+  createdAt    DateTime      @default(now()) @map("created_at")
+  finances     Finance[]
+  wishlists    Wishlist[]
+  splitBills   SplitBill[]
+  insights     Insight[]
+  transactions Transaction[]
+
+  @@map("users")
+}
+
+model Finance {
+  id                 Int      @id @default(autoincrement()) @map("finance_id")
+  userId             Int      @map("user_id")
+  monthlyIncome      Decimal  @map("monthly_income") @db.Decimal(15, 2)
+  savingsTarget      Decimal  @map("savings_target") @db.Decimal(15, 2)
+  dailySpendingLimit Decimal  @map("daily_spending_limit") @db.Decimal(15, 2)
+  periodStart        DateTime @map("period_start") @db.Date
+  periodEnd          DateTime @map("period_end") @db.Date
+  user               User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("finance")
+}
+
+model Category {
+  id           Int           @id @default(autoincrement()) @map("category_id")
+  categoryName String        @map("category_name") @db.VarChar(45)
+  iconName     String?       @map("icon_name") @db.VarChar(45)
+  type         CategoryType
+  transactions Transaction[]
+
+  @@map("categories")
+}
+
+model Transaction {
+  id              Int             @id @default(autoincrement()) @map("transaction_id")
+  userId          Int             @map("user_id")
+  categoryId      Int             @map("category_id")
+  amount          Decimal         @db.Decimal(15, 2)
+  type            TransactionType
+  isFixedExpense  Boolean         @default(false) @map("is_fixed_expense")
+  description     String?         @db.Text
+  attachmentUrl   String?         @map("attachment_url") @db.VarChar(255)
+  transactionDate DateTime        @map("transaction_date") @db.Date
+  user            User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  category        Category        @relation(fields: [categoryId], references: [id])
+
+  @@index([userId])
+  @@index([categoryId])
+  @@index([transactionDate])
+  @@map("transactions")
+}
+
+model Wishlist {
+  id            Int            @id @default(autoincrement()) @map("wishlist_id")
+  userId        Int            @map("user_id")
+  itemName      String         @map("item_name") @db.VarChar(45)
+  price         Decimal        @db.Decimal(15, 2)
+  priorityLevel Int            @map("priority_level")
+  status        WishlistStatus @default(PLANNED)
+  createdAt     DateTime       @default(now()) @map("created_at")
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("wishlist")
+}
+
+model SplitBill {
+  id              Int      @id @default(autoincrement()) @map("split_id")
+  userId          Int      @map("user_id")
+  totalAmount     Decimal  @map("total_amount") @db.Decimal(15, 2)
+  totalPeople     Int      @map("total_people")
+  amountPerPerson Decimal  @map("amount_per_person") @db.Decimal(15, 2)
+  description     String?  @db.Text
+  createdAt       DateTime @default(now()) @map("created_at")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("split_bill")
+}
+
+model Insight {
+  id        Int             @id @default(autoincrement()) @map("insight_id")
+  userId    Int             @map("user_id")
+  message   String          @db.Text
+  type      InsightType
+  priority  InsightPriority
+  createdAt DateTime        @default(now()) @map("created_at")
+  status    InsightStatus   @default(ACTIVE)
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("insight")
+}
+
+enum CategoryType {
+  INCOME
+  EXPENSE
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum WishlistStatus {
+  PLANNED
+  PURCHASED
+  CANCELLED
+}
+
+enum InsightType {
+  INFO
+  WARNING
+  RECOMMENDATION
+}
+
+enum InsightPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum InsightStatus {
+  ACTIVE
+  ARCHIVED
+}

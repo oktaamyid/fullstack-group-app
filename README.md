@@ -41,6 +41,38 @@ Isi default:
 - `PORT=5000`
 - `FRONTEND_URL=http://localhost:5173`
 
+Tambahkan koneksi PostgreSQL lokal di `backend/.env`:
+- `DB_HOST`
+- `DB_PORT`
+- `DB_USER`
+- `DB_PASSWORD`
+- `DB_NAME`
+
+## Database (PostgreSQL Local)
+
+1. Pastikan PostgreSQL lokal aktif.
+2. Buat database lokal:
+
+```sql
+CREATE DATABASE livo_local;
+```
+
+3. Jalankan backend:
+
+```bash
+npm run dev --prefix backend
+```
+
+Saat startup, backend melakukan test query `SELECT 1`.
+Jika koneksi gagal, backend akan berhenti dan menampilkan error di terminal.
+
+4. Uji koneksi database secara langsung (simple SELECT):
+
+```bash
+npm run db:test --prefix backend
+```
+
 ## Health Check
 - Endpoint: `GET /api/health`
+- Database check: `GET /api/db-health`
 - Frontend sudah memanggil endpoint ini saat pertama kali render.
