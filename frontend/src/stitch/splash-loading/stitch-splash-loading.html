@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>LIVO Splash Screen</title>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Plus Jakarta Sans -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed": "#301400",
+                    "tertiary-fixed-dim": "#ffb783",
+                    "on-background": "#1c1c13",
+                    "on-primary-fixed": "#07006c",
+                    "on-error-container": "#93000a",
+                    "surface-variant": "#e6e3d3",
+                    "on-tertiary-fixed-variant": "#703700",
+                    "surface": "#fdf9e9",
+                    "error-container": "#ffdad6",
+                    "secondary": "#795900",
+                    "outline": "#767586",
+                    "on-tertiary-container": "#fffbff",
+                    "inverse-surface": "#323126",
+                    "primary-container": "#6063ee",
+                    "on-secondary-fixed": "#261a00",
+                    "primary-fixed": "#e1e0ff",
+                    "error": "#ba1a1a",
+                    "primary": "#4648d4",
+                    "on-surface-variant": "#464554",
+                    "on-surface": "#1c1c13",
+                    "background": "#fdf9e9",
+                    "inverse-primary": "#c0c1ff",
+                    "on-tertiary": "#ffffff",
+                    "tertiary": "#904900",
+                    "surface-container-high": "#ece8d9",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#ffc329",
+                    "surface-container-highest": "#e6e3d3",
+                    "surface-container-low": "#f8f4e4",
+                    "on-secondary": "#ffffff",
+                    "tertiary-container": "#b55d00",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-on-surface": "#f5f1e1",
+                    "on-secondary-container": "#6f5100",
+                    "surface-container": "#f2eede",
+                    "secondary-fixed-dim": "#f9bd22",
+                    "on-primary-container": "#fffbff",
+                    "surface-dim": "#dedacb",
+                    "primary-fixed-dim": "#c0c1ff",
+                    "on-secondary-fixed-variant": "#5c4300",
+                    "secondary-fixed": "#ffdf9f",
+                    "surface-tint": "#494bd6",
+                    "tertiary-fixed": "#ffdcc5",
+                    "on-primary-fixed-variant": "#2f2ebe",
+                    "secondary-fixed": "#ffdf9f",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Plus Jakarta Sans"],
+                    "label": ["Plus Jakarta Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        @keyframes pulse-soft {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        .animate-pulse-soft {
+            animation: pulse-soft 3s ease-in-out infinite;
+        }
+        .scholarly-shadow {
+            box-shadow: 4px 4px 0px 0px #1c1c13;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-[#fdf9e9] font-body text-on-surface selection:bg-secondary-container selection:text-on-secondary-container overflow-hidden h-screen w-screen flex flex-col items-center justify-center">
+<!-- Splash Content Wrapper -->
+<main class="relative flex flex-col items-center justify-center max-w-sm w-full px-8 text-center">
+<!-- Mascot Section -->
+<div class="relative mb-12 animate-pulse-soft">
+<!-- Decorative Academic Ring Background -->
+<div class="absolute inset-0 -m-4 border-2 border-dashed border-outline opacity-20 rounded-full"></div>
+<!-- Character Card -->
+<div class="relative bg-white border border-on-surface rounded-full p-2 scholarly-shadow overflow-hidden w-64 h-64 flex items-center justify-center">
+<img alt="LIVO Graduation Hamster Mascot" class="w-full h-full object-cover rounded-full" data-alt="A cute chubby hamster wearing a miniature graduation cap and tiny glasses, holding a gold coin, soft bright illustration style with warm lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA1l7wNePoZV6h-8C7ZMYfun_04iPMoRpNbba-vW2dhxIfNt14VRq2fhcZUzVmvnHesX5CsjW8jRy_MHsRXfGW1Gw4bF_zpd25ahNk9WVp4dUwZpySt1Snx2Zwt6Bgzj5p4bN9KmMGeFmhG-haEFOT3nD9ahNQd-uRCbUNumXJfy1zRi7nx_fkGCiNABsbQFM3asmAcLM-DfE4GzDh8mkW5yE6oTioEsP4H64FKinUxr2NrwAHONW0HbCeAWOlN8Z3quUd1l2L_meAp"/>
+</div>
+<!-- Floating Badge Element -->
+<div class="absolute -top-2 -right-2 bg-secondary-container border border-on-surface px-4 py-1 rounded-full scholarly-shadow transform rotate-12">
+<span class="text-[10px] font-extrabold uppercase tracking-widest text-on-secondary-container">Level up</span>
+</div>
+</div>
+<!-- Typography Branding -->
+<div class="space-y-4">
+<h1 class="font-headline text-5xl font-extrabold tracking-tighter text-on-surface uppercase">
+                LIVO
+            </h1>
+<div class="inline-block bg-primary border border-on-surface scholarly-shadow px-6 py-3 rounded-lg transform -rotate-1">
+<p class="font-label text-xs uppercase tracking-[0.2em] text-white font-bold leading-tight">
+                    Your Academic Coin Master
+                </p>
+</div>
+</div>
+<!-- Progress Indicator -->
+<div class="mt-16 w-full max-w-[200px] flex flex-col items-center gap-4">
+<!-- Neo-Brutalist Progress Bar -->
+<div class="w-full h-4 bg-surface-container border border-on-surface rounded-full overflow-hidden relative">
+<div class="absolute inset-y-0 left-0 bg-secondary-container border-r border-on-surface w-3/4"></div>
+</div>
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-primary text-lg animate-spin" style="font-variation-settings: 'FILL' 0;">
+                    sync
+                </span>
+<p class="text-[10px] font-bold uppercase tracking-widest opacity-60">Syncing Achievements...</p>
+</div>
+</div>
+</main>
+<!-- Footer Attribution -->
+<footer class="absolute bottom-10 flex flex-col items-center gap-2">
+<p class="text-[10px] font-bold uppercase tracking-widest opacity-40">
+            © 2024 Scholarly Rebel Labs
+        </p>
+</footer>
+<!-- Content Suppression Guard: Navigation shells are hidden for splash screen as per protocol -->
+<!-- (TopAppBar and BottomNavBar suppressed for focused journey) -->
+</body></html>
