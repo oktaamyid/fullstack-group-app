@@ -1,5 +1,7 @@
 # Fullstack Group App
 
+Main branch dipakai sebagai baseline konfigurasi awal project. Implementasi fitur dilakukan di branch terpisah per role/dev.
+
 Setup awal project fullstack dengan:
 - Backend: Express (`backend/`)
 - Frontend: React + Vite (`frontend/`)
@@ -29,6 +31,33 @@ Default:
 - Backend API: http://localhost:5000
 
 Catatan: jika port 5173 dipakai proses lain, Vite otomatis pindah port (mis. 5174).
+
+## Workflow Branch (Per Role/Dev)
+
+Main branch:
+- Hanya untuk baseline project, konfigurasi bersama, dan stabilisasi.
+- Tidak dipakai untuk development fitur harian.
+
+Feature branch:
+- Setiap role/dev wajib punya branch sendiri.
+- Penamaan branch disarankan:
+
+```bash
+feature/<role>-<nama-fitur>
+```
+
+Contoh:
+- `feature/frontend-home-dashboard`
+- `feature/backend-fixed-cost-api`
+- `feature/data-transaction-schema`
+
+Alur kerja:
+1. Buat branch dari `main`.
+2. Kerjakan satu scope fitur per branch.
+3. Pull perubahan terbaru `main` secara berkala.
+4. Buat Pull Request ke `main` saat fitur siap review.
+
+Dokumen detail pembagian scope bisa dilihat di `BRANCHING_STRATEGY.md`.
 
 ## Backend Environment
 Salin file contoh env:
