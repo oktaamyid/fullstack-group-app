@@ -103,6 +103,7 @@ function HomeRoute() {
       lastChecked={lastChecked}
       onRecheck={handleRecheck}
       mainLogo={mainLogo}
+      mascotImage={mascotImage}
     />
   )
 }

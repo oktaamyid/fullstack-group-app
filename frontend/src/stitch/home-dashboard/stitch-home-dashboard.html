@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LIVO Dashboard - PWA</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "background": "#fdf9e9",
+                        "secondary-fixed-dim": "#f9bd22",
+                        "secondary-fixed": "#ffdf9f",
+                        "outline-variant": "#c7c4d7",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-high": "#ece8d9",
+                        "on-tertiary-fixed": "#301400",
+                        "inverse-surface": "#323126",
+                        "surface-container-low": "#f8f4e4",
+                        "on-tertiary-container": "#fffbff",
+                        "inverse-on-surface": "#f5f1e1",
+                        "on-background": "#1c1c13",
+                        "surface-container": "#f2eede",
+                        "surface": "#fdf9e9",
+                        "tertiary": "#904900",
+                        "surface-variant": "#e6e3d3",
+                        "on-surface-variant": "#464554",
+                        "secondary": "#795900",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "surface-container-lowest": "#ffffff",
+                        "on-secondary-fixed-variant": "#5c4300",
+                        "primary-container": "#6063ee",
+                        "on-error-container": "#93000a",
+                        "primary-fixed": "#e1e0ff",
+                        "tertiary-fixed": "#ffdcc5",
+                        "surface-bright": "#fdf9e9",
+                        "inverse-primary": "#c0c1ff",
+                        "error": "#ba1a1a",
+                        "secondary-container": "#ffc329",
+                        "tertiary-fixed-dim": "#ffb783",
+                        "surface-dim": "#dedacb",
+                        "surface-tint": "#494bd6",
+                        "surface-container-highest": "#e6e3d3",
+                        "on-surface": "#1c1c13",
+                        "on-primary-container": "#fffbff",
+                        "on-primary-fixed": "#07006c",
+                        "on-primary": "#ffffff",
+                        "error-container": "#ffdad6",
+                        "on-secondary-fixed": "#261a00",
+                        "on-secondary-container": "#6f5100",
+                        "on-secondary": "#ffffff",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "on-tertiary-fixed-variant": "#703700",
+                        "tertiary-container": "#b55d00",
+                        "primary": "#4648d4",
+                        "on-error": "#ffffff",
+                        "outline": "#767586"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Plus Jakarta Sans"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-color: #fdf9e9;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .neo-shadow-sm { shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] }
+        .neo-shadow-md { shadow-[4px_4px_0px_0px_rgba(28,28,19,1)] }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background text-on-surface min-h-screen pb-32">
+<header class="sticky top-0 w-full z-50 px-4 py-2 flex items-center justify-between bg-[#FFFBEB] border-b border-[#1c1c13] shadow-[4px_4px_0px_0px_rgba(28,28,19,1)]">
+<div class="flex items-center gap-3">
+<img alt="Hamster mascot logo" class="w-10 h-10 border border-[#1c1c13] rounded-full bg-secondary-container p-1" data-alt="cute hamster mascot logo with academic cap and round glasses in minimalist flat vector style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBEx3xGeTY3DJxIMDlosLrbzzOLWzVOrRq05K0BiYC2hhSc_tyvoPolj64gx1S5L0LBWSlPjTMnu7EAmnE1NX4DwYppQXO3lrOfkRGApmFhaf8hyNSYUXsuR-jifNakBJbjyYtRVhPmytrusI2_uzWjwVSotSLRNmFEKJSvc50-R59JkxHx2pg_hpFDj-n2jHPVxoDlFs_Lobcxw8fSj_yr_n0MlqovVCBjKjQew9R2riYL7icbXO9sG7ru21HaRDrgYVYuF5XOulj4"/>
+<span class="text-2xl font-black text-[#1c1c13] uppercase tracking-tighter font-headline">LIVO</span>
+</div>
+<div class="flex items-center gap-3">
+<button class="w-10 h-10 flex items-center justify-center border border-[#1c1c13] bg-[#FFFBEB] rounded-lg hover:bg-[#FBBF24] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none shadow-[2px_2px_0px_0px_rgba(28,28,19,1)]">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<main class="px-4 pt-8 max-w-md mx-auto space-y-6">
+<section class="relative">
+<div class="bg-[#FFFBEB] border border-[#1c1c13] rounded-xl p-6 shadow-[6px_6px_0px_0px_rgba(28,28,19,1)]">
+<div class="flex justify-between items-start mb-4">
+<span class="px-3 py-1 bg-primary text-on-primary text-[10px] font-bold uppercase tracking-widest border border-[#1c1c13] rounded-full">Active Limit</span>
+<span class="material-symbols-outlined text-on-surface opacity-40">settings</span>
+</div>
+<h2 class="text-on-surface-variant text-sm font-semibold uppercase tracking-tight mb-1">Daily Spending Limit</h2>
+<div class="flex items-baseline gap-1">
+<span class="text-4xl font-black text-on-surface">$</span>
+<span class="text-6xl font-black text-on-surface tracking-tighter">25.00</span>
+</div>
+<div class="mt-6 pt-6 border-t border-[#1c1c13]">
+<div class="flex justify-between items-center mb-2">
+<span class="text-xs font-bold uppercase text-on-surface-variant">Today's Progress</span>
+<span class="text-xs font-black text-primary">$12.40 / $25.00</span>
+</div>
+<div class="w-full h-4 bg-white border border-[#1c1c13] rounded-full overflow-hidden">
+<div class="h-full bg-secondary-container border-r border-[#1c1c13]" style="width: 49.6%"></div>
+</div>
+</div>
+</div>
+</section>
+<section class="grid grid-cols-2 gap-4">
+<div class="bg-surface-container-low border border-[#1c1c13] p-4 rounded-xl shadow-[4px_4px_0px_0px_rgba(28,28,19,1)] flex flex-col items-center justify-center space-y-2">
+<div class="relative w-20 h-20">
+<svg class="w-full h-full transform -rotate-90">
+<circle class="opacity-10" cx="40" cy="40" fill="transparent" r="32" stroke="#1c1c13" stroke-width="8"></circle>
+<circle class="stroke-primary" cx="40" cy="40" fill="transparent" r="32" stroke="#4648d4" stroke-dasharray="201" stroke-dashoffset="100" stroke-width="8"></circle>
+</svg>
+<div class="absolute inset-0 flex items-center justify-center">
+<span class="text-xs font-black">50%</span>
+</div>
+</div>
+<span class="text-[10px] font-bold uppercase text-on-surface-variant text-center">Efficiency Score</span>
+</div>
+<div class="bg-secondary-container border border-[#1c1c13] p-4 rounded-xl shadow-[4px_4px_0px_0px_rgba(28,28,19,1)] flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<span class="material-symbols-outlined font-bold text-on-surface">trending_up</span>
+<span class="text-[10px] font-black bg-white/40 px-2 py-0.5 rounded border border-[#1c1c13]">+12%</span>
+</div>
+<div>
+<span class="text-2xl font-black block leading-none">$145.20</span>
+<span class="text-[10px] font-bold uppercase text-on-secondary-container opacity-80">Weekly Savings</span>
+</div>
+</div>
+</section>
+<section class="space-y-4">
+<h3 class="text-lg font-black uppercase tracking-tight">Recent Transactions</h3>
+<div class="space-y-3">
+<div class="flex items-center justify-between p-4 bg-white border border-[#1c1c13] rounded-lg shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded border border-[#1c1c13] bg-primary-fixed-dim flex items-center justify-center">
+<span class="material-symbols-outlined">coffee</span>
+</div>
+<div>
+<p class="font-bold text-sm">Morning Espresso</p>
+<p class="text-[10px] font-bold text-on-surface-variant uppercase opacity-60">Food &amp; Drink • 08:30 AM</p>
+</div>
+</div>
+<span class="font-black text-error">-$4.50</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-white border border-[#1c1c13] rounded-lg shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded border border-[#1c1c13] bg-tertiary-fixed-dim flex items-center justify-center">
+<span class="material-symbols-outlined">directions_bus</span>
+</div>
+<div>
+<p class="font-bold text-sm">Metro Ticket</p>
+<p class="text-[10px] font-bold text-on-surface-variant uppercase opacity-60">Transport • 09:15 AM</p>
+</div>
+</div>
+<span class="font-black text-error">-$2.25</span>
+</div>
+<div class="flex items-center justify-between p-4 bg-white border border-[#1c1c13] rounded-lg shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] active:translate-x-[1px] active:translate-y-[1px] active:shadow-none transition-all">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded border border-[#1c1c13] bg-secondary-fixed flex items-center justify-center">
+<span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 1;">add</span>
+</div>
+<div>
+<p class="font-bold text-sm">Wallet Refund</p>
+<p class="text-[10px] font-bold text-on-surface-variant uppercase opacity-60">Refund • Yesterday</p>
+</div>
+</div>
+<span class="font-black text-primary">+$10.00</span>
+</div>
+</div>
+</section>
+<section class="pb-8">
+<div class="bg-[#1c1c13] text-white p-6 rounded-2xl border-2 border-white shadow-[6px_6px_0px_0px_rgba(28,28,19,1)]">
+<div class="flex justify-between items-center">
+<div>
+<h4 class="font-black text-xl leading-none mb-1">Join the Honor Roll</h4>
+<p class="text-xs opacity-80 max-w-[200px]">Spend within your limit for 5 days to unlock the 'Academic Excellence' badge.</p>
+</div>
+<div class="w-16 h-16 bg-secondary-container border border-white rounded-full flex items-center justify-center">
+<span class="material-symbols-outlined text-[#1c1c13] text-3xl" style="font-variation-settings: 'FILL' 1;">workspace_premium</span>
+</div>
+</div>
+<button class="mt-4 w-full py-3 bg-white text-[#1c1c13] font-black uppercase text-xs rounded-lg border border-[#1c1c13] shadow-[4px_4px_0px_0px_rgba(255,195,41,1)] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
+                    View Challenges
+                </button>
+</div>
+</section>
+</main>
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-[#FFFBEB] rounded-t-[24px] border-t border-l border-r border-[#1c1c13] shadow-[0px_-4px_0px_0px_rgba(28,28,19,1)]">
+<div class="flex flex-col items-center justify-center bg-[#FBBF24] text-[#1c1c13] border border-[#1c1c13] rounded-[16px] px-4 py-1 shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] active:scale-95 transition-transform duration-100">
+<span class="material-symbols-outlined" data-icon="home" style="font-variation-settings: 'FILL' 1;">home</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-[10px] uppercase">Home</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#1c1c13] p-2 hover:bg-[#6366F1]/10 active:scale-95 transition-transform duration-100">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-[10px] uppercase">History</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#1c1c13] p-2 hover:bg-[#6366F1]/10 active:scale-95 transition-transform duration-100">
+<span class="material-symbols-outlined" data-icon="favorite">favorite</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-[10px] uppercase">Wishlist</span>
+</div>
+<div class="flex flex-col items-center justify-center text-[#1c1c13] p-2 hover:bg-[#6366F1]/10 active:scale-95 transition-transform duration-100">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-[10px] uppercase">Insights</span>
+</div>
+</nav>
+<button class="fixed right-6 bottom-28 w-14 h-14 bg-primary text-on-primary rounded-full border-2 border-[#1c1c13] shadow-[4px_4px_0px_0px_rgba(28,28,19,1)] flex items-center justify-center active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
+<span class="material-symbols-outlined text-3xl">add</span>
+</button>
+</body></html>
