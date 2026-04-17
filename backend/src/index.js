@@ -3,6 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const { initializeDatabase, prisma } = require('./config/prisma');
 const authRoutes = require('./routes/authRoutes');
+const splitBillRoutes = require('./routes/splitBillRoutes');
 const { sendError } = require('./utils/apiResponse');
 
 dotenv.config();
@@ -48,6 +49,7 @@ app.get('/api/db-health', async (_req, res) => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/split-bills', splitBillRoutes);
 
 app.use((_req, res) => {
   return sendError(res, 'Route not found', 404);

@@ -14,7 +14,7 @@ function StatusPill({ ok, label }) {
   return <span className={`${base} bg-[#ddd6fe] text-[#312e81]`}>{label}: Checking</span>
 }
 
-export function HomeDashboard({ isOffline, apiStatus, dbStatus, lastChecked, onRecheck, mainLogo, mascotImage }) {
+export function HomeDashboard({ isOffline, apiStatus, dbStatus, lastChecked, onRecheck, onOpenSplitBill, mainLogo, mascotImage }) {
   const dailyLimit = 25
   const spentToday = dbStatus.ok ? 12.4 : 0
   const progress = Math.min(100, (spentToday / dailyLimit) * 100)
@@ -125,7 +125,16 @@ export function HomeDashboard({ isOffline, apiStatus, dbStatus, lastChecked, onR
         </section>
 
         <section className="space-y-4">
-          <h3 className="text-lg font-black tracking-tight uppercase">Recent Transactions</h3>
+          <div className="flex items-center justify-between gap-3">
+            <h3 className="text-lg font-black tracking-tight uppercase">Recent Transactions</h3>
+            <button
+              type="button"
+              onClick={onOpenSplitBill}
+              className="min-h-11 rounded-xl border border-[#1c1c13] bg-[#fbbf24] px-3 text-[10px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(28,28,19,1)]"
+            >
+              Split Bill
+            </button>
+          </div>
           <div className="space-y-3">
             <div className="flex items-center justify-between rounded-lg border border-[#1c1c13] bg-white p-4 shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] transition-all active:translate-x-px active:translate-y-px active:shadow-none">
               <div className="flex items-center gap-3">
