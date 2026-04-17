@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
 import { HomeDashboard } from '../components/screens/HomeDashboard'
+import { HistorySplitBillScreen } from '../components/screens/HistorySplitBillScreen'
 import { LoginAuthScreen } from '../components/screens/LoginAuthScreen'
 import { LoadingScreen } from '../components/screens/LoadingScreen'
 import { SplashScreen } from '../components/screens/SplashScreen'
@@ -106,6 +107,10 @@ function HomeRoute() {
     navigate('/login', { replace: true })
   }, [navigate])
 
+  const handleOpenSplitBill = useCallback(() => {
+    navigate('/split-bill')
+  }, [navigate])
+
   useEffect(() => {
     const onOnline = () => setIsOffline(false)
     const onOffline = () => setIsOffline(true)
@@ -135,11 +140,20 @@ function HomeRoute() {
       lastChecked={lastChecked}
       onRecheck={handleRecheck}
       onLogout={handleLogout}
+      onOpenSplitBill={handleOpenSplitBill}
       userName={authUser?.name || 'Student'}
       mainLogo={mainLogo}
       mascotImage={mascotImage}
     />
   )
+}
+
+function SplitBillRoute() {
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" replace />
+  }
+
+  return <HistorySplitBillScreen mascotImage={mascotImage} />
 }
 
 export function AppRoutes() {
@@ -150,6 +164,7 @@ export function AppRoutes() {
       <Route path="/loading" element={<LoadingRoute />} />
       <Route path="/login" element={<LoginRoute />} />
       <Route path="/home" element={<HomeRoute />} />
+      <Route path="/split-bill" element={<SplitBillRoute />} />
       <Route path="*" element={<Navigate to="/splash" replace />} />
     </Routes>
   )
