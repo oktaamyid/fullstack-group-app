@@ -33,6 +33,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(jsonParseErrorHandler);
 
 app.get('/api/health', (_req, res) => {
   res.json({
@@ -72,9 +73,8 @@ app.use('/api/split-bills', splitBillRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/wishlists', wishlistRoutes);
 
-app.use((_req, res) => {
-  return sendError(res, 'Route not found', 404);
-});
+app.use(notFoundHandler);
+app.use(globalErrorHandler);
 
 async function startServer() {
   try {
