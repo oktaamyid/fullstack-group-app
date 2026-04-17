@@ -1,10 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const { initializeDatabase, prisma } = require('./config/prisma');
+const authRoutes = require('./routes/authRoutes');
+const { sendError } = require('./utils/apiResponse');
 
 dotenv.config();
-
-const { testDatabaseConnection } = require('./config/database');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -26,36 +27,46 @@ app.get('/api/health', (_req, res) => {
 
 app.get('/api/db-health', async (_req, res) => {
   try {
-    const queryResult = await testDatabaseConnection();
+    await prisma.$connect();
+    const result = await prisma.$queryRaw`SELECT 1 AS ok`;
 
     return res.json({
       success: true,
       data: {
-        provider: 'postgresql',
         query: 'SELECT 1 AS ok',
-        result: queryResult,
+        result: result[0],
       },
-      message: 'Database connection is healthy',
+      message: 'Database is connected',
     });
   } catch (error) {
     return res.status(500).json({
       success: false,
       data: {},
-      message: `Database connection failed: ${error.message}`,
+      message: error?.message || 'Database connection failed',
     });
   }
 });
 
+app.use('/api/auth', authRoutes);
+
+app.use((_req, res) => {
+  return sendError(res, 'Route not found', 404);
+});
+
 async function startServer() {
   try {
-    await testDatabaseConnection();
-    console.log('Database connected successfully (SELECT 1).');
+    if (!process.env.JWT_SECRET) {
+      throw new Error('JWT_SECRET is required in environment variables.');
+    }
+
+    await initializeDatabase();
 
     app.listen(PORT, () => {
       console.log(`Backend server running at http://localhost:${PORT}`);
     });
   } catch (error) {
-    console.error(`Failed to connect to database: ${error.message}`);
+    const details = error?.message || 'Unknown startup error';
+    console.error('Failed to start backend server:', details);
     process.exit(1);
   }
 }
