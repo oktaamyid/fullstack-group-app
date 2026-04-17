@@ -19,8 +19,12 @@ function signToken(user) {
 async function register(req, res) {
   const validation = registerSchema.safeParse(req.body);
   if (!validation.success) {
+    const fieldErrors = validation.error.flatten().fieldErrors;
+    const firstError = Object.values(fieldErrors).find((errors) => Array.isArray(errors) && errors.length)?.[0];
+
     return sendError(res, 'Validation failed', 422, {
-      errors: validation.error.flatten().fieldErrors,
+      errors: fieldErrors,
+      detail: firstError || 'Invalid request payload',
     });
   }
 
@@ -56,6 +60,10 @@ async function register(req, res) {
       201
     );
   } catch (error) {
+    if (error?.code === 'P2002') {
+      return sendError(res, 'Email already registered', 409);
+    }
+
     return sendError(res, 'Failed to register user', 500, {
       error: error.message,
     });

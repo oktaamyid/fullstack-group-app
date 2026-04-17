@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>LIVO Analytics</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-tertiary-fixed": "#301400",
+                    "tertiary-fixed-dim": "#ffb783",
+                    "on-background": "#1c1c13",
+                    "on-primary-fixed": "#07006c",
+                    "on-error-container": "#93000a",
+                    "surface-variant": "#e6e3d3",
+                    "on-tertiary-fixed-variant": "#703700",
+                    "surface": "#fdf9e9",
+                    "error-container": "#ffdad6",
+                    "secondary": "#795900",
+                    "outline": "#767586",
+                    "on-tertiary-container": "#fffbff",
+                    "inverse-surface": "#323126",
+                    "primary-container": "#6063ee",
+                    "on-secondary-fixed": "#261a00",
+                    "primary-fixed": "#e1e0ff",
+                    "error": "#ba1a1a",
+                    "primary": "#4648d4",
+                    "on-surface-variant": "#464554",
+                    "on-surface": "#1c1c13",
+                    "background": "#fdf9e9",
+                    "inverse-primary": "#c0c1ff",
+                    "on-tertiary": "#ffffff",
+                    "tertiary": "#904900",
+                    "surface-container-high": "#ece8d9",
+                    "on-error": "#ffffff",
+                    "secondary-container": "#ffc329",
+                    "surface-container-highest": "#e6e3d3",
+                    "surface-container-low": "#f8f4e4",
+                    "on-secondary": "#ffffff",
+                    "tertiary-container": "#b55d00",
+                    "surface-container-lowest": "#ffffff",
+                    "inverse-on-surface": "#f5f1e1",
+                    "on-secondary-container": "#6f5100",
+                    "surface-container": "#f2eede",
+                    "secondary-fixed-dim": "#f9bd22",
+                    "on-primary-container": "#fffbff",
+                    "surface-dim": "#dedacb",
+                    "primary-fixed-dim": "#c0c1ff",
+                    "on-secondary-fixed-variant": "#5c4300",
+                    "secondary-fixed": "#ffdf9f",
+                    "surface-tint": "#494bd6",
+                    "tertiary-fixed": "#ffdcc5",
+                    "on-primary-fixed-variant": "#2f2ebe",
+                    "secondary-fixed": "#ffdf9f",
+                    "surface-bright": "#fdf9e9",
+                    "outline-variant": "#c7c4d7",
+                    "on-primary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Plus Jakarta Sans"],
+                    "label": ["Plus Jakarta Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fdf9e9; }
+        .chart-grid {
+            background-image: radial-gradient(#1c1c13 0.5px, transparent 0.5px);
+            background-size: 20px 20px;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-surface">
+<!-- TopAppBar -->
+<header class="bg-[#fdf9e9] border-b-[1px] border-[#1c1c13] pt-safe shadow-[2px_2px_0px_0px_#1c1c13] flex items-center justify-between px-4 h-16 w-full sticky top-0 z-50">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full border-[1px] border-[#1c1c13] overflow-hidden bg-secondary-container">
+<img alt="LIVO Mascot" class="w-full h-full object-cover" data-alt="A cute illustrated graduation hamster mascot with a tiny cap and diploma in a clean flat scholarly style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBwhkjxU-90gBslKaiAVjcpReRLTeUGXccBYtJr0PmLdfGiD5UkfuVo7VkxZyAfcJsu6xu8VfcFzZiR5e2iKP4IiaWugGEC0AR_P3JWynU2hYamnd0QxPCA8UQr7kaILyF_O2nTsgbGNnBVFdonIMk2lHrvJOPhNwdSimD4OyWYPOUO91Pk1JFUx1bVEmuLXNvHWTCMYw14NaB3G6w00ciwJubZ9-5AleXIGtW8qM2b8Y6av5wAEk2Ul0CMZTE_RhOY12egSmb_3PwY"/>
+</div>
+<h1 class="text-2xl font-extrabold text-[#1c1c13] tracking-tighter">LIVO</h1>
+</div>
+<div class="flex items-center gap-4">
+<button class="text-[#1c1c13] hover:bg-[#ffc329] transition-all p-2 rounded-lg active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</div>
+</header>
+<main class="p-4 pb-28 max-w-xl mx-auto space-y-6">
+<!-- Welcome Hero -->
+<section class="space-y-1">
+<h2 class="text-[1.75rem] font-bold leading-tight tracking-tight text-on-surface">Financial Insights</h2>
+<p class="text-on-surface-variant font-body text-sm">Your spending performance for the academic semester.</p>
+</section>
+<!-- Main Chart Card -->
+<div class="bg-surface-container-low border-[1px] border-on-surface rounded-xl overflow-hidden shadow-[4px_4px_0px_0px_#1c1c13]">
+<div class="p-6 border-b-[1px] border-on-surface flex justify-between items-end">
+<div>
+<label class="text-[10px] font-bold uppercase tracking-widest text-on-surface-variant">TOTAL SPENT</label>
+<div class="text-3xl font-extrabold text-primary">$1,248.50</div>
+</div>
+<div class="bg-secondary-container border-[1px] border-on-surface px-3 py-1 rounded-full text-xs font-bold shadow-[2px_2px_0px_0px_#1c1c13]">
+                    +12% vs LY
+                </div>
+</div>
+<div class="p-6 chart-grid relative h-48 flex items-end justify-between">
+<!-- SVG Chart Logic -->
+<svg class="absolute inset-0 w-full h-full p-6 overflow-visible" preserveaspectratio="none" viewbox="0 0 100 100">
+<!-- Path Line -->
+<polyline fill="none" points="0,80 20,60 40,75 60,30 80,45 100,10" stroke="#4648d4" stroke-width="3"></polyline>
+<!-- Data Points -->
+<circle cx="0" cy="80" fill="#ffc329" r="4" stroke="#1c1c13" stroke-width="1.5"></circle>
+<circle cx="20" cy="60" fill="#ffc329" r="4" stroke="#1c1c13" stroke-width="1.5"></circle>
+<circle cx="40" cy="75" fill="#ffc329" r="4" stroke="#1c1c13" stroke-width="1.5"></circle>
+<circle cx="60" cy="30" fill="#ffc329" r="4" stroke="#1c1c13" stroke-width="1.5"></circle>
+<circle cx="80" cy="45" fill="#ffc329" r="4" stroke="#1c1c13" stroke-width="1.5"></circle>
+<circle cx="100" cy="10" fill="#ffc329" r="4" stroke="#1c1c13" stroke-width="1.5"></circle>
+</svg>
+</div>
+<div class="px-6 py-4 flex justify-between text-[10px] font-bold uppercase tracking-widest text-on-surface-variant border-t-[1px] border-on-surface">
+<span>MON</span>
+<span>TUE</span>
+<span>WED</span>
+<span>THU</span>
+<span>FRI</span>
+<span>SAT</span>
+</div>
+</div>
+<!-- Insights Bento Grid -->
+<div class="grid grid-cols-2 gap-4">
+<!-- Top Category Card -->
+<div class="col-span-2 bg-surface-container-highest border-[1px] border-on-surface p-4 rounded-xl shadow-[2px_2px_0px_0px_#1c1c13] flex items-center gap-4">
+<div class="bg-primary text-on-primary p-3 rounded-lg border-[1px] border-on-surface shadow-[2px_2px_0px_0px_#1c1c13]">
+<span class="material-symbols-outlined" data-icon="restaurant">restaurant</span>
+</div>
+<div>
+<h3 class="text-sm font-bold text-on-surface">Top category: Food &amp; Drinks</h3>
+<p class="text-xs text-on-surface-variant">42% of your total budget</p>
+</div>
+</div>
+<!-- Goal Achievement -->
+<div class="bg-[#e1e0ff] border-[1px] border-on-surface p-4 rounded-xl shadow-[2px_2px_0px_0px_#1c1c13] space-y-3">
+<span class="material-symbols-outlined text-primary" data-icon="savings">savings</span>
+<div>
+<div class="text-xl font-extrabold text-on-surface">$200</div>
+<div class="text-[10px] font-bold uppercase tracking-widest text-primary">SAVINGS GOAL</div>
+</div>
+<div class="h-2 w-full bg-surface border-[1px] border-on-surface rounded-full overflow-hidden">
+<div class="h-full bg-secondary-container border-r-[1px] border-on-surface" style="width: 75%"></div>
+</div>
+</div>
+<!-- Average Spending -->
+<div class="bg-secondary-container border-[1px] border-on-surface p-4 rounded-xl shadow-[2px_2px_0px_0px_#1c1c13] space-y-3">
+<span class="material-symbols-outlined text-on-secondary-container" data-icon="trending_down">trending_down</span>
+<div>
+<div class="text-xl font-extrabold text-on-secondary-container">$42.10</div>
+<div class="text-[10px] font-bold uppercase tracking-widest text-on-secondary-container">AVG DAILY</div>
+</div>
+<p class="text-[10px] font-medium leading-tight">Well done! You spent 5% less than your average daily budget this week.</p>
+</div>
+</div>
+<!-- Recent Transactions Label -->
+<div class="pt-4 flex justify-between items-center">
+<h3 class="text-lg font-bold text-on-surface">Recent Reports</h3>
+<button class="text-primary text-[10px] font-bold uppercase tracking-widest underline">View all</button>
+</div>
+<!-- Transaction List -->
+<div class="space-y-3">
+<div class="bg-surface-container-low border-[1px] border-on-surface p-3 rounded-lg flex items-center justify-between hover:bg-secondary-container transition-all cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-white border-[1px] border-on-surface rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="school">school</span>
+</div>
+<div>
+<div class="font-bold text-sm">Library Fee</div>
+<div class="text-[10px] text-on-surface-variant font-bold uppercase">Oct 12, 2023</div>
+</div>
+</div>
+<div class="font-bold text-error">-$15.00</div>
+</div>
+<div class="bg-surface-container-low border-[1px] border-on-surface p-3 rounded-lg flex items-center justify-between hover:bg-secondary-container transition-all cursor-pointer">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 bg-white border-[1px] border-on-surface rounded flex items-center justify-center">
+<span class="material-symbols-outlined text-primary" data-icon="coffee">coffee</span>
+</div>
+<div>
+<div class="font-bold text-sm">Campus Cafe</div>
+<div class="text-[10px] text-on-surface-variant font-bold uppercase">Oct 11, 2023</div>
+</div>
+</div>
+<div class="font-bold text-error">-$4.50</div>
+</div>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full h-20 z-50 flex justify-around items-center px-2 bg-[#fdf9e9] border-t-[1px] border-[#1c1c13] pb-safe shadow-[0px_-4px_0px_0px_#1c1c13]">
+<a class="flex flex-col items-center justify-center text-[#1c1c13] opacity-70 hover:opacity-100 active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-[10px] uppercase tracking-widest mt-1">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1c1c13] opacity-70 hover:opacity-100 active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="receipt_long">receipt_long</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-[10px] uppercase tracking-widest mt-1">History</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1c1c13] opacity-70 hover:opacity-100 active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="add_circle">add_circle</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-[10px] uppercase tracking-widest mt-1">Add</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1c1c13] opacity-70 hover:opacity-100 active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="stars">stars</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-[10px] uppercase tracking-widest mt-1">Wishlist</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#4648d4] bg-[#ffc329] border-[1px] border-[#1c1c13] shadow-[2px_2px_0px_0px_#1c1c13] rounded-lg px-2 py-1 active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-[10px] uppercase tracking-widest mt-1">Data</span>
+</a>
+</nav>
+</body></html>

@@ -55,7 +55,7 @@ export function LoginAuthScreen({ onAuthSuccess, mainLogo, mascotImage }) {
       const data = await response.json()
 
       if (!response.ok || !data?.success) {
-        throw new Error(data?.message || 'Authentication failed.')
+        throw new Error(data?.data?.detail || data?.message || 'Authentication failed.')
       }
 
       const token = data?.data?.token
