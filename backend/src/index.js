@@ -5,7 +5,8 @@ const { initializeDatabase, prisma } = require('./config/prisma');
 const authRoutes = require('./routes/authRoutes');
 const splitBillRoutes = require('./routes/splitBillRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
-const { notFoundHandler, jsonParseErrorHandler, globalErrorHandler } = require('./middleware/errorHandler');
+const wishlistRoutes = require('./routes/wishlistRoutes');
+const { sendError } = require('./utils/apiResponse');
 
 dotenv.config();
 
@@ -70,6 +71,7 @@ app.get('/api/db-health', async (_req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/split-bills', splitBillRoutes);
 app.use('/api/analytics', analyticsRoutes);
+app.use('/api/wishlists', wishlistRoutes);
 
 app.use(notFoundHandler);
 app.use(globalErrorHandler);

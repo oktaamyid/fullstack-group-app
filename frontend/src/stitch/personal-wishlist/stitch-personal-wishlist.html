@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Wishlist Catalog LIVO</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "background": "#fdf9e9",
+                    "secondary-fixed-dim": "#f9bd22",
+                    "secondary-fixed": "#ffdf9f",
+                    "outline-variant": "#c7c4d7",
+                    "on-tertiary": "#ffffff",
+                    "surface-container-high": "#ece8d9",
+                    "on-tertiary-fixed": "#301400",
+                    "inverse-surface": "#323126",
+                    "surface-container-low": "#f8f4e4",
+                    "on-tertiary-container": "#fffbff",
+                    "inverse-on-surface": "#f5f1e1",
+                    "on-background": "#1c1c13",
+                    "surface-container": "#f2eede",
+                    "surface": "#fdf9e9",
+                    "tertiary": "#904900",
+                    "surface-variant": "#e6e3d3",
+                    "on-surface-variant": "#464554",
+                    "secondary": "#795900",
+                    "on-primary-fixed-variant": "#2f2ebe",
+                    "surface-container-lowest": "#ffffff",
+                    "on-secondary-fixed-variant": "#5c4300",
+                    "primary-container": "#6063ee",
+                    "on-error-container": "#93000a",
+                    "primary-fixed": "#e1e0ff",
+                    "tertiary-fixed": "#ffdcc5",
+                    "surface-bright": "#fdf9e9",
+                    "inverse-primary": "#c0c1ff",
+                    "error": "#ba1a1a",
+                    "secondary-container": "#ffc329",
+                    "tertiary-fixed-dim": "#ffb783",
+                    "surface-dim": "#dedacb",
+                    "surface-tint": "#494bd6",
+                    "surface-container-highest": "#e6e3d3",
+                    "on-surface": "#1c1c13",
+                    "on-primary-container": "#fffbff",
+                    "on-primary-fixed": "#07006c",
+                    "on-primary": "#ffffff",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed": "#261a00",
+                    "on-secondary-container": "#6f5100",
+                    "on-secondary": "#ffffff",
+                    "primary-fixed-dim": "#c0c1ff",
+                    "on-tertiary-fixed-variant": "#703700",
+                    "tertiary-container": "#b55d00",
+                    "primary": "#4648d4",
+                    "on-error": "#ffffff",
+                    "outline": "#767586"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Plus Jakarta Sans"],
+                    "label": ["Plus Jakarta Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #fdf9e9; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .neo-shadow { shadow-[4px_4px_0px_0px_rgba(28,28,19,1)] }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="text-on-background min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="sticky top-0 w-full z-50 px-4 py-2 flex items-center justify-between bg-[#FFFBEB] dark:bg-slate-900 border-b border-[#1c1c13] dark:border-white shadow-[4px_4px_0px_0px_rgba(28,28,19,1)]">
+<div class="flex items-center gap-3">
+<img alt="LIVO Logo" class="w-10 h-10 rounded-full border border-[#1c1c13]" data-alt="Minimalist cute hamster mascot logo with academic cap in deep indigo and gold colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCpAxIHmCQEehhMcYpTW5I9QYzRnVePg9lP15kgbfUzpcufE1eUDq-QAlnGUNPObYUNI0hFF2q7hs2gnP9lLzbdivTPYxg180hDJlR2-A6UotBLgydXMFh4ookbz9bdFEdUeC-yoGQZlvFntrNVnG8kVjk2GtnLemcS0FudD3YqSxdIXr47WpAtM1r55Wk30J4CQXQb1hl3_lbIczsvw1iFrXxuDbs3bk8zfBIYwPykp9uqz_iCMZJs4uGIpnEx3iH4tXXCrJeev6cm"/>
+<h1 class="text-2xl font-black text-[#1c1c13] dark:text-[#fdf9e9] uppercase tracking-tighter">LIVO</h1>
+</div>
+<button class="w-10 h-10 flex items-center justify-center border border-[#1c1c13] bg-[#FFFBEB] hover:bg-[#FBBF24] transition-all active:translate-x-[2px] active:translate-y-[2px] active:shadow-none shadow-[2px_2px_0px_0px_rgba(28,28,19,1)]">
+<span class="material-symbols-outlined" data-icon="account_circle">account_circle</span>
+</button>
+</header>
+<main class="px-4 pt-6 max-w-lg mx-auto">
+<!-- Balance Info -->
+<section class="mb-8 p-6 bg-primary-container text-on-primary-container border border-on-surface shadow-[4px_4px_0px_0px_rgba(28,28,19,1)] rounded-none">
+<div class="flex justify-between items-start">
+<div>
+<p class="text-xs font-bold uppercase tracking-widest opacity-90 mb-1">Available Savings</p>
+<h2 class="text-4xl font-extrabold tracking-tight">$4,250.00</h2>
+</div>
+<span class="material-symbols-outlined text-4xl" data-icon="account_balance_wallet">account_balance_wallet</span>
+</div>
+<div class="mt-4 pt-4 border-t border-on-surface/20 flex gap-4">
+<div class="flex items-center gap-1">
+<span class="material-symbols-outlined text-sm" data-icon="trending_up">trending_up</span>
+<span class="text-xs font-bold">+12% Monthly</span>
+</div>
+<div class="flex items-center gap-1 text-secondary-container">
+<span class="material-symbols-outlined text-sm" data-icon="military_tech">military_tech</span>
+<span class="text-xs font-bold">Gold Tier</span>
+</div>
+</div>
+</section>
+<!-- Search & Filter -->
+<div class="flex gap-2 mb-6">
+<div class="flex-1 relative">
+<input class="w-full bg-surface border border-on-surface px-4 py-3 text-sm font-bold focus:shadow-[4px_4px_0px_0px_rgba(28,28,19,1)] focus:outline-none transition-all placeholder:text-outline" placeholder="Search wishlist..." type="text"/>
+</div>
+<button class="p-3 border border-on-surface bg-surface shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px]">
+<span class="material-symbols-outlined" data-icon="tune">tune</span>
+</button>
+</div>
+<!-- Wishlist Catalog -->
+<div class="grid grid-cols-1 gap-6">
+<!-- Product Card 1: Safe to Buy -->
+<article class="bg-surface border border-on-surface shadow-[4px_4px_0px_0px_rgba(28,28,19,1)] flex flex-col overflow-hidden">
+<div class="relative h-48 border-b border-on-surface">
+<img alt="Headphones" class="w-full h-full object-cover" data-alt="Professional studio headphones on a minimalist desk background with soft cinematic lighting and shallow depth of field" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAEFJ2_mX195VN0-pRSmvqYtEfmdsav98rj13Bm67zbAUvk0VBdXKzugrD5iKeV1GO2AKZKvPZElOcnf4K2C7xkhRch1epXum92gd1BtpvhCmsR6mPk-o_sF56WrSVHnE2Of_i5Odx92SrhdYfGpDR6w57EqHI1fZMrRPbjB7Ozuc7CFBWvPVRsSgcGGCHGVWIIcWT2kucq4BRRcFgE6dYlezFhTWWdd56OI_BqtPhzbId8NG73inX2A45uBJuQf39IcK9J1Ir5NyUE"/>
+<div class="absolute top-3 right-3 bg-secondary-container text-on-secondary-container px-3 py-1 border border-on-surface font-bold text-xs uppercase shadow-[2px_2px_0px_0px_rgba(28,28,19,1)]">
+                        Safe to Buy
+                    </div>
+</div>
+<div class="p-4 flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<h3 class="text-lg font-bold tracking-tight">Audio Master Pro X</h3>
+<span class="text-xl font-extrabold text-primary">$299.00</span>
+</div>
+<p class="text-sm text-on-surface-variant leading-relaxed">High-fidelity noise-canceling headphones for deep academic focus sessions.</p>
+<div class="mt-2 flex gap-2">
+<button class="flex-1 py-3 bg-primary text-on-primary border border-on-surface font-bold text-sm uppercase shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all">
+                            Checkout Now
+                        </button>
+<button class="p-3 border border-on-surface bg-surface hover:bg-error-container transition-all">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 2: Not Now -->
+<article class="bg-surface border border-on-surface shadow-[4px_4px_0px_0px_rgba(28,28,19,1)] flex flex-col overflow-hidden">
+<div class="relative h-48 border-b border-on-surface grayscale">
+<img alt="Macbook" class="w-full h-full object-cover" data-alt="High-end laptop computer on a modern clean office desk with plant and natural window light" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbKZPuWhty7eS6JliJlAu4VrVAtjW6f2JngOcSp5awEinnhGfCIgxjtpqFWSteGBtel_92J-xQ-v5hNEUmlxusPOkZWjparNR6ypYRJTzuswT1-cpJp7w8cGd3T3yt9F8TTUshRprHa5Z5VMjT-8GSbbavGUblHH3bVwjom5kWuQNaTXbIP_RpEbMtBX9NEgnR_GcBc87KcRj58Y9xGVp9FthsXoRMWPPSiPKzOphD_hfax1E0fyTNU8uOvmrZnr1pvprnmkFYbw2q"/>
+<div class="absolute top-3 right-3 bg-error text-on-error px-3 py-1 border border-on-surface font-bold text-xs uppercase shadow-[2px_2px_0px_0px_rgba(28,28,19,1)]">
+                        Not Now
+                    </div>
+</div>
+<div class="p-4 flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<h3 class="text-lg font-bold tracking-tight">UltraStation Book 16</h3>
+<span class="text-xl font-extrabold text-error">$2,499.00</span>
+</div>
+<p class="text-sm text-on-surface-variant leading-relaxed">Requires $1,200 more in your 'Academic Growth' bucket to purchase safely.</p>
+<div class="mt-2 flex gap-2">
+<button class="flex-1 py-3 bg-surface-variant text-on-surface-variant border border-on-surface font-bold text-sm uppercase cursor-not-allowed opacity-75">
+                            Insufficient Funds
+                        </button>
+<button class="p-3 border border-on-surface bg-surface hover:bg-error-container transition-all">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+</article>
+<!-- Product Card 3: Safe to Buy -->
+<article class="bg-surface border border-on-surface shadow-[4px_4px_0px_0px_rgba(28,28,19,1)] flex flex-col overflow-hidden">
+<div class="relative h-48 border-b border-on-surface">
+<img alt="Planner" class="w-full h-full object-cover" data-alt="Elegant physical leather-bound academic planner with premium fountain pen on textured paper" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDIJLEvAj9QmCFZuHif5Il-Cv7hEYfF0OoFbQkpQA-ChZ6wfHVGqCyPW-0ocvMSLxjuHIA3muP_a65u-RCCbPyMme7zkXsmC2nmGtrKsSniahQaKSqhp3xAowukciBPvz0bo1NhOSR5Th1IwpugpVtpBgemjlFP59q75ot8XOY585yGwGvKEyaUfU-1Q490DV7rD9taj05eA9yggjxrs6W0BUsLkjnZCHo_vFkSJ62gkWItfJtP0qu4gtNRSUqx2HAqdtszdcyxqlM6"/>
+<div class="absolute top-3 right-3 bg-secondary-container text-on-secondary-container px-3 py-1 border border-on-surface font-bold text-xs uppercase shadow-[2px_2px_0px_0px_rgba(28,28,19,1)]">
+                        Safe to Buy
+                    </div>
+</div>
+<div class="p-4 flex flex-col gap-2">
+<div class="flex justify-between items-center">
+<h3 class="text-lg font-bold tracking-tight">Curator Notebook</h3>
+<span class="text-xl font-extrabold text-primary">$45.00</span>
+</div>
+<p class="text-sm text-on-surface-variant leading-relaxed">Genuine leather bound notebook for manual goal tracking and sketching.</p>
+<div class="mt-2 flex gap-2">
+<button class="flex-1 py-3 bg-primary text-on-primary border border-on-surface font-bold text-sm uppercase shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] active:shadow-none active:translate-x-[2px] active:translate-y-[2px] transition-all">
+                            Checkout Now
+                        </button>
+<button class="p-3 border border-on-surface bg-surface hover:bg-error-container transition-all">
+<span class="material-symbols-outlined" data-icon="delete">delete</span>
+</button>
+</div>
+</div>
+</article>
+</div>
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 pb-6 pt-3 bg-[#FFFBEB] rounded-t-[24px] border-t border-l border-r border-[#1c1c13] shadow-[0px_-4px_0px_0px_rgba(28,28,19,1)]">
+<a class="flex flex-col items-center justify-center text-[#1c1c13] dark:text-slate-400 p-2 hover:bg-[#6366F1]/10 active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="home">home</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-[10px] uppercase">Home</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1c1c13] dark:text-slate-400 p-2 hover:bg-[#6366F1]/10 active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="history">history</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-[10px] uppercase">History</span>
+</a>
+<!-- Active Item: Wishlist -->
+<a class="flex flex-col items-center justify-center bg-[#FBBF24] text-[#1c1c13] border border-[#1c1c13] rounded-[16px] px-4 py-1 shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="favorite" style="font-variation-settings: 'FILL' 1;">favorite</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-[10px] uppercase">Wishlist</span>
+</a>
+<a class="flex flex-col items-center justify-center text-[#1c1c13] dark:text-slate-400 p-2 hover:bg-[#6366F1]/10 active:scale-95 transition-transform duration-100" href="#">
+<span class="material-symbols-outlined" data-icon="analytics">analytics</span>
+<span class="font-['Plus_Jakarta_Sans'] font-bold text-[10px] uppercase">Insights</span>
+</a>
+</nav>
+</body></html>

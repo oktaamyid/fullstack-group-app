@@ -26,6 +26,8 @@ Jalankan backend + frontend bersamaan dari root:
 npm run dev
 ```
 
+Script ini sekarang menunggu backend `http://localhost:5000` siap dulu sebelum menjalankan frontend, sehingga menghindari error awal Vite proxy seperti `ECONNREFUSED` pada `/api/*`.
+
 Default:
 - Frontend: http://localhost:5173
 - Backend API: http://localhost:5000
