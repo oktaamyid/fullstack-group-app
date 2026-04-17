@@ -329,13 +329,13 @@ export function WishlistScreen({ mascotImage }) {
           >
             <span className="material-symbols-outlined">home</span>
           </Link>
-          <button
-            type="button"
+          <Link
+            to="/profile"
             className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#1c1c13] bg-white shadow-[2px_2px_0_#1c1c13]"
             aria-label="Profile"
           >
             <span className="material-symbols-outlined">account_circle</span>
-          </button>
+          </Link>
         </div>
       </header>
 

@@ -14,7 +14,7 @@ function StatusPill({ ok, label }) {
   return <span className={`${base} bg-[#ddd6fe] text-[#312e81]`}>{label}: Checking</span>
 }
 
-export function HomeDashboard({ isOffline, apiStatus, dbStatus, lastChecked, onRecheck, onOpenSplitBill, onOpenAnalytics, mainLogo, mascotImage }) {
+export function HomeDashboard({ isOffline, apiStatus, dbStatus, lastChecked, onRecheck, onOpenSplitBill, onOpenAnalytics, onOpenProfile, mainLogo, mascotImage }) {
   const dailyLimit = 25
   const spentToday = dbStatus.ok ? 12.4 : 0
   const progress = Math.min(100, (spentToday / dailyLimit) * 100)
@@ -31,14 +31,24 @@ export function HomeDashboard({ isOffline, apiStatus, dbStatus, lastChecked, onR
           <span className="text-2xl font-black tracking-tight">LIVO</span>
         </div>
 
-        <button
-          type="button"
-          onClick={onRecheck}
-          className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#1c1c13] bg-[#fffbeb] shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
-          aria-label="Refresh connection status"
-        >
-          <span className="material-symbols-outlined">sync</span>
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={onOpenProfile}
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#1c1c13] bg-white shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+            aria-label="Open profile settings"
+          >
+            <span className="material-symbols-outlined">settings</span>
+          </button>
+          <button
+            type="button"
+            onClick={onRecheck}
+            className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#1c1c13] bg-[#fffbeb] shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+            aria-label="Refresh connection status"
+          >
+            <span className="material-symbols-outlined">sync</span>
+          </button>
+        </div>
       </header>
 
       <main className="mx-auto max-w-md space-y-6 px-4 pt-8">

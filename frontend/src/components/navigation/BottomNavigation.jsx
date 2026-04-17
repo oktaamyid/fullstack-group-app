@@ -32,6 +32,7 @@ export function BottomNavigation() {
         <NavItem icon="history" label="History" active={isActive('/split-bill')} onClick={() => navigate('/split-bill')} />
         <NavItem icon="favorite" label="Wishlist" active={isActive('/wishlist')} onClick={() => navigate('/wishlist')} />
         <NavItem icon="analytics" label="Insights" active={isActive('/analytics')} onClick={() => navigate('/analytics')} />
+        <NavItem icon="person" label="Profile" active={isActive('/profile')} onClick={() => navigate('/profile')} />
       </nav>
 
       <button

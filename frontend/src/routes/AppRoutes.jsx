@@ -5,6 +5,7 @@ import { HomeDashboard } from '../components/screens/HomeDashboard'
 import { HistorySplitBillScreen } from '../components/screens/HistorySplitBillScreen'
 import { LoginAuthScreen } from '../components/screens/LoginAuthScreen'
 import { LoadingScreen } from '../components/screens/LoadingScreen'
+import { ProfileSettingsScreen } from '../components/screens/ProfileSettingsScreen'
 import { SplashScreen } from '../components/screens/SplashScreen'
 import { WishlistScreen } from '../components/screens/WishlistScreen'
 import { initialStatus } from '../constants/connectionStatus'
@@ -117,6 +118,10 @@ function HomeRoute() {
     navigate('/analytics')
   }, [navigate])
 
+  const handleOpenProfile = useCallback(() => {
+    navigate('/profile')
+  }, [navigate])
+
   useEffect(() => {
     const onOnline = () => setIsOffline(false)
     const onOffline = () => setIsOffline(true)
@@ -148,6 +153,7 @@ function HomeRoute() {
       onRecheck={handleRecheck}
       onLogout={handleLogout}
       onOpenSplitBill={handleOpenSplitBill}
+      onOpenProfile={handleOpenProfile}
       userName={authUser?.name || 'Student'}
       mainLogo={mainLogo}
       mascotImage={mascotImage}
@@ -179,6 +185,14 @@ function WishlistRoute() {
   return <WishlistScreen mascotImage={mascotImage} />
 }
 
+function ProfileRoute() {
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" replace />
+  }
+
+  return <ProfileSettingsScreen mascotImage={mascotImage} />
+}
+
 export function AppRoutes() {
   return (
     <Routes>
@@ -190,6 +204,7 @@ export function AppRoutes() {
       <Route path="/split-bill" element={<SplitBillRoute />} />
       <Route path="/analytics" element={<AnalyticsRoute />} />
       <Route path="/wishlist" element={<WishlistRoute />} />
+      <Route path="/profile" element={<ProfileRoute />} />
       <Route path="*" element={<Navigate to="/splash" replace />} />
     </Routes>
   )

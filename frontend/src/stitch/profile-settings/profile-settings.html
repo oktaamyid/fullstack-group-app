@@ -1,0 +1,208 @@
+<!DOCTYPE html><html class="light" lang="en"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>LIVO - Profile &amp; Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "secondary": "#795900",
+                    "primary-fixed": "#e1e0ff",
+                    "error": "#ba1a1a",
+                    "on-error": "#ffffff",
+                    "on-secondary-container": "#6f5100",
+                    "background": "#fdf9e9",
+                    "on-secondary-fixed-variant": "#5c4300",
+                    "surface-tint": "#494bd6",
+                    "outline": "#767586",
+                    "on-background": "#1c1c13",
+                    "outline-variant": "#c7c4d7",
+                    "on-secondary-fixed": "#261a00",
+                    "on-primary-container": "#fffbff",
+                    "inverse-on-surface": "#f5f1e1",
+                    "surface-container-low": "#f8f4e4",
+                    "on-tertiary-container": "#fffbff",
+                    "on-secondary": "#ffffff",
+                    "on-primary-fixed": "#07006c",
+                    "tertiary-fixed-dim": "#ffb783",
+                    "on-tertiary-fixed": "#301400",
+                    "error-container": "#ffdad6",
+                    "on-tertiary-fixed-variant": "#703700",
+                    "surface": "#fdf9e9",
+                    "on-surface-variant": "#464554",
+                    "surface-container": "#f2eede",
+                    "inverse-primary": "#c0c1ff",
+                    "inverse-surface": "#323126",
+                    "on-tertiary": "#ffffff",
+                    "secondary-fixed": "#ffdf9f",
+                    "tertiary": "#904900",
+                    "surface-container-highest": "#e6e3d3",
+                    "surface-container-high": "#ece8d9",
+                    "secondary-fixed-dim": "#f9bd22",
+                    "tertiary-container": "#b55d00",
+                    "surface-bright": "#fdf9e9",
+                    "on-primary-fixed-variant": "#2f2ebe",
+                    "surface-dim": "#dedacb",
+                    "on-primary": "#ffffff",
+                    "on-error-container": "#93000a",
+                    "primary-fixed-dim": "#c0c1ff",
+                    "surface-variant": "#e6e3d3",
+                    "primary": "#4648d4"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Plus Jakarta Sans"],
+                    "label": ["Plus Jakarta Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .neo-shadow-sm { shadow: 2px 2px 0px 0px #1c1c13; }
+        .neo-shadow-md { shadow: 4px 4px 0px 0px #1c1c13; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+<body class="bg-background text-on-background min-h-screen pb-32">
+<!-- TopAppBar -->
+<header class="fixed top-0 left-0 w-full z-50 flex items-center justify-between px-6 py-4 bg-[#fdf9e9] dark:bg-stone-900 border-b-2 border-[#1c1c13] dark:border-stone-100 shadow-[2px_2px_0px_0px_#1c1c13]">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 border-2 border-[#1c1c13] rounded-full overflow-hidden bg-secondary-container">
+<img alt="Hamster Mascot Logo" class="w-full h-full object-cover" data-alt="whimsical and scholarly hamster mascot wearing small glasses and a tiny graduation cap, flat vector illustration style" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5BWrgKxFDYhBbHztrsO2xoelPKRDsJERWy1FpAKe8SMXzgEEy6ZjMjHoA_wedHnQRiZJQJ1-wWdsAsbd8vrgrA_X7-fxSEo0WjBrA2ccVPGvwhlks4CBocjpYFeFuTLdkf_2HOyUHZCATO44fca38WIFYwse6P3AFAEx2Kqdf70m8ynaNF_knBtZ9sox33v8Kn78snR5c5ATAA5VInu9crefLEJGVnu58aG8Ce5PWOpHGqfT3HlnM9p9ngTs2cKkdXAWRTpd07av_" style="">
+</div>
+<span class="text-2xl font-black text-[#1c1c13] dark:text-stone-100 uppercase font-plus-jakarta-sans tracking-tight" style="">LIVO</span>
+</div>
+<button class="w-11 h-11 flex items-center justify-center border-2 border-[#1c1c13] rounded-lg bg-surface-container-lowest hover:bg-[#ffc329] transition-colors duration-200 active:translate-x-[1px] active:translate-y-[1px] active:shadow-none shadow-[2px_2px_0px_0px_#1c1c13]" style="">
+<span class="material-symbols-outlined" data-icon="settings" style="">settings</span>
+</button>
+</header>
+<main class="mt-24 px-6 max-w-2xl mx-auto space-y-8">
+<!-- User Profile Header -->
+<section class="flex flex-col items-center text-center space-y-4">
+<div class="relative">
+<div class="w-32 h-32 border-[#1c1c13] rounded-full overflow-hidden bg-white border-4 shadow-[6px_6px_0px_0px_#1c1c13]">
+<img alt="Alex Rivera Profile" class="w-full h-full object-cover" data-alt="Portrait of a young professional man with a kind smile, neutral background, soft academic lighting, high quality photography" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDkq1uPkePy3AJoQHNCtflC8CJobLyBY8HPi9B1v7JgZFzLgaPtF6D7qoMutsxd8Bvs9QdrToKWk3MKKLP9BYY4ZvRte3oLUxztoF1Fv_2yKcZZwY24vVMbGpGeVNKLKJVzivNpw1QmApCC7DqUBTVDPQ9Xafo7JahEzpkYdwhk3EBorE34_AI1nfMpVVeNwmuB3cyMy2zEJ8W_KV85iqVfbAp0nZU_OS1gcDvoJVA4u1yMF04_W1VcMK-Cxhi3Ws_G_0Yx83-TooR8" style="">
+</div>
+<div class="absolute -bottom-2 -right-2 bg-secondary-container border-2 border-[#1c1c13] px-3 py-1 rounded-full shadow-[2px_2px_0px_0px_#1c1c13]">
+<span class="text-[10px] font-extrabold uppercase tracking-widest text-[#1c1c13]" style=""></span>
+</div>
+</div>
+<div>
+<h1 class="text-3xl font-extrabold tracking-tight text-[#1c1c13]" style="">Alex Rivera</h1>
+<p class="text-on-surface-variant font-medium" style=""><br></p>
+</div>
+</section>
+<!-- Account Settings Card -->
+<div class="bg-surface-container-low border-2 border-[#1c1c13] rounded-xl overflow-hidden shadow-[4px_4px_0px_0px_#1c1c13]">
+<div class="px-6 py-4 border-b-2 border-[#1c1c13] bg-surface-container-high">
+<h2 class="text-lg font-bold uppercase tracking-tight flex items-center gap-2" style="">
+<span class="material-symbols-outlined" data-icon="person" style="">person</span>
+                    Account Settings
+                </h2>
+</div>
+<div class="divide-y-2 divide-[#1c1c13]">
+<button class="w-full px-6 py-4 flex items-center justify-between hover:bg-secondary-container/20 transition-colors group" style="">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined" data-icon="edit_note" style="">edit_note</span>
+<span class="font-bold" style="">Edit Profile</span>
+</div>
+<span class="material-symbols-outlined transition-transform group-hover:translate-x-1" data-icon="chevron_right" style="">chevron_right</span>
+</button>
+<button class="w-full px-6 py-4 flex items-center justify-between hover:bg-secondary-container/20 transition-colors group" style="">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined" data-icon="shield" style="">shield</span>
+<span class="font-bold" style="">Security</span>
+</div>
+<span class="material-symbols-outlined transition-transform group-hover:translate-x-1" data-icon="chevron_right" style="">chevron_right</span>
+</button>
+<button class="w-full px-6 py-4 flex items-center justify-between hover:bg-secondary-container/20 transition-colors group border-b-0" style="">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined" data-icon="link" style="">link</span>
+<span class="font-bold" style="">Linked Accounts</span>
+</div>
+<span class="material-symbols-outlined transition-transform group-hover:translate-x-1" data-icon="chevron_right" style="">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Preferences Card -->
+<div class="bg-surface-container-low border-2 border-[#1c1c13] rounded-xl overflow-hidden shadow-[4px_4px_0px_0px_#1c1c13]">
+<div class="px-6 py-4 border-b-2 border-[#1c1c13] bg-surface-container-high">
+<h2 class="text-lg font-bold uppercase tracking-tight flex items-center gap-2" style="">
+<span class="material-symbols-outlined" data-icon="tune" style="">tune</span>
+                    Preferences
+                </h2>
+</div>
+<div class="divide-y-2 divide-[#1c1c13]">
+<button class="w-full px-6 py-4 flex flex-col items-start gap-1 hover:bg-secondary-container/20 transition-colors" style="">
+<div class="flex items-center justify-between w-full">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined" data-icon="category" style="">category</span>
+<span class="font-bold" style="">Custom Categories</span>
+</div>
+<span class="material-symbols-outlined" data-icon="chevron_right" style="">chevron_right</span>
+</div>
+<p class="ml-10 text-xs text-on-surface-variant" style="">Manage Makan, Transport, and Academic supplies</p>
+</button>
+<button class="w-full px-6 py-4 flex flex-col items-start gap-1 hover:bg-secondary-container/20 transition-colors border-b-0" style="">
+<div class="flex items-center justify-between w-full">
+<div class="flex items-center gap-4">
+<span class="material-symbols-outlined" data-icon="notifications" style="">notifications</span>
+<span class="font-bold" style="">Notification Settings</span>
+</div>
+<span class="material-symbols-outlined" data-icon="chevron_right" style="">chevron_right</span>
+</div>
+<p class="ml-10 text-xs text-on-surface-variant" style="">Stock reminders and weekly budget alerts</p>
+</button>
+</div>
+</div>
+<!-- Reports Section -->
+<section class="pt-4">
+<button class="w-full py-5 bg-secondary-container text-[#1c1c13] font-black uppercase tracking-widest border-2 border-[#1c1c13] rounded-xl shadow-[4px_4px_0px_0px_#1c1c13] flex items-center justify-center gap-3 active:translate-x-1 active:translate-y-1 active:shadow-none transition-all" style="">
+<span class="material-symbols-outlined" data-icon="picture_as_pdf" style="">picture_as_pdf</span>
+                Export Monthly Report (PDF)
+            </button>
+</section>
+<!-- Integrity Section -->
+</main>
+<!-- BottomNavBar -->
+<nav class="fixed bottom-0 left-0 w-full z-50 flex justify-around items-center px-4 py-3 pb-safe bg-[#fdf9e9] border-t-2 border-[#1c1c13] dark:border-stone-100 shadow-[0px_-2px_0px_0px_#1c1c13]">
+<button class="flex flex-col items-center justify-center text-[#1c1c13] dark:text-stone-300 opacity-70 hover:bg-[#ffc329]/20 transition-all active:scale-95 duration-100 min-h-[44px] min-w-[44px]" style="">
+<span class="material-symbols-outlined" data-icon="home" style="">home</span>
+<span class="font-plus-jakarta-sans text-[11px] font-bold uppercase" style="">Home</span>
+</button>
+<button class="flex flex-col items-center justify-center text-[#1c1c13] dark:text-stone-300 opacity-70 hover:bg-[#ffc329]/20 transition-all active:scale-95 duration-100 min-h-[44px] min-w-[44px]" style="">
+<span class="material-symbols-outlined" data-icon="history" style="">history</span>
+<span class="font-plus-jakarta-sans text-[11px] font-bold uppercase" style="">History</span>
+</button>
+<button class="flex flex-col items-center justify-center text-[#1c1c13] dark:text-stone-300 opacity-70 hover:bg-[#ffc329]/20 transition-all active:scale-95 duration-100 min-h-[44px] min-w-[44px]" style="">
+<span class="material-symbols-outlined" data-icon="receipt_long" style="">receipt_long</span>
+<span class="font-plus-jakarta-sans text-[11px] font-bold uppercase" style="">Wishlist</span>
+</button>
+<!-- ACTIVE TAB: Insights (Closest semantic match to Profile/Account overview context) -->
+<button class="flex flex-col items-center justify-center bg-[#ffc329] text-[#1c1c13] border-2 border-[#1c1c13] rounded-lg px-3 py-1 shadow-[2px_2px_0px_0px_#1c1c13] active:scale-95 duration-100 min-h-[44px] min-w-[44px]" style="">
+<span class="material-symbols-outlined" data-icon="insights" style="">insights</span>
+<span class="font-plus-jakarta-sans text-[11px] font-bold uppercase" style="">Insights</span>
+</button>
+</nav>
+</body></html>

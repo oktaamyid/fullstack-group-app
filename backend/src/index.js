@@ -6,7 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const splitBillRoutes = require('./routes/splitBillRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const wishlistRoutes = require('./routes/wishlistRoutes');
-const { sendError } = require('./utils/apiResponse');
+const { notFoundHandler, jsonParseErrorHandler, globalErrorHandler } = require('./middleware/errorHandler');
 
 dotenv.config();
 
