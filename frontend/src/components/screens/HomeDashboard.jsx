@@ -1,4 +1,4 @@
-export function HomeDashboard({ isOffline, apiStatus, dbStatus, lastChecked, onRecheck, mainLogo }) {
+export function HomeDashboard({ isOffline, apiStatus, dbStatus, lastChecked, onRecheck, onLogout, userName, mainLogo }) {
   return (
     <main className="flex min-h-svh items-center justify-center bg-[#fffbeb] px-3.5 py-5">
       <section className="w-full max-w-195 rounded-2xl border border-black bg-[#fff9dc] p-4.5 text-left md:p-5.5">
@@ -7,7 +7,8 @@ export function HomeDashboard({ isOffline, apiStatus, dbStatus, lastChecked, onR
             <h1 className="m-0 text-[1.9rem] leading-tight font-extrabold tracking-[-0.02em] text-[#1c1c13]">
               LIVO Connection Status
             </h1>
-            <p className="mt-1 mb-4 text-[#464554]">Monitoring backend and local PostgreSQL connection.</p>
+            <p className="mt-1 mb-1 text-[#464554]">Monitoring backend and local PostgreSQL connection.</p>
+            <p className="text-sm font-semibold text-[#313244]">Logged in as: {userName}</p>
           </div>
           <img
             src={mainLogo}
@@ -48,13 +49,22 @@ export function HomeDashboard({ isOffline, apiStatus, dbStatus, lastChecked, onR
 
         <div className="mt-3.5 flex flex-col items-start gap-2.5 md:flex-row md:items-center md:justify-between">
           <p className="text-sm text-[#464554]">Last checked: {lastChecked}</p>
-          <button
-            type="button"
-            onClick={onRecheck}
-            className="min-h-11 rounded-2xl border border-black bg-[#6366f1] px-4 py-2.5 font-bold text-white transition-transform hover:-translate-y-px active:translate-y-0"
-          >
-            Recheck Connection
-          </button>
+          <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row">
+            <button
+              type="button"
+              onClick={onRecheck}
+              className="min-h-11 rounded-2xl border border-black bg-[#6366f1] px-4 py-2.5 font-bold text-white transition-transform hover:-translate-y-px active:translate-y-0"
+            >
+              Recheck Connection
+            </button>
+            <button
+              type="button"
+              onClick={onLogout}
+              className="min-h-11 rounded-2xl border border-black bg-white px-4 py-2.5 font-bold text-[#1c1c13] transition-transform hover:-translate-y-px active:translate-y-0"
+            >
+              Logout
+            </button>
+          </div>
         </div>
       </section>
     </main>

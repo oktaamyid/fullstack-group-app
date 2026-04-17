@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
-const { initializeDatabase } = require('./config/prisma');
+const { initializeDatabase, prisma } = require('./config/prisma');
 const authRoutes = require('./routes/authRoutes');
 const { sendError } = require('./utils/apiResponse');
 
@@ -23,6 +23,28 @@ app.get('/api/health', (_req, res) => {
     },
     message: 'Express backend is running',
   });
+});
+
+app.get('/api/db-health', async (_req, res) => {
+  try {
+    await prisma.$connect();
+    const result = await prisma.$queryRaw`SELECT 1 AS ok`;
+
+    return res.json({
+      success: true,
+      data: {
+        query: 'SELECT 1 AS ok',
+        result: result[0],
+      },
+      message: 'Database is connected',
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      data: {},
+      message: error?.message || 'Database connection failed',
+    });
+  }
 });
 
 app.use('/api/auth', authRoutes);
