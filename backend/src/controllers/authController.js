@@ -1,7 +1,6 @@
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const { prisma } = require('../config/prisma');
-const { registerSchema, loginSchema } = require('../validators/authValidator');
 const { sendSuccess, sendError } = require('../utils/apiResponse');
 
 function signToken(user) {
@@ -17,18 +16,7 @@ function signToken(user) {
 }
 
 async function register(req, res) {
-  const validation = registerSchema.safeParse(req.body);
-  if (!validation.success) {
-    const fieldErrors = validation.error.flatten().fieldErrors;
-    const firstError = Object.values(fieldErrors).find((errors) => Array.isArray(errors) && errors.length)?.[0];
-
-    return sendError(res, 'Validation failed', 422, {
-      errors: fieldErrors,
-      detail: firstError || 'Invalid request payload',
-    });
-  }
-
-  const { name, email, password } = validation.data;
+  const { name, email, password } = req.body;
 
   try {
     const existingUser = await prisma.user.findUnique({ where: { email } });
@@ -71,14 +59,7 @@ async function register(req, res) {
 }
 
 async function login(req, res) {
-  const validation = loginSchema.safeParse(req.body);
-  if (!validation.success) {
-    return sendError(res, 'Validation failed', 422, {
-      errors: validation.error.flatten().fieldErrors,
-    });
-  }
-
-  const { email, password } = validation.data;
+  const { email, password } = req.body;
 
   try {
     const user = await prisma.user.findUnique({ where: { email } });

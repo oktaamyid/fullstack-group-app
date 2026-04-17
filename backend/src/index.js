@@ -5,7 +5,7 @@ const { initializeDatabase, prisma } = require('./config/prisma');
 const authRoutes = require('./routes/authRoutes');
 const splitBillRoutes = require('./routes/splitBillRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
-const { sendError } = require('./utils/apiResponse');
+const { notFoundHandler, jsonParseErrorHandler, globalErrorHandler } = require('./middleware/errorHandler');
 
 dotenv.config();
 
@@ -32,6 +32,7 @@ app.use(
   })
 );
 app.use(express.json());
+app.use(jsonParseErrorHandler);
 
 app.get('/api/health', (_req, res) => {
   res.json({
@@ -70,9 +71,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/split-bills', splitBillRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
-app.use((_req, res) => {
-  return sendError(res, 'Route not found', 404);
-});
+app.use(notFoundHandler);
+app.use(globalErrorHandler);
 
 async function startServer() {
   try {
