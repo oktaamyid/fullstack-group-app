@@ -402,7 +402,6 @@ export function WishlistScreen({ mascotImage }) {
                 Balance (Rp)
                 <input
                   type="number"
-                  min="0"
                   value={currentBalance}
                   onChange={(event) => setCurrentBalance(Number(event.target.value) || 0)}
                   className="mt-1 min-h-11 w-full rounded-lg border border-[#1c1c13] bg-white px-3 text-sm"
