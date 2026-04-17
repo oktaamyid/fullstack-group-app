@@ -137,6 +137,7 @@ function HomeRoute() {
       onLogout={handleLogout}
       userName={authUser?.name || 'Student'}
       mainLogo={mainLogo}
+      mascotImage={mascotImage}
     />
   )
 }
