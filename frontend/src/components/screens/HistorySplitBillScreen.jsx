@@ -7,6 +7,7 @@ import {
   updateSplitBill,
   updateSplitBillMemberStatus,
 } from '../../services/splitBill'
+import { BottomNavigation } from '../navigation/BottomNavigation'
 
 const defaultForm = {
   title: '',
@@ -360,6 +361,8 @@ export function HistorySplitBillScreen({ mascotImage }) {
           </section>
         ) : null}
       </main>
+
+      <BottomNavigation />
     </div>
   )
 }
