@@ -6,6 +6,7 @@ const authRoutes = require('./routes/authRoutes');
 const splitBillRoutes = require('./routes/splitBillRoutes');
 const analyticsRoutes = require('./routes/analyticsRoutes');
 const wishlistRoutes = require('./routes/wishlistRoutes');
+const contactRoutes = require('./routes/contactRoutes');
 const { notFoundHandler, jsonParseErrorHandler, globalErrorHandler } = require('./middleware/errorHandler');
 
 dotenv.config();
@@ -72,6 +73,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/split-bills', splitBillRoutes);
 app.use('/api/analytics', analyticsRoutes);
 app.use('/api/wishlists', wishlistRoutes);
+app.use('/api/contact', contactRoutes);
 
 app.use(notFoundHandler);
 app.use(globalErrorHandler);

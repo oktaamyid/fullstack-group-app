@@ -7,44 +7,16 @@ const {
 } = require('../validators/splitBillValidator');
 
 function allocateMemberAmounts(totalAmount, members) {
-  const withCustomAmount = members.filter((member) => typeof member.amount === 'number');
-  const withoutCustomAmount = members.filter((member) => typeof member.amount !== 'number');
+  const allocatedAmount = members.reduce((sum, member) => sum + member.amount, 0);
 
-  const allocatedCustom = withCustomAmount.reduce((sum, member) => sum + member.amount, 0);
-  const remainder = totalAmount - allocatedCustom;
-
-  if (remainder < 0) {
-    throw new Error('Sum of custom member amounts cannot exceed total amount');
+  if (allocatedAmount !== totalAmount) {
+    throw new Error('Total amount must equal sum of member amounts');
   }
-
-  if (withoutCustomAmount.length === 0) {
-    if (allocatedCustom !== totalAmount) {
-      throw new Error('Sum of member amounts must match total amount');
-    }
-
-    return members.map((member) => ({
-      friendName: member.friendName,
-      amount: member.amount,
-    }));
-  }
-
-  const evenShare = Math.floor(remainder / withoutCustomAmount.length);
-  let leftovers = remainder % withoutCustomAmount.length;
 
   return members.map((member) => {
-    if (typeof member.amount === 'number') {
-      return {
-        friendName: member.friendName,
-        amount: member.amount,
-      };
-    }
-
-    const extra = leftovers > 0 ? 1 : 0;
-    leftovers -= extra;
-
     return {
       friendName: member.friendName,
-      amount: evenShare + extra,
+      amount: member.amount,
     };
   });
 }
@@ -198,14 +170,14 @@ async function updateSplitBill(req, res) {
     const nextDescription = validation.data.description !== undefined ? validation.data.description : existing.description;
     const nextTotalAmount = validation.data.totalAmount ?? existing.totalAmount;
     const nextMembers = validation.data.members;
+    const membersForValidation =
+      nextMembers || existing.members.map((member) => ({ friendName: member.friendName, amount: member.amount }));
 
     let memberAllocations;
-    if (nextMembers) {
-      try {
-        memberAllocations = allocateMemberAmounts(nextTotalAmount, nextMembers);
-      } catch (error) {
-        return sendError(res, error.message, 422);
-      }
+    try {
+      memberAllocations = allocateMemberAmounts(nextTotalAmount, membersForValidation);
+    } catch (error) {
+      return sendError(res, error.message, 422);
     }
 
     const updated = await prisma.$transaction(async (tx) => {
