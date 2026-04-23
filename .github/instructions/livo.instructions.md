@@ -15,7 +15,7 @@ applyTo:
 ## Project Identity
 
 - **Project Name:** LIVO
-- **Type:** PWA-based Finance Management System for students
+- **Type:** PWA-based Finance Management System
 - **Vibe:** Minimalist, Student-Friendly, Illustrative
 - **Visual Style:** Outlined Neo-Brutalism
   - 1px black border on all cards and buttons
@@ -44,6 +44,7 @@ applyTo:
    ```json
    { "success": boolean, "data": {}, "message": "string" }
    ```
+4. DONT MAKE FILE .MD FOR DOCUMENTATION AFTER IMPLEMENTATION, USE .MD FOR INSTRUCTION FILES ONLY.
 
 ## Key Responsibilities & Features
 

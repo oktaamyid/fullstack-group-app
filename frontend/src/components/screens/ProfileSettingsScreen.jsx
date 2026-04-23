@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import { clearAuthSession, getAuthToken, getAuthUser, saveAuthSession } from '../../services/auth'
 import {
   fetchProfile,
@@ -8,7 +8,9 @@ import {
   updatePassword,
   updateProfile,
 } from '../../services/profileSettings'
-import { BottomNavigation } from '../navigation/BottomNavigation'
+import { PageLayout } from '../layouts/PageLayout'
+import { PageHeader } from '../headers/PageHeader'
+import { Alert } from '../ui/Alert'
 
 const defaultProfileForm = {
   name: '',
@@ -38,7 +40,7 @@ function ToggleSetting({ label, description, checked, onChange }) {
   )
 }
 
-export function ProfileSettingsScreen({ mascotImage }) {
+export function ProfileSettingsScreen({ mainLogo }) {
   const navigate = useNavigate()
   const authUser = getAuthUser()
   const [isLoading, setIsLoading] = useState(true)
@@ -164,42 +166,35 @@ export function ProfileSettingsScreen({ mascotImage }) {
   )
 
   return (
-    <div className="min-h-svh bg-[#fdf9e9] pb-32 text-[#1c1c13]">
-      <header className="sticky top-0 z-50 flex items-center justify-between border-b border-[#1c1c13] bg-[#fdf9e9] px-4 py-3 shadow-[2px_2px_0_#1c1c13]">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 overflow-hidden rounded-full border border-[#1c1c13] bg-[#ffc329]">
-            <img src={mascotImage} alt="LIVO Mascot" className="h-full w-full object-cover" />
-          </div>
-          <div>
-            <h1 className="text-xl font-extrabold leading-none">Profile & Settings</h1>
-            <p className="text-[11px] font-bold text-[#464554] uppercase">LIVO Account</p>
-          </div>
-        </div>
-        <Link
-          to="/home"
-          className="flex h-10 w-10 items-center justify-center rounded-lg border border-[#1c1c13] bg-white shadow-[2px_2px_0_#1c1c13]"
-          aria-label="Back Home"
-        >
-          <span className="material-symbols-outlined">home</span>
-        </Link>
-      </header>
-
-      <main className="mx-auto max-w-lg space-y-5 px-4 py-5">
-        <section className="rounded-xl border border-[#1c1c13] bg-white p-4 shadow-[3px_3px_0_#1c1c13]">
+    <PageLayout
+      header={
+        <PageHeader
+          mainLogo={mainLogo}
+          title="Profile & Settings"
+          backLink="/home"
+        />
+      }
+      className="space-y-5 py-5 lg:grid lg:grid-cols-12 lg:gap-6 lg:space-y-0"
+    >
+        <section className="rounded-xl border border-[#1c1c13] bg-white p-4 shadow-[3px_3px_0_#1c1c13] lg:col-span-12">
           <p className="text-[11px] font-black uppercase text-[#4648d4]">Account Snapshot</p>
           <h2 className="mt-1 text-lg font-extrabold">{authUser?.name || 'Student'}</h2>
           <p className="text-sm text-[#464554]">{authUser?.email || '-'}</p>
         </section>
 
         {message ? (
-          <p className="rounded-xl border border-[#1c1c13] bg-[#bbf7d0] px-3 py-2 text-sm font-bold text-[#14532d]">{message}</p>
+          <Alert type="success" onClose={() => setMessage('')}>
+            {message}
+          </Alert>
         ) : null}
 
         {errorMessage ? (
-          <p className="rounded-xl border border-[#1c1c13] bg-[#fee2e2] px-3 py-2 text-sm font-bold text-[#7f1d1d]">{errorMessage}</p>
+          <Alert type="error" onClose={() => setErrorMessage('')}>
+            {errorMessage}
+          </Alert>
         ) : null}
 
-        <section className="rounded-xl border border-[#1c1c13] bg-[#f8f4e4] p-4 shadow-[3px_3px_0_#1c1c13]">
+        <section className="rounded-xl border border-[#1c1c13] bg-[#f8f4e4] p-4 shadow-[3px_3px_0_#1c1c13] lg:col-span-6">
           <h3 className="mb-3 text-sm font-black uppercase">Edit Profile</h3>
           {isLoading ? (
             <p className="text-sm font-semibold">Loading profile...</p>
@@ -238,7 +233,7 @@ export function ProfileSettingsScreen({ mascotImage }) {
           )}
         </section>
 
-        <section className="rounded-xl border border-[#1c1c13] bg-[#fff9dc] p-4 shadow-[3px_3px_0_#1c1c13]">
+        <section className="rounded-xl border border-[#1c1c13] bg-[#fff9dc] p-4 shadow-[3px_3px_0_#1c1c13] lg:col-span-6">
           <h3 className="mb-3 text-sm font-black uppercase">Security</h3>
           <form className="space-y-3" onSubmit={onSavePassword}>
             <label className="block text-[11px] font-black uppercase">
@@ -284,7 +279,7 @@ export function ProfileSettingsScreen({ mascotImage }) {
           </form>
         </section>
 
-        <section className="rounded-xl border border-[#1c1c13] bg-white p-4 shadow-[3px_3px_0_#1c1c13]">
+        <section className="rounded-xl border border-[#1c1c13] bg-white p-4 shadow-[3px_3px_0_#1c1c13] lg:col-span-12">
           <h3 className="mb-3 text-sm font-black uppercase">Preferences</h3>
           <div className="space-y-3">
             <ToggleSetting
@@ -307,9 +302,6 @@ export function ProfileSettingsScreen({ mascotImage }) {
             />
           </div>
         </section>
-      </main>
-
-      <BottomNavigation />
-    </div>
+    </PageLayout>
   )
 }

@@ -1,18 +1,23 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import { useCallback, useEffect, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate } from 'react-router-dom'
-import { AnalyticsTrendsScreen } from '../components/screens/AnalyticsTrendsScreen'
 import { HomeDashboard } from '../components/screens/HomeDashboard'
 import { HistorySplitBillScreen } from '../components/screens/HistorySplitBillScreen'
 import { LoginAuthScreen } from '../components/screens/LoginAuthScreen'
 import { LoadingScreen } from '../components/screens/LoadingScreen'
 import { ProfileSettingsScreen } from '../components/screens/ProfileSettingsScreen'
 import { SplashScreen } from '../components/screens/SplashScreen'
+import { TransactionScreen } from '../components/screens/TransactionScreen'
 import { WishlistScreen } from '../components/screens/WishlistScreen'
+import { AnalyticsTrendsScreen } from '../components/screens/AnalyticsTrendsScreen'
 import { initialStatus } from '../constants/connectionStatus'
 import { useConnectionCheck } from '../hooks/useConnectionCheck'
+import { getAnalyticsOverview } from '../services/analytics'
 import { clearAuthSession, getAuthUser, isAuthenticated, saveAuthSession } from '../services/auth'
+import { getSplitBills } from '../services/splitBill'
+import { getTransactions } from '../services/transaction'
 import mainLogo from '../stitch/main-logo/main-logo.png'
-import mascotImage from '../stitch/splash-loading/mascot-hamster.png'
+import mascotImage from '../stitch/main-logo/main-logo.png'
 
 function SplashRoute() {
   const navigate = useNavigate()
@@ -89,6 +94,12 @@ function HomeRoute() {
   const [apiStatus, setApiStatus] = useState(location.state?.apiStatus ?? initialStatus)
   const [dbStatus, setDbStatus] = useState(location.state?.dbStatus ?? initialStatus)
   const [lastChecked, setLastChecked] = useState(location.state?.lastChecked ?? '-')
+  const [financeData, setFinanceData] = useState({
+    splitSummary: { total: 0, paid: 0, unpaid: 0 },
+    transactionSummary: { totalIncome: 0, totalExpense: 0, netBalance: 0 },
+    recentTransactions: [],
+    analytics: null,
+  })
 
   if (!isAuthenticated()) {
     return <Navigate to="/login" replace />
@@ -105,6 +116,30 @@ function HomeRoute() {
     applyCheckResult(result)
   }, [applyCheckResult, checkConnections])
 
+  const loadFinanceData = useCallback(async () => {
+    try {
+      const [splitData, analyticsData, transactionData] = await Promise.all([
+        getSplitBills(),
+        getAnalyticsOverview(),
+        getTransactions(),
+      ])
+
+      setFinanceData({
+        splitSummary: splitData.summary || { total: 0, paid: 0, unpaid: 0 },
+        transactionSummary: transactionData.summary || { totalIncome: 0, totalExpense: 0, netBalance: 0 },
+        recentTransactions: transactionData.transactions || [],
+        analytics: analyticsData,
+      })
+    } catch {
+      setFinanceData({
+        splitSummary: { total: 0, paid: 0, unpaid: 0 },
+        transactionSummary: { totalIncome: 0, totalExpense: 0, netBalance: 0 },
+        recentTransactions: [],
+        analytics: null,
+      })
+    }
+  }, [])
+
   const handleLogout = useCallback(() => {
     clearAuthSession()
     navigate('/login', { replace: true })
@@ -112,10 +147,6 @@ function HomeRoute() {
 
   const handleOpenSplitBill = useCallback(() => {
     navigate('/split-bill')
-  }, [navigate])
-
-  const handleOpenAnalytics = useCallback(() => {
-    navigate('/analytics')
   }, [navigate])
 
   const handleOpenProfile = useCallback(() => {
@@ -143,18 +174,22 @@ function HomeRoute() {
     void handleRecheck()
   }, [handleRecheck, location.state])
 
+  useEffect(() => {
+    void loadFinanceData()
+  }, [loadFinanceData])
+
   return (
     <HomeDashboard
       isOffline={isOffline}
       apiStatus={apiStatus}
       dbStatus={dbStatus}
-      onOpenAnalytics={handleOpenAnalytics}
+      financeData={financeData}
       lastChecked={lastChecked}
       onRecheck={handleRecheck}
       onLogout={handleLogout}
       onOpenSplitBill={handleOpenSplitBill}
       onOpenProfile={handleOpenProfile}
-      userName={authUser?.name || 'Student'}
+      userName={authUser?.name || 'User'}
       mainLogo={mainLogo}
       mascotImage={mascotImage}
     />
@@ -166,15 +201,15 @@ function SplitBillRoute() {
     return <Navigate to="/login" replace />
   }
 
-  return <HistorySplitBillScreen mascotImage={mascotImage} />
+  return <HistorySplitBillScreen mainLogo={mainLogo} />
 }
 
-function AnalyticsRoute() {
+function TransactionRoute() {
   if (!isAuthenticated()) {
     return <Navigate to="/login" replace />
   }
 
-  return <AnalyticsTrendsScreen mascotImage={mascotImage} />
+  return <TransactionScreen mainLogo={mainLogo} />
 }
 
 function WishlistRoute() {
@@ -182,7 +217,7 @@ function WishlistRoute() {
     return <Navigate to="/login" replace />
   }
 
-  return <WishlistScreen mascotImage={mascotImage} />
+  return <WishlistScreen mainLogo={mainLogo} />
 }
 
 function ProfileRoute() {
@@ -190,7 +225,15 @@ function ProfileRoute() {
     return <Navigate to="/login" replace />
   }
 
-  return <ProfileSettingsScreen mascotImage={mascotImage} />
+  return <ProfileSettingsScreen mainLogo={mainLogo} />
+}
+
+function AnalyticsRoute() {
+  if (!isAuthenticated()) {
+    return <Navigate to="/login" replace />
+  }
+
+  return <AnalyticsTrendsScreen mainLogo={mainLogo} />
 }
 
 export function AppRoutes() {
@@ -202,9 +245,10 @@ export function AppRoutes() {
       <Route path="/login" element={<LoginRoute />} />
       <Route path="/home" element={<HomeRoute />} />
       <Route path="/split-bill" element={<SplitBillRoute />} />
-      <Route path="/analytics" element={<AnalyticsRoute />} />
+      <Route path="/transactions" element={<TransactionRoute />} />
       <Route path="/wishlist" element={<WishlistRoute />} />
       <Route path="/profile" element={<ProfileRoute />} />
+      <Route path="/analytics" element={<AnalyticsRoute />} />
       <Route path="*" element={<Navigate to="/splash" replace />} />
     </Routes>
   )

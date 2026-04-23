@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LIVO Financial - Profile &amp; Settings</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "outline-variant": "#c7c4d7",
+                    "on-primary-fixed": "#07006c",
+                    "outline": "#767586",
+                    "tertiary": "#904900",
+                    "on-primary": "#ffffff",
+                    "surface-bright": "#fdf9e9",
+                    "error-container": "#ffdad6",
+                    "surface-container-highest": "#e6e3d3",
+                    "secondary": "#795900",
+                    "on-tertiary-container": "#fffbff",
+                    "tertiary-container": "#b55d00",
+                    "secondary-fixed": "#ffdf9f",
+                    "on-tertiary-fixed-variant": "#703700",
+                    "tertiary-fixed-dim": "#ffb783",
+                    "on-secondary-fixed-variant": "#5c4300",
+                    "surface-container-low": "#f8f4e4",
+                    "surface-variant": "#e6e3d3",
+                    "on-secondary-container": "#6f5100",
+                    "on-tertiary-fixed": "#301400",
+                    "tertiary-fixed": "#ffdcc5",
+                    "inverse-primary": "#c0c1ff",
+                    "inverse-surface": "#323126",
+                    "on-tertiary": "#ffffff",
+                    "on-surface-variant": "#464554",
+                    "secondary-fixed-dim": "#f9bd22",
+                    "background": "#fdf9e9",
+                    "surface": "#fdf9e9",
+                    "inverse-on-surface": "#f5f1e1",
+                    "surface-container-lowest": "#ffffff",
+                    "on-primary-container": "#fffbff",
+                    "primary-fixed-dim": "#c0c1ff",
+                    "on-error": "#ffffff",
+                    "primary-fixed": "#e1e0ff",
+                    "on-secondary": "#ffffff",
+                    "surface-container-high": "#ece8d9",
+                    "primary": "#4648d4",
+                    "surface-container": "#f2eede",
+                    "on-primary-fixed-variant": "#2f2ebe",
+                    "on-error-container": "#93000a",
+                    "primary-container": "#6063ee",
+                    "on-background": "#1c1c13",
+                    "on-surface": "#1c1c13",
+                    "secondary-container": "#ffc329",
+                    "surface-tint": "#494bd6",
+                    "error": "#ba1a1a",
+                    "on-secondary-fixed": "#261a00",
+                    "surface-dim": "#dedacb"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "fontFamily": {
+                    "headline": ["Plus Jakarta Sans"],
+                    "body": ["Plus Jakarta Sans"],
+                    "label": ["Plus Jakarta Sans"]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface flex font-body">
+<!-- SideNavBar -->
+<nav class="fixed top-0 left-0 h-full flex flex-col p-6 bg-[#fdf9e9] h-screen w-64 border-r border-[#1c1c13] z-50">
+<div class="border-b border-[#1c1c13] mb-4 pb-4 flex items-center justify-between">
+<span class="text-2xl font-extrabold text-[#1c1c13] uppercase tracking-tighter">LIVO</span>
+</div>
+<div class="flex-1 flex flex-col gap-2">
+<a class="flex items-center gap-3 px-4 py-3 text-[#1c1c13] border border-transparent hover:border-[#1c1c13] hover:bg-[#ffc329] hover:shadow-[2px_2px_0px_0px_#1c1c13] transition-all font-['Plus_Jakarta_Sans'] font-bold text-sm tracking-tight rounded" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#1c1c13] border border-transparent hover:border-[#1c1c13] hover:bg-[#ffc329] hover:shadow-[2px_2px_0px_0px_#1c1c13] transition-all font-['Plus_Jakarta_Sans'] font-bold text-sm tracking-tight rounded" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+                Wallet
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#1c1c13] border border-transparent hover:border-[#1c1c13] hover:bg-[#ffc329] hover:shadow-[2px_2px_0px_0px_#1c1c13] transition-all font-['Plus_Jakarta_Sans'] font-bold text-sm tracking-tight rounded" href="#">
+<span class="material-symbols-outlined">school</span>
+                Scholarships
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#1c1c13] border border-transparent hover:border-[#1c1c13] hover:bg-[#ffc329] hover:shadow-[2px_2px_0px_0px_#1c1c13] transition-all font-['Plus_Jakarta_Sans'] font-bold text-sm tracking-tight rounded" href="#">
+<span class="material-symbols-outlined">stars</span>
+                Goals
+            </a>
+<!-- Active state mapped conceptually to Support/Settings area -->
+<a class="flex items-center gap-3 px-4 py-3 bg-[#4648d4] text-white border border-[#1c1c13] shadow-[2px_2px_0px_0px_#1c1c13] transition-all transform translate-x-1 translate-y-1 font-['Plus_Jakarta_Sans'] font-bold text-sm tracking-tight rounded" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+                Support
+            </a>
+</div>
+<div class="mt-auto">
+<button class="w-full bg-secondary-container text-on-secondary-container font-bold py-3 px-4 border border-on-surface shadow-[2px_2px_0px_0px_#1c1c13] rounded transition-all hover:bg-secondary-container hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_#1c1c13] active:translate-x-0 active:translate-y-0 active:shadow-none">
+                Upgrade to Honors
+            </button>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="ml-64 flex-1 min-h-screen flex flex-col">
+<!-- TopAppBar -->
+<header class="w-full border-b border-[#1c1c13] bg-[#fdf9e9] flex justify-between items-center h-20 px-8 sticky top-0 z-40">
+<div class="flex items-center gap-4">
+<span class="font-headline font-bold text-primary text-xl">Profile &amp; Settings</span>
+</div>
+<div class="flex items-center gap-6">
+<div class="flex gap-4">
+<button class="text-[#1c1c13] hover:text-[#4648d4] transition-colors duration-200">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-[#4648d4] border-b-2 border-[#4648d4] transition-colors duration-200">
+<span class="material-symbols-outlined">settings</span>
+</button>
+</div>
+<button class="bg-primary text-on-primary font-bold py-2 px-4 border border-on-surface shadow-[2px_2px_0px_0px_#1c1c13] rounded text-sm transition-all hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_#1c1c13] active:translate-x-0 active:translate-y-0 active:shadow-none">
+                    Add Transaction
+                </button>
+<img alt="Student Profile" class="w-10 h-10 rounded-full border border-on-surface object-cover" data-alt="close up portrait of a young professional student with a bright smile, warm lighting, natural background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEqKsUnidsHJd7osBW-5APz5v2nAYQ92TUupcj97BEOY5l5spwFFJgoVIMnz0uiOAh3ayQ2Jy1k1s3kCJUTE61Z4AIGto0qJ_vGTmsJN18mvFrNI7NBXnN-qrd5i3jG6i-9ViWwmEo1OQDoY7-6Nvs2t5ooHBREGEGIkaCekfYmkULVEbxwPWDxiAgyZM9MMd_Vwq4I3m7e4H81XRULwU0EqDE2IkyUxETpoIouyxfcsbsNoIH5H46XyUQrijf62b5IwWcH4xxy6Vq"/>
+</div>
+</header>
+<div class="p-8 max-w-5xl mx-auto w-full flex flex-col gap-8">
+<!-- Profile Header Card -->
+<section class="bg-surface-container-low border border-on-surface rounded-lg p-xl relative overflow-hidden flex items-center gap-6 shadow-[4px_4px_0px_0px_#1c1c13]">
+<img alt="Student Profile Large" class="w-24 h-24 rounded-full border border-on-surface object-cover shadow-[2px_2px_0px_0px_#1c1c13]" data-alt="close up portrait of a young professional student with a bright smile, warm lighting, natural background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBcenh4JvFLD7kShWzLfUoFvlD8mVjj1RlagSeP5plMniiAVs0_OWYF6ftbvTg5CSJwoUc-O0rE6vcRjGeFb4cFXRIBepIoEl-oxDcoyu4N2lRgX5tviPR0LzwWZHEN2RDlM-6tsnslMF2i7uPDNNAHdZ8kUn8R08qSpCPA7M9ernwLJG7-W2QFox_c2icCoJKg0kHBHSbLEMzND1H75wvCVwU5pt5uD-osfNVhI6lATp0fmzKuLcFcCFMSlLoWdA85gJMoIwQOP2GT"/>
+<div>
+<h1 class="text-display-lg font-headline font-extrabold text-on-surface leading-none tracking-tight">Alex Sterling</h1>
+<p class="text-headline-md font-headline font-bold text-primary mt-2">Class of 2025 • Computer Science</p>
+</div>
+<div class="ml-auto flex flex-col items-end gap-2">
+<span class="bg-secondary-container text-on-secondary-container border border-on-surface px-3 py-1 rounded font-bold text-label-md uppercase shadow-[2px_2px_0px_0px_#1c1c13]">Honors Student</span>
+<span class="text-body-md text-on-surface-variant font-medium">LIVO Member since 2021</span>
+</div>
+</section>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+<!-- Left Column: Settings -->
+<div class="md:col-span-2 flex flex-col gap-8">
+<!-- Account Settings -->
+<section class="bg-surface-container-low border border-on-surface rounded-lg shadow-[2px_2px_0px_0px_#1c1c13]">
+<div class="p-xl border-b border-on-surface">
+<h2 class="text-headline-md font-headline font-bold text-on-surface">Account Settings</h2>
+</div>
+<div class="p-xl flex flex-col gap-6">
+<div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+<div class="flex flex-col gap-2">
+<label class="text-label-md font-bold text-on-surface uppercase">Email Address</label>
+<input class="bg-surface-container-lowest border border-on-surface rounded h-12 px-4 text-body-md focus:bg-primary-fixed focus:ring-0 focus:border-on-surface focus:shadow-[4px_4px_0px_0px_#1c1c13] transition-all outline-none" disabled="" type="email" value="alex.sterling@university.edu"/>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-label-md font-bold text-on-surface uppercase">Phone Number</label>
+<input class="bg-surface-container-lowest border border-on-surface rounded h-12 px-4 text-body-md focus:bg-primary-fixed focus:ring-0 focus:border-on-surface focus:shadow-[4px_4px_0px_0px_#1c1c13] transition-all outline-none" type="tel" value="+1 (555) 019-2834"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-label-md font-bold text-on-surface uppercase">Primary Bank Linked</label>
+<div class="flex items-center justify-between bg-surface-container-lowest border border-on-surface rounded p-4">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">account_balance</span>
+<span class="font-bold text-body-md">Chase College Checking (...4829)</span>
+</div>
+<button class="text-label-md font-bold text-primary uppercase hover:underline">Update</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Preferences -->
+<section class="bg-surface-container-low border border-on-surface rounded-lg shadow-[2px_2px_0px_0px_#1c1c13]">
+<div class="p-xl border-b border-on-surface">
+<h2 class="text-headline-md font-headline font-bold text-on-surface">Preferences</h2>
+</div>
+<div class="p-xl flex flex-col gap-4">
+<label class="flex items-center justify-between cursor-pointer p-4 border border-on-surface bg-surface-container-lowest rounded hover:shadow-[2px_2px_0px_0px_#1c1c13] transition-all">
+<div>
+<span class="font-bold text-body-md block">Monthly Spending Alerts</span>
+<span class="text-body-md text-on-surface-variant block mt-1">Get notified when nearing category limits.</span>
+</div>
+<input checked="" class="form-checkbox h-6 w-6 text-primary border-on-surface rounded focus:ring-primary focus:ring-offset-0" type="checkbox"/>
+</label>
+<label class="flex items-center justify-between cursor-pointer p-4 border border-on-surface bg-surface-container-lowest rounded hover:shadow-[2px_2px_0px_0px_#1c1c13] transition-all">
+<div>
+<span class="font-bold text-body-md block">Scholarship Deadlines</span>
+<span class="text-body-md text-on-surface-variant block mt-1">Weekly digest of upcoming opportunities.</span>
+</div>
+<input checked="" class="form-checkbox h-6 w-6 text-primary border-on-surface rounded focus:ring-primary focus:ring-offset-0" type="checkbox"/>
+</label>
+</div>
+</section>
+</div>
+<!-- Right Column: Actions -->
+<div class="flex flex-col gap-8">
+<!-- Export Card -->
+<section class="bg-primary text-on-primary border border-on-surface rounded-lg p-xl shadow-[4px_4px_0px_0px_#1c1c13] flex flex-col gap-6 transform translate-x-1 translate-y-1">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-secondary-container" style="font-variation-settings: 'FILL' 1;">description</span>
+<h2 class="text-title-md font-headline font-bold">Academic Dossier</h2>
+</div>
+<p class="text-body-md opacity-90">Download your comprehensive financial and academic progress report for the current term.</p>
+<button class="w-full bg-secondary-container text-on-secondary-container font-bold py-4 px-4 border border-on-surface shadow-[2px_2px_0px_0px_#1c1c13] rounded flex items-center justify-center gap-2 transition-all hover:bg-[#eab308] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_#1c1c13] active:translate-x-0 active:translate-y-0 active:shadow-none text-label-md uppercase">
+<span class="material-symbols-outlined">download</span>
+                            Export Monthly Report (PDF)
+                        </button>
+</section>
+<!-- Danger Zone -->
+<section class="bg-surface-container-low border border-error rounded-lg shadow-[2px_2px_0px_0px_#ba1a1a]">
+<div class="p-xl border-b border-error">
+<h2 class="text-title-md font-headline font-bold text-error">Danger Zone</h2>
+</div>
+<div class="p-xl">
+<button class="w-full bg-surface-container-lowest text-error font-bold py-3 px-4 border border-error shadow-[2px_2px_0px_0px_#ba1a1a] rounded transition-all hover:bg-error-container hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_#ba1a1a] active:translate-x-0 active:translate-y-0 active:shadow-none">
+                                Deactivate Account
+                            </button>
+</div>
+</section>
+</div>
+</div>
+</div>
+</main>
+</body></html>

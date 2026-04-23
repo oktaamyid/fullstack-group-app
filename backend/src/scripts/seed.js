@@ -3,7 +3,7 @@ const bcryptjs = require('bcryptjs');
 
 const sampleData = {
   user: {
-    name: 'Demo Student',
+    name: 'Demo User',
     email: 'demo@livo.app',
     password: 'Demo123!@#',
   },
@@ -20,7 +20,7 @@ const sampleData = {
     },
     {
       title: 'Cafe Study Session',
-      description: 'Coffee and snacks during exam prep',
+      description: 'Coffee and snacks during planning session',
       totalAmount: 145000,
       members: [
         { friendName: 'Rudi', amount: 72500 },
@@ -29,7 +29,7 @@ const sampleData = {
     },
     {
       title: 'Transportation Home',
-      description: 'Grab to airport after semester',
+      description: 'Ride to airport after business trip',
       totalAmount: 250000,
       members: [
         { friendName: 'Ahmad', amount: 125000 },
@@ -38,7 +38,7 @@ const sampleData = {
     },
     {
       title: 'Grocery Shopping',
-      description: 'Weekly groceries for dorm',
+      description: 'Weekly household groceries',
       totalAmount: 320000,
       members: [
         { friendName: 'Rina', amount: 80000 },
@@ -66,6 +66,38 @@ const sampleData = {
         { friendName: 'Toni', amount: 105000 },
         { friendName: 'Edo', amount: 105000 },
       ],
+    },
+  ],
+  transactions: [
+    {
+      type: 'INCOME',
+      amount: 2500000,
+      category: 'Salary',
+      note: 'Monthly salary',
+    },
+    {
+      type: 'EXPENSE',
+      amount: 350000,
+      category: 'Food & Drinks',
+      note: 'Weekly groceries',
+    },
+    {
+      type: 'EXPENSE',
+      amount: 120000,
+      category: 'Transport',
+      note: 'Fuel and parking',
+    },
+    {
+      type: 'EXPENSE',
+      amount: 210000,
+      category: 'Utilities',
+      note: 'Internet and electricity',
+    },
+    {
+      type: 'INCOME',
+      amount: 150000,
+      category: 'Freelance',
+      note: 'Design side project',
     },
   ],
 };
@@ -122,8 +154,22 @@ async function seed() {
       console.log(`✅ Created split bill: ${splitBill.title} with ${splitBill.members.length} members`);
     }
 
+    let transactionsCreated = 0;
+    for (const transaction of sampleData.transactions) {
+      await prisma.transaction.create({
+        data: {
+          userId: user.id,
+          type: transaction.type,
+          amount: transaction.amount,
+          category: transaction.category,
+          note: transaction.note,
+        },
+      });
+      transactionsCreated++;
+    }
+
     console.log(`\n🎉 Seed completed successfully!`);
-    console.log(`📊 Created 1 user and ${billsCreated} split bills`);
+    console.log(`📊 Created 1 user, ${billsCreated} split bills, and ${transactionsCreated} transactions`);
     console.log(`\n📝 Demo Credentials:`);
     console.log(`   Email: ${sampleData.user.email}`);
     console.log(`   Password: ${sampleData.user.password}`);

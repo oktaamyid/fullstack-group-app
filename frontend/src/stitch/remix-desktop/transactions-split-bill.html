@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LIVO - History &amp; Split Bill</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+          darkMode: "class",
+          theme: {
+            extend: {
+              "colors": {
+                      "outline-variant": "#c7c4d7",
+                      "on-primary-fixed": "#07006c",
+                      "outline": "#767586",
+                      "tertiary": "#904900",
+                      "on-primary": "#ffffff",
+                      "surface-bright": "#fdf9e9",
+                      "error-container": "#ffdad6",
+                      "surface-container-highest": "#e6e3d3",
+                      "secondary": "#795900",
+                      "on-tertiary-container": "#fffbff",
+                      "tertiary-container": "#b55d00",
+                      "secondary-fixed": "#ffdf9f",
+                      "on-tertiary-fixed-variant": "#703700",
+                      "tertiary-fixed-dim": "#ffb783",
+                      "on-secondary-fixed-variant": "#5c4300",
+                      "surface-container-low": "#f8f4e4",
+                      "surface-variant": "#e6e3d3",
+                      "on-secondary-container": "#6f5100",
+                      "on-tertiary-fixed": "#301400",
+                      "tertiary-fixed": "#ffdcc5",
+                      "inverse-primary": "#c0c1ff",
+                      "inverse-surface": "#323126",
+                      "on-tertiary": "#ffffff",
+                      "on-surface-variant": "#464554",
+                      "secondary-fixed-dim": "#f9bd22",
+                      "background": "#fdf9e9",
+                      "surface": "#fdf9e9",
+                      "inverse-on-surface": "#f5f1e1",
+                      "surface-container-lowest": "#ffffff",
+                      "on-primary-container": "#fffbff",
+                      "primary-fixed-dim": "#c0c1ff",
+                      "on-error": "#ffffff",
+                      "primary-fixed": "#e1e0ff",
+                      "on-secondary": "#ffffff",
+                      "surface-container-high": "#ece8d9",
+                      "primary": "#4648d4",
+                      "surface-container": "#f2eede",
+                      "on-primary-fixed-variant": "#2f2ebe",
+                      "on-error-container": "#93000a",
+                      "primary-container": "#6063ee",
+                      "on-background": "#1c1c13",
+                      "on-surface": "#1c1c13",
+                      "secondary-container": "#ffc329",
+                      "surface-tint": "#494bd6",
+                      "error": "#ba1a1a",
+                      "on-secondary-fixed": "#261a00",
+                      "surface-dim": "#dedacb"
+              },
+              "borderRadius": {
+                      "DEFAULT": "0.25rem",
+                      "lg": "0.5rem",
+                      "xl": "0.75rem",
+                      "full": "9999px"
+              },
+              "spacing": {},
+              "fontFamily": {
+                      "headline": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "body": [
+                              "Plus Jakarta Sans"
+                      ],
+                      "label": [
+                              "Plus Jakarta Sans"
+                      ]
+              }
+      },
+          },
+        }
+      </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+      </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen flex">
+<!-- SideNavBar (from JSON) -->
+<nav class="fixed top-0 left-0 h-full flex flex-col p-6 h-screen w-64 border-r border-[#1c1c13] bg-[#fdf9e9] hidden md:flex z-50">
+<div class="border-b border-[#1c1c13] mb-4 pb-4 flex items-center justify-between">
+<span class="text-2xl font-extrabold text-[#1c1c13] uppercase tracking-tighter">LIVO</span>
+</div>
+<div class="flex-grow flex flex-col gap-2 mt-4">
+<a class="flex items-center gap-3 px-4 py-3 text-[#1c1c13] border border-transparent hover:border-[#1c1c13] hover:bg-[#ffc329] hover:shadow-[2px_2px_0px_0px_#1c1c13] transition-all font-['Plus_Jakarta_Sans'] font-bold text-sm tracking-tight rounded" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                Dashboard
+            </a>
+<!-- Active State Semantic Intent: "Wallet" matches history/transactions -->
+<a class="flex items-center gap-3 px-4 py-3 bg-[#4648d4] text-white border border-[#1c1c13] shadow-[2px_2px_0px_0px_#1c1c13] transition-all transform translate-x-1 translate-y-1 font-['Plus_Jakarta_Sans'] font-bold text-sm tracking-tight rounded" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+                Wallet
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#1c1c13] border border-transparent hover:border-[#1c1c13] hover:bg-[#ffc329] hover:shadow-[2px_2px_0px_0px_#1c1c13] transition-all font-['Plus_Jakarta_Sans'] font-bold text-sm tracking-tight rounded" href="#">
+<span class="material-symbols-outlined">school</span>
+                Scholarships
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#1c1c13] border border-transparent hover:border-[#1c1c13] hover:bg-[#ffc329] hover:shadow-[2px_2px_0px_0px_#1c1c13] transition-all font-['Plus_Jakarta_Sans'] font-bold text-sm tracking-tight rounded" href="#">
+<span class="material-symbols-outlined">stars</span>
+                Goals
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#1c1c13] border border-transparent hover:border-[#1c1c13] hover:bg-[#ffc329] hover:shadow-[2px_2px_0px_0px_#1c1c13] transition-all font-['Plus_Jakarta_Sans'] font-bold text-sm tracking-tight rounded" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+                Support
+            </a>
+</div>
+<div class="mt-auto">
+<button class="w-full bg-secondary-container text-on-secondary-container border border-on-surface py-3 px-4 rounded font-bold shadow-[2px_2px_0px_0px_#1c1c13] hover:bg-[#ffc329] hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">bolt</span>
+                Upgrade to Honors
+            </button>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 ml-0 md:ml-64 flex flex-col min-h-screen relative">
+<!-- TopAppBar (from JSON) -->
+<header class="hidden md:flex ml-64 flex justify-between items-center h-20 px-8 w-[calc(100%-16rem)] border-b border-[#1c1c13] bg-[#fdf9e9] fixed top-0 left-0 z-40">
+<div class="flex items-center">
+<!-- Search bar would go here, simplified for display -->
+<div class="relative flex items-center border border-on-surface rounded bg-surface-container-lowest px-3 py-2 w-64 shadow-[2px_2px_0px_0px_#1c1c13]">
+<span class="material-symbols-outlined mr-2 text-outline">search</span>
+<input class="bg-transparent border-none outline-none text-sm w-full font-['Plus_Jakarta_Sans']" placeholder="Search..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="text-[#1c1c13] hover:text-[#4648d4] transition-colors duration-200">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="text-[#1c1c13] hover:text-[#4648d4] transition-colors duration-200">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<button class="bg-primary text-on-primary border border-on-surface px-4 py-2 rounded font-bold shadow-[2px_2px_0px_0px_#1c1c13] hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-0 active:translate-y-0 active:shadow-none transition-all text-sm">
+                    Add Transaction
+                </button>
+<img alt="Student Profile" class="w-10 h-10 rounded-full border border-on-surface object-cover shadow-[2px_2px_0px_0px_#1c1c13]" data-alt="Close-up portrait of a young professional smiling naturally with soft warm lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAbWPH2YjXYnhng0VabyFu0Lt_zIa7u5NCTK1u-dhXJZEWWN8Yy5YOjo8ogs9ozhWQWOX5qEk5BazmJiGMoHlE8twv-O_91zl8LydPjrWgehNYNMfycaPxpKHylfkF3i-YeRsB1o3ECfOMwuMXBp8xadhXZpvHmvJyeivfmyM5fy7-HMK_jVfTWF-e5XVSnWnwnsvxvqFpmj1ogJoM6EmP5ysrAnBXAshuNX9FGQp_OjjzSkmZKw6VTHtu-vWuorpuZO--oUs6Bee4t"/>
+</div>
+</header>
+<!-- Page Canvas -->
+<main class="flex-1 p-8 mt-0 md:mt-20 overflow-auto">
+<div class="mb-8">
+<h1 class="text-3xl font-extrabold text-on-surface tracking-tight mb-2">Wallet &amp; History</h1>
+<p class="text-on-surface-variant font-medium">Manage your recent transactions and split bills with friends.</p>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+<!-- Left Column: Transaction History (Spans 2 columns on lg screens) -->
+<div class="lg:col-span-2 space-y-6">
+<!-- Stats Bar -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+<div class="bg-surface-container-low border border-on-surface p-6 rounded shadow-[4px_4px_0px_0px_#1c1c13] relative overflow-hidden">
+<h3 class="text-sm font-bold text-on-surface-variant uppercase tracking-wider mb-2">Total Balance</h3>
+<div class="text-3xl font-extrabold text-primary">$4,250.00</div>
+</div>
+<div class="bg-surface-container-low border border-on-surface p-6 rounded shadow-[4px_4px_0px_0px_#1c1c13]">
+<h3 class="text-sm font-bold text-on-surface-variant uppercase tracking-wider mb-2">Spent This Month</h3>
+<div class="text-3xl font-extrabold text-on-surface">$1,124.50</div>
+</div>
+<div class="bg-secondary-container border border-on-surface p-6 rounded shadow-[4px_4px_0px_0px_#1c1c13]">
+<h3 class="text-sm font-bold text-on-secondary-container uppercase tracking-wider mb-2">Upcoming Bills</h3>
+<div class="text-3xl font-extrabold text-on-surface">$340.00</div>
+</div>
+</div>
+<!-- Transaction Table Card -->
+<div class="bg-surface-container-lowest border border-on-surface rounded shadow-[4px_4px_0px_0px_#1c1c13]">
+<div class="p-6 border-b border-on-surface flex justify-between items-center bg-surface-container-low rounded-t">
+<h2 class="text-xl font-bold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined">receipt_long</span>
+                                Recent Transactions
+                            </h2>
+<button class="text-sm font-bold border border-on-surface px-3 py-1.5 rounded bg-surface hover:bg-secondary-container shadow-[2px_2px_0px_0px_#1c1c13] transition-all">
+                                View All
+                            </button>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-on-surface bg-surface-container">
+<th class="p-4 font-bold text-sm text-on-surface">Date</th>
+<th class="p-4 font-bold text-sm text-on-surface">Merchant</th>
+<th class="p-4 font-bold text-sm text-on-surface">Category</th>
+<th class="p-4 font-bold text-sm text-on-surface text-right">Amount</th>
+</tr>
+</thead>
+<tbody>
+<tr class="border-b border-on-surface hover:bg-surface-container-high transition-colors">
+<td class="p-4 text-sm font-medium">Oct 24, 2023</td>
+<td class="p-4 font-bold">University Bookstore</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold border border-on-surface bg-primary-fixed text-on-primary-fixed">
+                                                Education
+                                            </span>
+</td>
+<td class="p-4 text-right font-bold text-on-surface">-$145.00</td>
+</tr>
+<tr class="border-b border-on-surface hover:bg-surface-container-high transition-colors">
+<td class="p-4 text-sm font-medium">Oct 23, 2023</td>
+<td class="p-4 font-bold flex items-center gap-2">
+                                            Sweetgreen
+                                        </td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold border border-on-surface bg-secondary-fixed text-on-secondary-fixed-variant">
+                                                Food
+                                            </span>
+</td>
+<td class="p-4 text-right font-bold text-on-surface">-$18.50</td>
+</tr>
+<tr class="border-b border-on-surface hover:bg-surface-container-high transition-colors bg-secondary-fixed-dim bg-opacity-20">
+<td class="p-4 text-sm font-medium">Oct 22, 2023</td>
+<td class="p-4 font-bold">Venmo Transfer (Alex)</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold border border-on-surface bg-surface-variant text-on-surface-variant">
+                                                Transfer
+                                            </span>
+</td>
+<td class="p-4 text-right font-extrabold text-primary">+$45.00</td>
+</tr>
+<tr class="border-b border-on-surface hover:bg-surface-container-high transition-colors">
+<td class="p-4 text-sm font-medium">Oct 20, 2023</td>
+<td class="p-4 font-bold">Spotify Premium</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold border border-on-surface bg-[#e1e0ff] text-on-primary-fixed">
+                                                Entertainment
+                                            </span>
+</td>
+<td class="p-4 text-right font-bold text-on-surface">-$5.99</td>
+</tr>
+<tr class="hover:bg-surface-container-high transition-colors">
+<td class="p-4 text-sm font-medium">Oct 18, 2023</td>
+<td class="p-4 font-bold">Campus Coffee</td>
+<td class="p-4">
+<span class="inline-flex items-center px-2.5 py-0.5 rounded text-xs font-bold border border-on-surface bg-secondary-fixed text-on-secondary-fixed-variant">
+                                                Food
+                                            </span>
+</td>
+<td class="p-4 text-right font-bold text-on-surface">-$4.25</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<!-- Right Column: Split Bill Management -->
+<div class="space-y-6">
+<div class="bg-surface-container-low border border-on-surface rounded shadow-[4px_4px_0px_0px_#1c1c13] flex flex-col h-full">
+<div class="p-6 border-b border-on-surface bg-primary text-on-primary rounded-t">
+<h2 class="text-xl font-bold flex items-center gap-2">
+<span class="material-symbols-outlined">group</span>
+                                Split Bills
+                            </h2>
+<p class="text-sm opacity-90 mt-1 font-medium">Manage shared expenses</p>
+</div>
+<div class="p-6 flex-1 flex flex-col gap-4">
+<!-- Action Buttons -->
+<div class="grid grid-cols-2 gap-3 mb-2">
+<button class="bg-surface-container-lowest border border-on-surface py-2 px-3 rounded font-bold shadow-[2px_2px_0px_0px_#1c1c13] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all text-sm flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-sm">add</span>
+                                    New Split
+                                </button>
+<button class="bg-surface-container-lowest border border-on-surface py-2 px-3 rounded font-bold shadow-[2px_2px_0px_0px_#1c1c13] hover:translate-y-[2px] hover:translate-x-[2px] hover:shadow-none transition-all text-sm flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-sm">history</span>
+                                    History
+                                </button>
+</div>
+<!-- Friend Card 1: Owes you (Green/Primary theme) -->
+<div class="border border-on-surface rounded bg-surface-container-lowest p-4 relative shadow-[2px_2px_0px_0px_#1c1c13] hover:-translate-y-1 transition-transform">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-3">
+<img alt="Alex Rivera" class="w-10 h-10 rounded-full border border-on-surface object-cover" data-alt="Casual portrait of a young man with short dark hair smiling against a soft blurred background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAVNO_Oz_MIeZDJeBnsIudNvSJKae_gKPtjd2q1xWMEUoumekLjmX52SKAUZb5Dz5gAENRmLV73-m2cNuhEDDYu9MUKb3EvMDoq3Gj7KE_gOdW81cefq7CUCcMTXMVlAtS4C95WpaIIpvOPCUThRJILvBWsosyn3Dtq84WaynQl1sdA5stMAHaj8FkQqMCs6bHwrKe3E6ftIdfwMz2W_rphi0yNMSleLBN6Of8ueaiFjQ7VhzwiUeWkQOOca_hBq9j1-ZzQA99B1Q5v"/>
+<div>
+<h4 class="font-bold text-on-surface">Alex Rivera</h4>
+<p class="text-xs text-on-surface-variant font-medium">Owes you</p>
+</div>
+</div>
+<div class="text-right">
+<div class="font-extrabold text-primary text-lg">+$45.00</div>
+</div>
+</div>
+<div class="border-t border-on-surface pt-3 flex justify-between items-center">
+<span class="text-xs font-medium text-on-surface-variant">Last activity: Yesterday</span>
+<button class="text-xs font-bold bg-primary text-on-primary px-3 py-1 rounded border border-on-surface shadow-[1px_1px_0px_0px_#1c1c13]">Remind</button>
+</div>
+</div>
+<!-- Friend Card 2: You owe (Red/Error theme adapted) -->
+<div class="border border-on-surface rounded bg-surface-container-lowest p-4 relative shadow-[2px_2px_0px_0px_#1c1c13] hover:-translate-y-1 transition-transform">
+<div class="flex items-center justify-between mb-3">
+<div class="flex items-center gap-3">
+<img alt="Mia Park" class="w-10 h-10 rounded-full border border-on-surface object-cover" data-alt="Portrait of a young woman with dark hair smiling gently with soft outdoor lighting" src="https://lh3.googleusercontent.com/aida-public/AB6AXuA5NmCdbgQLNogQTwR8N54VxDA2WUL_qdH3eWtK-w3QS8Xefnshgv1iWEhKsNG2Ep7j0jJjSsDqpK-7WLobbnypiz4_IgvLRKE-pODxCwJpU59lrekpq8fO0HaX8g0cJZfmGwYwJYdZdzZT6FcRO2UzDqdS90HZkrOiUUMX-g2zKZkNGsZvg57pOTbAOICe4WnflyGL46BNwYinxbnvBAFSCROV8QY1FWiXg8-E9I82Ng_5yYgbWaJLPh31r3QPes5dlYSXa3G6ie_Y"/>
+<div>
+<h4 class="font-bold text-on-surface">Mia Park</h4>
+<p class="text-xs text-error font-bold">You owe</p>
+</div>
+</div>
+<div class="text-right">
+<div class="font-extrabold text-error text-lg">-$24.50</div>
+</div>
+</div>
+<div class="border-t border-on-surface pt-3 flex justify-between items-center">
+<span class="text-xs font-medium text-on-surface-variant">Dinner at Sushi Roku</span>
+<button class="text-xs font-bold bg-secondary-container text-on-secondary-container px-3 py-1 rounded border border-on-surface shadow-[1px_1px_0px_0px_#1c1c13]">Settle</button>
+</div>
+</div>
+<!-- Friend Card 3: Settled -->
+<div class="border border-on-surface rounded bg-surface-container-highest opacity-70 p-4 relative">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="w-10 h-10 rounded-full border border-on-surface bg-surface-variant flex items-center justify-center font-bold">
+                                            JD
+                                        </div>
+<div>
+<h4 class="font-bold text-on-surface">Jordan Davis</h4>
+<p class="text-xs text-on-surface-variant font-medium">Settled up</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-outline">check_circle</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

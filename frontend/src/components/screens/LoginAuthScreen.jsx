@@ -1,4 +1,8 @@
 import { useMemo, useState } from 'react'
+import { AuthLayout } from '../layouts/AuthLayout'
+import { FormField } from '../ui/FormField'
+import { Button } from '../ui/Button'
+import { Alert } from '../ui/Alert'
 
 const defaultForm = {
   name: '',
@@ -15,7 +19,7 @@ export function LoginAuthScreen({ onAuthSuccess, mainLogo, mascotImage }) {
   const isRegister = mode === 'register'
 
   const submitLabel = useMemo(() => {
-    return isRegister ? 'Create Scholar Account' : 'Enter Library'
+    return isRegister ? 'Create Account' : 'Sign In'
   }, [isRegister])
 
   const onChange = (event) => {
@@ -74,82 +78,88 @@ export function LoginAuthScreen({ onAuthSuccess, mainLogo, mascotImage }) {
   }
 
   return (
-    <main className="flex min-h-svh items-center justify-center bg-[#fffbeb] px-4 py-6">
-      <section className="w-full max-w-sm rounded-2xl border border-black bg-[#fff9dc] p-4 text-[#1c1c13]">
+    <AuthLayout maxWidth="max-w-5xl">
+      <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
+        <section className="hidden rounded-2xl border border-[#1c1c13] bg-[#6366f1] p-6 text-white shadow-[4px_4px_0_#1c1c13] lg:flex lg:flex-col lg:justify-between">
+          <div>
+            <p className="rounded-full border border-white/70 bg-white/10 px-3 py-1 text-xs font-black tracking-widest uppercase">Desktop Access</p>
+            <h2 className="mt-4 text-4xl font-black leading-tight">LIVO Finance Management</h2>
+            <p className="mt-3 text-sm text-white/90">Track spending, split bills, and wishlist goals with one finance workspace.</p>
+          </div>
+          <div className="mt-6 rounded-2xl border border-white/70 bg-white p-4">
+            <img src={mainLogo} alt="LIVO Logo" className="h-24 w-auto" />
+          </div>
+        </section>
+
+        <div className="rounded-2xl border border-[#1c1c13] bg-[#fff9dc] p-4 text-[#1c1c13] lg:p-6">
         <div className="mb-5 flex flex-col items-center text-center">
           <div className="relative mb-4">
-            <div className="h-28 w-28 overflow-hidden rounded-full border border-black bg-[#fbbf24] shadow-[4px_4px_0_#1c1c13]">
-              <img src={mainLogo} alt="LIVO Mascot" className="h-full w-full object-cover" />
+            <div className="h-28 w-28 overflow-hidden rounded-full border border-[#1c1c13] bg-[#fbbf24] shadow-[4px_4px_0_#1c1c13]">
+              <img src={mainLogo} alt="LIVO Logo" className="h-full w-full object-cover" />
             </div>
           </div>
 
           <h1 className="m-0 text-2xl font-extrabold">{isRegister ? 'Create Account' : 'Welcome Back'}</h1>
           <p className="mt-1 text-sm text-[#464554]">
-            {isRegister ? 'Start your student finance journey.' : 'Sign in to continue managing your budget.'}
+            {isRegister ? 'Start your budget journey.' : 'Sign in to continue managing your budget.'}
           </p>
         </div>
 
         <form className="space-y-3" onSubmit={onSubmit}>
           {isRegister ? (
-            <label className="block text-xs font-bold uppercase tracking-wider">
-              Full Name
-              <input
-                type="text"
-                name="name"
-                value={form.name}
-                onChange={onChange}
-                placeholder="Your name"
-                className="mt-1 min-h-11 w-full rounded-2xl border border-black bg-white px-3 text-sm outline-none focus:-translate-y-px"
-              />
-            </label>
+            <FormField
+              label="Full Name"
+              type="text"
+              name="name"
+              value={form.name}
+              onChange={onChange}
+              placeholder="Your name"
+              required
+            />
           ) : null}
 
-          <label className="block text-xs font-bold uppercase tracking-wider">
-            Email Address
-            <input
-              type="email"
-              name="email"
-              value={form.email}
-              onChange={onChange}
-              placeholder="emailkamu@gmail.com"
-              className="mt-1 min-h-11 w-full rounded-2xl border border-black bg-white px-3 text-sm outline-none focus:-translate-y-px"
-            />
-          </label>
+          <FormField
+            label="Email Address"
+            type="email"
+            name="email"
+            value={form.email}
+            onChange={onChange}
+            placeholder="emailkamu@gmail.com"
+            required
+          />
 
-          <label className="block text-xs font-bold uppercase tracking-wider">
-            Password
-            <input
-              type="password"
-              name="password"
-              value={form.password}
-              onChange={onChange}
-              placeholder="••••••••"
-              className="mt-1 min-h-11 w-full rounded-2xl border border-black bg-white px-3 text-sm outline-none focus:-translate-y-px"
-            />
-          </label>
+          <FormField
+            label="Password"
+            type="password"
+            name="password"
+            value={form.password}
+            onChange={onChange}
+            placeholder="••••••••"
+            required
+          />
 
           {errorMessage ? (
-            <p className="rounded-2xl border border-black bg-[#fee2e2] px-3 py-2 text-sm font-semibold text-[#7f1d1d]">
-              {errorMessage}
-            </p>
+            <Alert type="error">{errorMessage}</Alert>
           ) : null}
 
-          <button
+          <Button
             type="submit"
             disabled={isSubmitting}
-            className="min-h-11 w-full rounded-2xl border border-black bg-[#6366f1] px-4 py-2 font-bold text-white shadow-[3px_3px_0_#1c1c13] transition-transform disabled:cursor-not-allowed disabled:opacity-70"
+            fullWidth
+            className="bg-[#6366f1] text-white shadow-[3px_3px_0_#1c1c13]"
           >
             {isSubmitting ? 'Submitting...' : submitLabel}
-          </button>
+          </Button>
         </form>
 
         <div className="mt-4 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#464554]">
           <span>{isRegister ? 'Already have an account?' : 'Need an account?'}</span>
-          <button type="button" onClick={switchMode} className="rounded-full border border-black bg-white px-3 py-1">
+          <button type="button" onClick={switchMode} className="rounded-full border border-[#1c1c13] bg-white px-3 py-1 font-bold">
             {isRegister ? 'Login' : 'Register'}
           </button>
         </div>
-      </section>
-    </main>
+        </div>
+      </div>
+    </AuthLayout>
   )
 }

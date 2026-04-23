@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LIVO - Personal Wishlist</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#c7c4d7",
+                        "on-primary-fixed": "#07006c",
+                        "outline": "#767586",
+                        "tertiary": "#904900",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#fdf9e9",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e6e3d3",
+                        "secondary": "#795900",
+                        "on-tertiary-container": "#fffbff",
+                        "tertiary-container": "#b55d00",
+                        "secondary-fixed": "#ffdf9f",
+                        "on-tertiary-fixed-variant": "#703700",
+                        "tertiary-fixed-dim": "#ffb783",
+                        "on-secondary-fixed-variant": "#5c4300",
+                        "surface-container-low": "#f8f4e4",
+                        "surface-variant": "#e6e3d3",
+                        "on-secondary-container": "#6f5100",
+                        "on-tertiary-fixed": "#301400",
+                        "tertiary-fixed": "#ffdcc5",
+                        "inverse-primary": "#c0c1ff",
+                        "inverse-surface": "#323126",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#464554",
+                        "secondary-fixed-dim": "#f9bd22",
+                        "background": "#fdf9e9",
+                        "surface": "#fdf9e9",
+                        "inverse-on-surface": "#f5f1e1",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#fffbff",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#e1e0ff",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#ece8d9",
+                        "primary": "#4648d4",
+                        "surface-container": "#f2eede",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#6063ee",
+                        "on-background": "#1c1c13",
+                        "on-surface": "#1c1c13",
+                        "secondary-container": "#ffc329",
+                        "surface-tint": "#494bd6",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#261a00",
+                        "surface-dim": "#dedacb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Plus Jakarta Sans"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+</head>
+<body class="bg-[#fdf9e9] text-[#1c1c13] min-h-screen flex">
+<!-- SideNavBar (Shared Component) -->
+<nav class="fixed top-0 left-0 h-screen w-64 border-r border-[#1c1c13] flex flex-col p-6 bg-[#fdf9e9] shadow-[4px_4px_0px_0px_#1c1c13] z-20">
+<div class="border-b border-[#1c1c13] mb-4 pb-4 flex items-center gap-3">
+<img alt="LIVO Mascot Icon" class="w-10 h-10 rounded-full border border-[#1c1c13]" data-alt="cute stylised hamster mascot with graduation cap looking scholarly on light background" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDg4aQNs9YbEQ3hOgYx3SfRiTezTBiHVNCAg6bfxIHUkWRJFMyP4PWTTisXXVQJDnETCmP6EEBSH6r4YvdtYZFErwrSBiYBXD9BNqPhzEGWFTaHxlRPt6FyERGFJ0DPhI3uGHdjzFgCe4ZgzkAv0pK1yOQx_ftCHkMf5K-BCkt3sPVKT_IS5OQ6NXm3o3oYrHSVksico3gaGZS1NwO0AtWCAY_EAblbI9qc5EbcZqi_8syvi7Ui8NUxgnOyyIXtA-p7cbkdhrJBuy2E"/>
+<div>
+<div class="text-2xl font-extrabold text-[#1c1c13] uppercase tracking-tighter">LIVO</div>
+<div class="text-xs text-[#4648d4] font-bold tracking-tight">Academic Wealth</div>
+</div>
+</div>
+<ul class="flex-1 space-y-2">
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-[#1c1c13] border border-transparent hover:border-[#1c1c13] hover:bg-[#ffc329] hover:shadow-[2px_2px_0px_0px_#1c1c13] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all font-bold text-sm tracking-tight rounded-DEFAULT" href="#">
+<span class="material-symbols-outlined">dashboard</span>
+                    Dashboard
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-[#1c1c13] border border-transparent hover:border-[#1c1c13] hover:bg-[#ffc329] hover:shadow-[2px_2px_0px_0px_#1c1c13] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all font-bold text-sm tracking-tight rounded-DEFAULT" href="#">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+                    Wallet
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-[#1c1c13] border border-transparent hover:border-[#1c1c13] hover:bg-[#ffc329] hover:shadow-[2px_2px_0px_0px_#1c1c13] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all font-bold text-sm tracking-tight rounded-DEFAULT" href="#">
+<span class="material-symbols-outlined">school</span>
+                    Scholarships
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 bg-[#4648d4] text-white border border-[#1c1c13] shadow-[2px_2px_0px_0px_#1c1c13] transition-all transform translate-x-1 translate-y-1 font-bold text-sm tracking-tight rounded-DEFAULT" href="#">
+<span class="material-symbols-outlined">stars</span>
+                    Goals
+                </a>
+</li>
+<li>
+<a class="flex items-center gap-3 px-4 py-3 text-[#1c1c13] border border-transparent hover:border-[#1c1c13] hover:bg-[#ffc329] hover:shadow-[2px_2px_0px_0px_#1c1c13] hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all font-bold text-sm tracking-tight rounded-DEFAULT" href="#">
+<span class="material-symbols-outlined">help_outline</span>
+                    Support
+                </a>
+</li>
+</ul>
+<div class="mt-auto pt-4 border-t border-[#1c1c13]">
+<button class="w-full bg-[#ffc329] text-[#6f5100] border border-[#1c1c13] shadow-[2px_2px_0px_0px_#1c1c13] py-3 px-4 font-bold text-sm rounded-DEFAULT hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all active:translate-x-0 active:translate-y-0 active:shadow-none">
+                Upgrade to Honors
+            </button>
+</div>
+</nav>
+<!-- Main Content Wrapper -->
+<div class="ml-64 flex-1 flex flex-col min-h-screen">
+<!-- TopAppBar (Shared Component) -->
+<header class="w-full border-b border-[#1c1c13] bg-[#fdf9e9] flex justify-between items-center h-20 px-8 z-10 sticky top-0">
+<div class="flex items-center gap-4">
+<div class="relative hidden md:block">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-outline">search</span>
+<input class="pl-10 pr-4 py-2 bg-surface-container-lowest border border-[#1c1c13] rounded-DEFAULT focus:outline-none focus:bg-primary-fixed focus:shadow-[4px_4px_0px_0px_#1c1c13] transition-all min-h-[48px] w-64" placeholder="Search wishlist..." type="text"/>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<button class="bg-[#4648d4] text-white border border-[#1c1c13] shadow-[2px_2px_0px_0px_#1c1c13] py-2 px-4 font-bold text-sm rounded-DEFAULT hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all active:translate-x-0 active:translate-y-0 active:shadow-none flex items-center gap-2">
+<span class="material-symbols-outlined">add</span>
+                    Add Transaction
+                </button>
+<div class="flex items-center gap-4 text-[#1c1c13]">
+<button class="hover:text-[#4648d4] transition-colors duration-200">
+<span class="material-symbols-outlined">notifications</span>
+</button>
+<button class="hover:text-[#4648d4] transition-colors duration-200">
+<span class="material-symbols-outlined">settings</span>
+</button>
+<img alt="Student Profile" class="w-10 h-10 rounded-DEFAULT border border-[#1c1c13] shadow-[2px_2px_0px_0px_#1c1c13]" data-alt="headshot of young male student smiling slightly in natural light on campus" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDfxOtpbIotgDt9OYiTGUl_UgPCme0IWh4Z1lBnbA5MWLhBUeT-KSltPTAxmvX4IomF-H5m2EHRXmn-Afb30y467LfQjazQyltwMNBj1OOP_ik3iNpwOKyzrHuKqwprF_Cdy94jvWGHBnteRTNdO9Ccn6ddO5roRWeAoZ1qiyXZmS25yWOhrx_rnvDQT5RwHHAV8q_KdQMOg8uH61LaHRZOikLELs_z-oge5yb6bUm3y-wKAZ6SPZV1MoBKTaZyhKMi_jgPX0hs5L9i"/>
+</div>
+</div>
+</header>
+<!-- Canvas -->
+<main class="flex-1 p-8 overflow-y-auto">
+<div class="max-w-6xl mx-auto">
+<!-- Page Header -->
+<div class="flex justify-between items-end mb-8 border-b border-[#1c1c13] pb-4">
+<div>
+<h1 class="text-4xl font-extrabold tracking-tight text-[#1c1c13] mb-2">Personal Wishlist</h1>
+<p class="text-on-surface-variant text-sm max-w-xl">Curate your goals. Track your purchasing power. Decide when it's safe to buy based on your academic budget.</p>
+</div>
+</div>
+<!-- Bento Grid Layout -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<!-- Mascot Advisory Card (Span 1 col) -->
+<div class="md:col-span-1 bg-surface-container-low border border-[#1c1c13] p-6 shadow-[4px_4px_0px_0px_#1c1c13] rounded-lg relative overflow-hidden flex flex-col justify-between">
+<div class="absolute -right-4 -bottom-4 opacity-20">
+<img alt="Decorative Mascot" class="w-48 h-48" data-alt="cute stylised hamster mascot looking scholarly" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCATC-6BlNYY5SgI637Qjj_F19XI51oFE5id-tppNGVU5loJfo4NYSuTYS-nsmP-h97KjfzAqmQN-_6jDlQ0r5sDA-7c39PPTki1_ioSYe-O06_WFsBueAVwsr3kHlsDvSkLsay7X7ysHP1QwD5dak0z4VTW2Ho7zoPWBBbsg_lJh1nyvImxfhpFhmmbqSp4bP72kwbAhLd-4SFtf5c1U1fIP03gfFRf7peA5xjRAic1T0yti2NnisFfCpqqw-_Mt9Xtf-qRBIxwTZG"/>
+</div>
+<div class="relative z-10">
+<div class="flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined text-secondary">tips_and_updates</span>
+<h3 class="font-bold text-lg">Hammy's Advice</h3>
+</div>
+<p class="text-sm mb-4">You're $150 away from hitting your savings target for the month. Hold off on non-essentials until Friday!</p>
+</div>
+<div class="relative z-10 mt-auto border-t border-[#1c1c13] pt-4">
+<div class="flex justify-between items-center text-sm font-bold mb-2">
+<span>Monthly Goal</span>
+<span>$850 / $1000</span>
+</div>
+<div class="h-4 w-full bg-surface-container-lowest border border-[#1c1c13] rounded-full overflow-hidden">
+<div class="h-full bg-secondary-container border-r border-[#1c1c13] w-[85%]"></div>
+</div>
+</div>
+</div>
+<!-- Wishlist Item 1 -->
+<div class="bg-surface-container-lowest border border-[#1c1c13] rounded-lg shadow-[2px_2px_0px_0px_#1c1c13] flex flex-col group transition-transform hover:-translate-y-1">
+<div class="h-48 border-b border-[#1c1c13] relative overflow-hidden bg-surface-container-high rounded-t-lg">
+<img alt="Noise Cancelling Headphones" class="w-full h-full object-cover" data-alt="sleek modern black over-ear noise cancelling headphones resting on a light wooden desk" src="https://lh3.googleusercontent.com/aida-public/AB6AXuD7hTppOl7eTWt7Ya5PXuzmMd5xU999MDNCrW4HIq1zsN-ljU14rNUxfWWDLiKGVmD-k3a3DApsWkqwqst7cq0mTW8HCKEj64t1vKrDzSZj1zpTSVZOvi5R2wqBWLgmZHfgCFdZl6zepZKv7doLJvtSPz-m8xdKuM5YUt6WubeEwO6MDUpyVwUxApooqO_-TIjl0SPnucRokWC7skupUDM3w7xTBH3G2xh8KT7AO7NLUPGp1HnT3sjbeoNHarDoc0kYC-QmPxConSzF"/>
+<div class="absolute top-3 right-3 bg-secondary-container text-on-secondary-container text-xs font-bold px-2 py-1 border border-[#1c1c13] rounded-full shadow-[1px_1px_0px_0px_#1c1c13]">
+                                Priority
+                            </div>
+</div>
+<div class="p-4 flex-1 flex flex-col">
+<h3 class="font-bold text-lg mb-1 line-clamp-1">Sony WH-1000XM5</h3>
+<p class="text-xs text-on-surface-variant mb-4">Noise Cancelling Headphones</p>
+<div class="mt-auto">
+<div class="flex justify-between items-center mb-3">
+<span class="text-xl font-extrabold">$348.00</span>
+<span class="inline-flex items-center gap-1 text-xs font-bold text-[#ba1a1a] bg-[#ffdad6] px-2 py-1 border border-[#1c1c13] rounded-DEFAULT">
+<span class="material-symbols-outlined text-[14px]">warning</span> Not Now
+                                    </span>
+</div>
+<button class="w-full bg-surface text-[#1c1c13] border border-[#1c1c13] shadow-[2px_2px_0px_0px_#1c1c13] py-2 font-bold text-sm rounded-DEFAULT hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all active:translate-x-0 active:translate-y-0 active:shadow-none min-h-[48px]">
+                                    View Details
+                                </button>
+</div>
+</div>
+</div>
+<!-- Wishlist Item 2 -->
+<div class="bg-surface-container-lowest border border-[#1c1c13] rounded-lg shadow-[2px_2px_0px_0px_#1c1c13] flex flex-col group transition-transform hover:-translate-y-1">
+<div class="h-48 border-b border-[#1c1c13] relative overflow-hidden bg-surface-container-high rounded-t-lg">
+<img alt="Used Textbooks" class="w-full h-full object-cover" data-alt="stack of thick academic textbooks with colourful spines on a library table" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDysRruBIVEznpE8fjh22MxwstDk074zru7Xx_yEhURV9sigMqq8JSeWsmJgFdIXAB0Ijo64__F-jtlD8pTcCpLcbHbYlNCgULNTVVIATLuOvv-sSR_ozRXLJqs2qSmzB_JAHj1Sxg9xLt7kNKXcQgUKWcBS4c4raQVFXd59hTsbagDoKeL4xuTPEZxB1SUSQG3ctRIS68xwRO1btZa9UA21TZFaLnTfnwFHAUYFDZ2DKVzETitleRfJDYaJvFpo8namD8h_10gYqJa"/>
+</div>
+<div class="p-4 flex-1 flex flex-col">
+<h3 class="font-bold text-lg mb-1 line-clamp-1">Advanced Calculus Text</h3>
+<p class="text-xs text-on-surface-variant mb-4">Required for Math 301</p>
+<div class="mt-auto">
+<div class="flex justify-between items-center mb-3">
+<span class="text-xl font-extrabold">$85.50</span>
+<span class="inline-flex items-center gap-1 text-xs font-bold text-[#07006c] bg-[#e1e0ff] px-2 py-1 border border-[#1c1c13] rounded-DEFAULT">
+<span class="material-symbols-outlined text-[14px]" style="font-variation-settings: 'FILL' 1;">check_circle</span> Safe to Buy
+                                    </span>
+</div>
+<button class="w-full bg-[#4648d4] text-white border border-[#1c1c13] shadow-[2px_2px_0px_0px_#1c1c13] py-2 font-bold text-sm rounded-DEFAULT hover:translate-x-[-2px] hover:translate-y-[-2px] transition-all active:translate-x-0 active:translate-y-0 active:shadow-none min-h-[48px]">
+                                    Purchase
+                                </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

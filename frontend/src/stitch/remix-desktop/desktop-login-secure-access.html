@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>LIVO - Dashboard</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "outline-variant": "#c7c4d7",
+                        "on-primary-fixed": "#07006c",
+                        "outline": "#767586",
+                        "tertiary": "#904900",
+                        "on-primary": "#ffffff",
+                        "surface-bright": "#fdf9e9",
+                        "error-container": "#ffdad6",
+                        "surface-container-highest": "#e6e3d3",
+                        "secondary": "#795900",
+                        "on-tertiary-container": "#fffbff",
+                        "tertiary-container": "#b55d00",
+                        "secondary-fixed": "#ffdf9f",
+                        "on-tertiary-fixed-variant": "#703700",
+                        "tertiary-fixed-dim": "#ffb783",
+                        "on-secondary-fixed-variant": "#5c4300",
+                        "surface-container-low": "#f8f4e4",
+                        "surface-variant": "#e6e3d3",
+                        "on-secondary-container": "#6f5100",
+                        "on-tertiary-fixed": "#301400",
+                        "tertiary-fixed": "#ffdcc5",
+                        "inverse-primary": "#c0c1ff",
+                        "inverse-surface": "#323126",
+                        "on-tertiary": "#ffffff",
+                        "on-surface-variant": "#464554",
+                        "secondary-fixed-dim": "#f9bd22",
+                        "background": "#fdf9e9",
+                        "surface": "#fdf9e9",
+                        "inverse-on-surface": "#f5f1e1",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-container": "#fffbff",
+                        "primary-fixed-dim": "#c0c1ff",
+                        "on-error": "#ffffff",
+                        "primary-fixed": "#e1e0ff",
+                        "on-secondary": "#ffffff",
+                        "surface-container-high": "#ece8d9",
+                        "primary": "#4648d4",
+                        "surface-container": "#f2eede",
+                        "on-primary-fixed-variant": "#2f2ebe",
+                        "on-error-container": "#93000a",
+                        "primary-container": "#6063ee",
+                        "on-background": "#1c1c13",
+                        "on-surface": "#1c1c13",
+                        "secondary-container": "#ffc329",
+                        "surface-tint": "#494bd6",
+                        "error": "#ba1a1a",
+                        "on-secondary-fixed": "#261a00",
+                        "surface-dim": "#dedacb"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "fontFamily": {
+                        "headline": ["Plus Jakarta Sans"],
+                        "body": ["Plus Jakarta Sans"],
+                        "label": ["Plus Jakarta Sans"]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-surface text-on-surface min-h-screen font-body flex overflow-hidden">
+<!-- SideNavBar -->
+<nav class="hidden md:flex flex-col bg-[#fdf9e9] text-[#4648d4] font-['Plus_Jakarta_Sans'] font-bold text-sm tracking-tight fixed top-0 left-0 h-full p-6 w-64 border-r border-[#1c1c13] z-20">
+<div class="border-b border-[#1c1c13] mb-4 pb-4 flex flex-col items-center">
+<img alt="LIVO Mascot Icon" class="w-16 h-16 rounded-full border border-on-surface bg-white shadow-[2px_2px_0px_0px_#1c1c13] mb-3 object-cover" data-alt="Cute, stylized hamster mascot wearing graduation cap, flat vector illustration style, bright colors" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC6vD1ZbyGH16v90o0DQJqJLTkqaWEOL4YlUoYyeqzd2dY7VsqFucy6f08BbTYStsElc4cZ-4gwWABT3HuDz_s9_CHwRP4awaCAzg04b3lxt5Wl3-uq4dZlSpoh3jO36QSsSYL6zGbI8dtqz3ItkPsKg5e_1r9yXslO83FcMXsIeApzkMi71e2PBfBnOVcI0ymqxA2bAkDnuLfB9X-VBSpYBZdI6P_0J_he5ftXQRx8LzSA5ZXUYqwGhDs9QYwqtC4wrq4_CBaBojUS"/>
+<h1 class="text-2xl font-extrabold text-[#1c1c13] uppercase tracking-tighter">LIVO</h1>
+<span class="text-xs font-semibold text-on-surface-variant uppercase tracking-widest mt-1">Academic Wealth</span>
+</div>
+<div class="flex-1 space-y-2 mt-4">
+<a class="flex items-center gap-3 px-4 py-3 bg-[#4648d4] text-white border border-[#1c1c13] shadow-[2px_2px_0px_0px_#1c1c13] transition-all transform translate-x-1 translate-y-1 rounded" href="#">
+<span class="material-symbols-outlined" data-icon="dashboard">dashboard</span>
+                Dashboard
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#1c1c13] border border-transparent hover:border-[#1c1c13] hover:bg-[#ffc329] hover:shadow-[2px_2px_0px_0px_#1c1c13] transition-all rounded hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-0 active:translate-y-0 active:shadow-none" href="#">
+<span class="material-symbols-outlined" data-icon="account_balance_wallet">account_balance_wallet</span>
+                Wallet
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#1c1c13] border border-transparent hover:border-[#1c1c13] hover:bg-[#ffc329] hover:shadow-[2px_2px_0px_0px_#1c1c13] transition-all rounded hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-0 active:translate-y-0 active:shadow-none" href="#">
+<span class="material-symbols-outlined" data-icon="school">school</span>
+                Scholarships
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#1c1c13] border border-transparent hover:border-[#1c1c13] hover:bg-[#ffc329] hover:shadow-[2px_2px_0px_0px_#1c1c13] transition-all rounded hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-0 active:translate-y-0 active:shadow-none" href="#">
+<span class="material-symbols-outlined" data-icon="stars">stars</span>
+                Goals
+            </a>
+<a class="flex items-center gap-3 px-4 py-3 text-[#1c1c13] border border-transparent hover:border-[#1c1c13] hover:bg-[#ffc329] hover:shadow-[2px_2px_0px_0px_#1c1c13] transition-all rounded hover:translate-x-[-2px] hover:translate-y-[-2px] active:translate-x-0 active:translate-y-0 active:shadow-none" href="#">
+<span class="material-symbols-outlined" data-icon="help_outline">help_outline</span>
+                Support
+            </a>
+</div>
+<div class="mt-auto pt-4 border-t border-[#1c1c13]">
+<button class="w-full bg-secondary-container text-on-secondary-container font-bold py-3 px-4 rounded border border-on-surface shadow-[2px_2px_0px_0px_#1c1c13] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_#1c1c13] active:translate-x-[2px] active:translate-y-[2px] active:shadow-[0px_0px_0px_0px_#1c1c13] transition-all">
+                Upgrade to Honors
+            </button>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex-1 flex flex-col md:ml-64 min-h-screen w-full md:w-[calc(100%-16rem)]">
+<!-- TopAppBar -->
+<header class="bg-[#fdf9e9] text-[#4648d4] font-['Plus_Jakarta_Sans'] font-bold w-full border-b border-[#1c1c13] flex justify-between items-center h-20 px-8 z-10 sticky top-0">
+<div class="flex items-center gap-4">
+<h2 class="text-xl font-extrabold text-on-surface tracking-tight">Overview</h2>
+</div>
+<div class="flex items-center gap-6">
+<button class="bg-primary text-on-primary px-4 py-2 rounded border border-on-surface shadow-[2px_2px_0px_0px_#1c1c13] text-sm font-bold active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px]" data-icon="add">add</span>
+                    Add Transaction
+                </button>
+<div class="flex items-center gap-3">
+<button class="w-10 h-10 rounded border border-on-surface flex items-center justify-center bg-surface-container-lowest shadow-[2px_2px_0px_0px_#1c1c13] text-[#1c1c13] hover:text-[#4648d4] transition-colors duration-200 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
+<span class="material-symbols-outlined" data-icon="notifications">notifications</span>
+</button>
+<button class="w-10 h-10 rounded border border-on-surface flex items-center justify-center bg-surface-container-lowest shadow-[2px_2px_0px_0px_#1c1c13] text-[#1c1c13] hover:text-[#4648d4] transition-colors duration-200 active:translate-x-[2px] active:translate-y-[2px] active:shadow-none">
+<span class="material-symbols-outlined" data-icon="settings">settings</span>
+</button>
+<div class="w-10 h-10 rounded border border-on-surface overflow-hidden shadow-[2px_2px_0px_0px_#1c1c13] ml-2">
+<img alt="Student Profile" class="w-full h-full object-cover" data-alt="Headshot of a young student looking confident, brightly lit" src="https://lh3.googleusercontent.com/aida-public/AB6AXuALI0xQLNfV-XUeeKHKracmkSR4ROlQKEhy8bRr8Lutyky-X7iS0KAC-ohIZLA4cBGdJn99SD9xlVSYsCKMJgjvui8MiPq0TM57_YBoCCGcuZMFdNSNbrUALRoE0NnrKB390X1pB-FQAQOe6jQXlkGBD5oDc9O3xZPS-cKNu3vmKCA7-Phumx3wJPbgTbbLd3MGDvhUArA5cJxNztBN75q22D9eqaYueLH-AcSoynrkKEfbRBCE8m6PIrLX5Mmnt7RGh-7lkLHt_Kk1"/>
+</div>
+</div>
+</div>
+</header>
+<!-- Dashboard Content -->
+<main class="p-6 md:p-8 flex-1 overflow-y-auto space-y-8 bg-surface-bright">
+<!-- Top Bento Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Main Budget Card (Left, spanning 2 cols) -->
+<div class="lg:col-span-2 bg-surface-container-low border border-on-surface rounded shadow-[4px_4px_0px_0px_#1c1c13] p-6 relative overflow-hidden">
+<div class="flex justify-between items-start mb-6 pb-4 border-b border-on-surface">
+<div>
+<h3 class="text-title-md font-bold text-on-surface">Daily Spending Limit</h3>
+<p class="text-body-md text-on-surface-variant mt-1">You're doing great today.</p>
+</div>
+<span class="bg-secondary-container text-on-secondary-container px-3 py-1 rounded text-label-md border border-on-surface font-bold uppercase tracking-wider">On Track</span>
+</div>
+<div class="flex items-end gap-2 mb-4">
+<span class="text-display-lg font-extrabold text-on-surface tracking-tighter leading-none">$12.50</span>
+<span class="text-title-md font-bold text-on-surface-variant pb-2">/ $25.00</span>
+</div>
+<div class="w-full h-8 bg-surface-container-lowest border border-on-surface rounded relative overflow-hidden">
+<!-- Progress Track -->
+<div class="absolute top-0 left-0 h-full bg-secondary border-r border-on-surface" style="width: 50%;"></div>
+<div class="absolute inset-0 flex items-center justify-center font-bold text-xs tracking-widest text-on-surface z-10 mix-blend-difference text-white">50% USED</div>
+</div>
+<div class="mt-6 flex gap-4">
+<div class="flex-1 bg-surface-container-lowest border border-on-surface p-3 rounded flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-primary text-on-primary flex items-center justify-center border border-on-surface">
+<span class="material-symbols-outlined" data-icon="restaurant">restaurant</span>
+</div>
+<div>
+<p class="text-xs font-bold text-on-surface-variant uppercase">Food</p>
+<p class="text-sm font-extrabold text-on-surface">$8.00</p>
+</div>
+</div>
+<div class="flex-1 bg-surface-container-lowest border border-on-surface p-3 rounded flex items-center gap-3">
+<div class="w-10 h-10 rounded bg-secondary-fixed text-on-secondary-fixed-variant flex items-center justify-center border border-on-surface">
+<span class="material-symbols-outlined" data-icon="local_cafe">local_cafe</span>
+</div>
+<div>
+<p class="text-xs font-bold text-on-surface-variant uppercase">Coffee</p>
+<p class="text-sm font-extrabold text-on-surface">$4.50</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Panels -->
+<div class="flex flex-col gap-6">
+<!-- Efficiency Score -->
+<div class="bg-primary border border-on-surface rounded shadow-[4px_4px_0px_0px_#1c1c13] p-6 text-on-primary relative overflow-hidden h-full flex flex-col justify-between">
+<div class="flex justify-between items-start">
+<h3 class="text-title-md font-bold">Efficiency Score</h3>
+<span class="material-symbols-outlined text-secondary-container" data-icon="trending_up">trending_up</span>
+</div>
+<div class="mt-4">
+<span class="text-[3rem] font-extrabold tracking-tighter leading-none">A-</span>
+<p class="text-sm font-semibold opacity-90 mt-1">Top 15% of Scholars</p>
+</div>
+<!-- Decorative background element -->
+<div class="absolute -bottom-6 -right-6 text-primary-fixed opacity-20 pointer-events-none">
+<span class="material-symbols-outlined text-[8rem]" data-icon="school">school</span>
+</div>
+</div>
+<!-- Weekly Savings -->
+<div class="bg-secondary-container border border-on-surface rounded shadow-[4px_4px_0px_0px_#1c1c13] p-6 text-on-surface h-full flex flex-col justify-between">
+<h3 class="text-title-md font-bold">Weekly Savings</h3>
+<div class="mt-2">
+<span class="text-3xl font-extrabold tracking-tight">$42.00</span>
+<p class="text-sm font-bold text-on-surface-variant mt-1">+12% from last week</p>
+</div>
+<button class="mt-4 w-full bg-surface-container-lowest border border-on-surface py-2 rounded text-sm font-bold shadow-[2px_2px_0px_0px_#1c1c13] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all">
+                             Move to Vault
+                         </button>
+</div>
+</div>
+</div>
+<!-- Transaction History -->
+<div class="bg-surface-container-low border border-on-surface rounded shadow-[4px_4px_0px_0px_#1c1c13] overflow-hidden">
+<div class="p-6 border-b border-on-surface flex justify-between items-center bg-surface-bright">
+<h3 class="text-headline-md font-bold tracking-tight text-on-surface">Recent Activity</h3>
+<button class="text-sm font-bold text-primary hover:underline underline-offset-4">View All</button>
+</div>
+<div class="p-6 space-y-4 bg-surface-container-lowest">
+<!-- Transaction Item -->
+<div class="flex items-center justify-between p-4 border border-on-surface rounded shadow-[2px_2px_0px_0px_#1c1c13] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_#1c1c13] transition-all bg-surface cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded border border-on-surface bg-primary-fixed text-on-primary-fixed-variant flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined" data-icon="book">book</span>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">Campus Bookstore</h4>
+<p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mt-1">Education • Today, 2:30 PM</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-extrabold text-on-surface">-$145.00</span>
+</div>
+</div>
+<!-- Transaction Item -->
+<div class="flex items-center justify-between p-4 border border-on-surface rounded shadow-[2px_2px_0px_0px_#1c1c13] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_#1c1c13] transition-all bg-surface cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded border border-on-surface bg-secondary-fixed text-on-secondary-fixed-variant flex items-center justify-center group-hover:bg-secondary-container group-hover:text-on-surface transition-colors">
+<span class="material-symbols-outlined" data-icon="local_pizza">local_pizza</span>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">Luigi's Pizza</h4>
+<p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mt-1">Food • Yesterday, 7:15 PM</p>
+</div>
+</div>
+<div class="text-right">
+<span class="font-extrabold text-on-surface">-$18.50</span>
+</div>
+</div>
+<!-- Transaction Item -->
+<div class="flex items-center justify-between p-4 border border-on-surface rounded shadow-[2px_2px_0px_0px_#1c1c13] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[4px_4px_0px_0px_#1c1c13] transition-all bg-surface cursor-pointer group">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded border border-on-surface bg-tertiary-fixed text-on-tertiary-fixed flex items-center justify-center group-hover:bg-tertiary group-hover:text-white transition-colors">
+<span class="material-symbols-outlined" data-icon="work">work</span>
+</div>
+<div>
+<h4 class="font-bold text-on-surface">Library Desk Shift</h4>
+<p class="text-xs font-semibold text-on-surface-variant uppercase tracking-wider mt-1">Income • Oct 24, 5:00 PM</p>
+</div>
+</div>
+<div class="text-right flex items-center gap-2">
+<span class="bg-secondary-container text-xs font-bold px-2 py-1 rounded border border-on-surface uppercase">+ Paycheck</span>
+<span class="font-extrabold text-tertiary">+$85.00</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+</div>
+<!-- Login Modal Overlay -->
+<div class="fixed inset-0 z-50 flex items-center justify-center bg-white/40 backdrop-blur-xl p-4">
+<div class="bg-white border border-[#1c1c13] shadow-[8px_8px_0px_0px_#1c1c13] w-full max-w-md p-8 rounded flex flex-col items-center">
+<!-- Mascot Logo -->
+<div class="w-24 h-24 rounded-full border border-[#1c1c13] shadow-[4px_4px_0px_0px_#1c1c13] overflow-hidden mb-6 bg-surface-container-lowest">
+<img alt="LIVO Main Logo" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida/ADBb0ujzVSHmYOIIaheX_SQqIyPPjzbLvTAzp-7wzESfmRLaXJaeizQqJbZHt_4zmNSazVxWj8sdXe4JZd4ck7b5m_duvajpky_7c2OIB2h4ejaSBL7Jrwl4nrP3V0Jh_UWMF49clXIth1fX8lRXTRdvcIiIB44mFcw1BN3Vy9OWOwRO3hrvwN6es1bn9A2k0w4J3_OTKPpBLtzQlbmFlaryeSMtuhFHbJseh0u51CtvqOPMvpAVvdkxqprCol7H0FehWoxRh7strXbqow"/>
+</div>
+<h2 class="text-3xl font-extrabold text-[#1c1c13] tracking-tighter mb-8 text-center uppercase">Welcome Back</h2>
+<!-- Login Form -->
+<form class="w-full space-y-5" onsubmit="event.preventDefault();">
+<!-- Email Input -->
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-bold text-[#1c1c13] uppercase tracking-wider" for="email">Student Email</label>
+<input class="w-full bg-surface-bright border border-[#1c1c13] p-3 rounded shadow-[2px_2px_0px_0px_#1c1c13] focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:shadow-[4px_4px_0px_0px_#1c1c13] transition-all font-semibold" id="email" placeholder="scholar@university.edu" type="email"/>
+</div>
+<!-- Password Input -->
+<div class="flex flex-col gap-1.5">
+<label class="text-xs font-bold text-[#1c1c13] uppercase tracking-wider" for="password">Password</label>
+<input class="w-full bg-surface-bright border border-[#1c1c13] p-3 rounded shadow-[2px_2px_0px_0px_#1c1c13] focus:outline-none focus:ring-2 focus:ring-[#6366F1] focus:shadow-[4px_4px_0px_0px_#1c1c13] transition-all font-semibold" id="password" placeholder="••••••••" type="password"/>
+</div>
+<div class="pt-4 flex flex-col gap-4">
+<!-- Login Button -->
+<button class="w-full bg-[#6366F1] text-white font-extrabold py-3 px-4 rounded border border-[#1c1c13] shadow-[4px_4px_0px_0px_#1c1c13] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#1c1c13] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all uppercase tracking-wide">
+                    Login
+                </button>
+<!-- Create Account Button -->
+<button class="w-full bg-[#FBBF24] text-[#1c1c13] font-extrabold py-3 px-4 rounded border border-[#1c1c13] shadow-[4px_4px_0px_0px_#1c1c13] hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0px_0px_#1c1c13] active:translate-x-[2px] active:translate-y-[2px] active:shadow-none transition-all uppercase tracking-wide">
+                    Create Account
+                </button>
+</div>
+<div class="text-center mt-6">
+<a class="text-sm font-bold text-[#6366F1] hover:text-[#1c1c13] hover:underline underline-offset-4 transition-colors cursor-pointer" href="#">
+                    Continue as Guest
+                </a>
+</div>
+</form>
+</div>
+</div>
+</body></html>

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link } from 'react-router-dom'
 import { getAnalyticsOverview } from '../../services/analytics'
-import { BottomNavigation } from '../navigation/BottomNavigation'
+import { PageLayout } from '../layouts/PageLayout'
+import { PageHeader } from '../headers/PageHeader'
 
 function toCurrency(value) {
   return new Intl.NumberFormat('en-US', {
@@ -22,7 +22,7 @@ const CATEGORIES = [
   'Other',
 ]
 
-export function AnalyticsTrendsScreen({ mascotImage }) {
+export function AnalyticsTrendsScreen({ mainLogo }) {
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
   const [analytics, setAnalytics] = useState(null)
@@ -82,28 +82,16 @@ export function AnalyticsTrendsScreen({ mascotImage }) {
   }, [analytics, selectedCategory])
 
   return (
-    <div className="min-h-svh bg-[#fdf9e9] pb-24 text-[#1c1c13]">
-      <header className="sticky top-0 z-50 flex h-16 items-center justify-between border-b border-[#1c1c13] bg-[#fdf9e9] px-4 shadow-[2px_2px_0_#1c1c13]">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 overflow-hidden rounded-full border border-[#1c1c13] bg-[#ffc329]">
-            <img src={mascotImage} alt="LIVO Mascot" className="h-full w-full object-cover" />
-          </div>
-          <h1 className="text-2xl font-extrabold tracking-tight">LIVO</h1>
-        </div>
-
-        <Link
-          to="/home"
-          className="min-h-11 rounded-xl border border-[#1c1c13] bg-white px-3 py-2 text-xs font-black uppercase shadow-[2px_2px_0_#1c1c13]"
-        >
-          Back Home
-        </Link>
-      </header>
-
-      <main className="mx-auto max-w-xl space-y-5 px-4 pt-5">
-        <section>
-          <h2 className="text-[1.75rem] leading-tight font-bold tracking-tight">Analytics & Trends</h2>
-          <p className="text-sm text-[#464554]">Your spending performance for the academic semester.</p>
-        </section>
+    <PageLayout
+      header={
+        <PageHeader
+          mainLogo={mainLogo}
+          title="Analytics & Trends"
+          backLink="/home"
+        />
+      }
+      className="space-y-5 pt-5 lg:space-y-6"
+    >
 
         {loading ? (
           <section className="rounded-xl border border-[#1c1c13] bg-white p-4 font-semibold">Loading analytics...</section>
@@ -147,7 +135,7 @@ export function AnalyticsTrendsScreen({ mascotImage }) {
               </div>
             </section>
 
-            <section className="grid grid-cols-2 gap-3">
+            <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
               <article className="col-span-2 flex items-center gap-3 rounded-xl border border-[#1c1c13] bg-[#ece8d9] p-4 shadow-[2px_2px_0_#1c1c13]">
                 <div className="rounded-lg border border-[#1c1c13] bg-[#4648d4] p-3 text-white shadow-[2px_2px_0_#1c1c13]">
                   <span className="material-symbols-outlined">restaurant</span>
@@ -208,7 +196,7 @@ export function AnalyticsTrendsScreen({ mascotImage }) {
                 filteredReports.map((report) => (
                   <article
                     key={report.id}
-                    className="flex items-center justify-between rounded-lg border border-[#1c1c13] bg-[#f8f4e4] p-3"
+                    className="flex items-center justify-between rounded-lg border border-[#1c1c13] bg-[#f8f4e4] p-3 lg:px-4 lg:py-4"
                   >
                     <div className="flex items-center gap-3">
                       <div className="flex h-10 w-10 items-center justify-center rounded border border-[#1c1c13] bg-white">
@@ -229,9 +217,6 @@ export function AnalyticsTrendsScreen({ mascotImage }) {
             </section>
           </>
         ) : null}
-      </main>
-
-      <BottomNavigation />
-    </div>
+    </PageLayout>
   )
 }
