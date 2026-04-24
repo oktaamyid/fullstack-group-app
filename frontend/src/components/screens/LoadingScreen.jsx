@@ -1,6 +1,9 @@
 import { EntryBackdrop } from './EntryBackdrop'
+import { useI18n } from '../../i18n/useI18n'
 
 export function LoadingScreen({ bootMessage, mainLogo }) {
+  const { t } = useI18n()
+
   return (
     <EntryBackdrop>
       <section className="relative flex w-full max-w-97.5 flex-col items-center text-center">
@@ -16,7 +19,7 @@ export function LoadingScreen({ bootMessage, mainLogo }) {
         </div>
 
         <p className="mt-3 text-[0.72rem] font-bold tracking-[0.12em] text-[#5c4300] uppercase">
-          Syncing achievements...
+          {t('syncingAchievements', 'Syncing achievements...')}
         </p>
       </section>
     </EntryBackdrop>

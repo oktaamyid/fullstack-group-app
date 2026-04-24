@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom'
+import { useI18n } from '../../i18n/useI18n'
 
 /**
  * PageHeader - Header for settings/profile pages
@@ -16,6 +17,8 @@ export function PageHeader({
   backLink = '/home',
   className = '',
 }) {
+  const { t } = useI18n()
+
   return (
     <header
       className={`sticky top-0 z-50 border-b border-[#1c1c13] bg-[#fffbeb] px-4 py-3 shadow-[4px_4px_0px_0px_rgba(28,28,19,1)] lg:static lg:border-0 lg:bg-transparent lg:px-5 lg:py-0 lg:shadow-none ${className}`}
@@ -43,7 +46,7 @@ export function PageHeader({
             <Link
               to={backLink}
               className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-[#1c1c13] bg-white shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
-              aria-label="Back"
+              aria-label={t('back', 'Back')}
             >
               <span className="material-symbols-outlined">arrow_back</span>
             </Link>
@@ -53,7 +56,7 @@ export function PageHeader({
         <Link
           to={backLink}
           className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border border-[#1c1c13] bg-white shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none lg:hidden"
-          aria-label="Back"
+          aria-label={t('back', 'Back')}
         >
           <span className="material-symbols-outlined">arrow_back</span>
         </Link>

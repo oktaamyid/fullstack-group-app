@@ -1,10 +1,19 @@
 import { useCallback, useState } from 'react'
+import { getAuthUser } from '../services/auth'
+import { getLocalSettings } from '../services/profileSettings'
+
+function isEnglishMode() {
+  const authUser = getAuthUser()
+  const settings = getLocalSettings(authUser?.id || 'guest')
+  return settings.language === 'en-US'
+}
 
 export function useConnectionCheck() {
-  const [bootMessage, setBootMessage] = useState('Preparing your financial journey...')
+  const [bootMessage, setBootMessage] = useState(isEnglishMode() ? 'Preparing your financial journey...' : 'Menyiapkan perjalanan finansialmu...')
 
   const checkConnections = useCallback(async () => {
-    setBootMessage('Checking backend service...')
+    const english = isEnglishMode()
+    setBootMessage(english ? 'Checking backend service...' : 'Memeriksa layanan backend...')
 
     let apiStatus
 
@@ -14,18 +23,18 @@ export function useConnectionCheck() {
 
       apiStatus = {
         ok: Boolean(apiData.success),
-        title: apiData.success ? 'Backend Connected' : 'Backend Error',
-        detail: apiData.message || 'Backend status unavailable.',
+        title: apiData.success ? (english ? 'Backend Connected' : 'Backend Terhubung') : (english ? 'Backend Error' : 'Backend Bermasalah'),
+        detail: apiData.message || (english ? 'Backend status unavailable.' : 'Status backend tidak tersedia.'),
       }
     } catch {
       apiStatus = {
         ok: false,
-        title: 'Backend Disconnected',
-        detail: 'Cannot reach /api/health on backend service.',
+        title: english ? 'Backend Disconnected' : 'Backend Terputus',
+        detail: english ? 'Cannot reach /api/health on backend service.' : 'Tidak dapat mengakses /api/health pada layanan backend.',
       }
     }
 
-    setBootMessage('Checking database service...')
+    setBootMessage(english ? 'Checking database service...' : 'Memeriksa layanan database...')
 
     let dbStatus
 
@@ -38,16 +47,16 @@ export function useConnectionCheck() {
 
       dbStatus = {
         ok: Boolean(dbData.success),
-        title: dbData.success ? 'PostgreSQL Connected' : 'Database Error',
+        title: dbData.success ? (english ? 'PostgreSQL Connected' : 'PostgreSQL Terhubung') : (english ? 'Database Error' : 'Database Bermasalah'),
         detail: dbData.success
           ? `${queryText} -> ${queryResult}`
-          : dbData.message || 'Database status unavailable.',
+          : dbData.message || (english ? 'Database status unavailable.' : 'Status database tidak tersedia.'),
       }
     } catch {
       dbStatus = {
         ok: false,
-        title: 'Database Disconnected',
-        detail: 'Cannot reach /api/db-health endpoint.',
+        title: english ? 'Database Disconnected' : 'Database Terputus',
+        detail: english ? 'Cannot reach /api/db-health endpoint.' : 'Tidak dapat mengakses endpoint /api/db-health.',
       }
     }
 

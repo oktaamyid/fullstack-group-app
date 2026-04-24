@@ -1,3 +1,5 @@
+import { useI18n } from '../../i18n/useI18n'
+
 /**
  * AppHeader - Standard header for main app pages
  * Features: main logo, LIVO title, action buttons, search input
@@ -11,6 +13,8 @@
  * @param {string} props.className - Additional classes
  */
 export function AppHeader({ mainLogo, onSettingsClick, onRefreshClick, onAddTransactionClick, onSearchChange, className = '' }) {
+  const { t } = useI18n()
+
   return (
     <header
       className={`sticky top-0 z-50 border-b border-[#1c1c13] bg-[#fffbeb] px-4 py-3 shadow-[4px_4px_0px_0px_rgba(28,28,19,1)] lg:py-4 ${className}`}
@@ -23,14 +27,14 @@ export function AppHeader({ mainLogo, onSettingsClick, onRefreshClick, onAddTran
 
         <div className="hidden min-w-0 flex-1 items-center gap-4 lg:flex">
           <div className="min-w-0">
-            <h2 className="text-2xl font-black tracking-tight text-[#1c1c13]">Dashboard</h2>
+            <h2 className="text-2xl font-black tracking-tight text-[#1c1c13]">{t('dashboard', 'Dashboard')}</h2>
           </div>
 
           <label className="ml-auto flex h-11 w-full max-w-md items-center gap-2 rounded-2xl border border-[#1c1c13] bg-white px-3 shadow-[2px_2px_0px_0px_rgba(28,28,19,1)]">
             <span className="material-symbols-outlined text-[#464554]">search</span>
             <input
               type="text"
-              placeholder="Search..."
+              placeholder={t('searchPlaceholder', 'Search...')}
               onChange={onSearchChange}
               className="w-full border-0 bg-transparent text-sm outline-none placeholder:text-[#464554]"
             />
@@ -43,7 +47,7 @@ export function AppHeader({ mainLogo, onSettingsClick, onRefreshClick, onAddTran
               type="button"
               onClick={onSettingsClick}
               className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[#1c1c13] bg-white shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
-              aria-label="Settings"
+              aria-label={t('settings', 'Settings')}
             >
               <span className="material-symbols-outlined">settings</span>
             </button>
@@ -54,7 +58,7 @@ export function AppHeader({ mainLogo, onSettingsClick, onRefreshClick, onAddTran
               type="button"
               onClick={onRefreshClick}
               className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[#1c1c13] bg-[#fffbeb] shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
-              aria-label="Refresh"
+              aria-label={t('refresh', 'Refresh')}
             >
               <span className="material-symbols-outlined">sync</span>
             </button>
@@ -67,7 +71,7 @@ export function AppHeader({ mainLogo, onSettingsClick, onRefreshClick, onAddTran
               className="hidden h-11 items-center gap-2 rounded-2xl border border-[#1c1c13] bg-[#6366f1] px-4 text-sm font-black text-white shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none lg:inline-flex"
             >
               <span className="material-symbols-outlined">add</span>
-              Add Transaction
+              {t('addTransaction', 'Add Transaction')}
             </button>
           )}
 

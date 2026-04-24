@@ -3,6 +3,7 @@ import { PageLayout } from '../layouts/PageLayout'
 import { AppHeader } from '../headers/AppHeader'
 import { StatusPill } from '../ui/StatusPill'
 import { CreateTransactionModal } from '../modals/CreateTransactionModal'
+import { useI18n } from '../../i18n/useI18n'
 
 function toRupiah(value) {
   return new Intl.NumberFormat('id-ID', {
@@ -13,6 +14,8 @@ function toRupiah(value) {
 }
 
 export function HomeDashboard({ isOffline, apiStatus, dbStatus, financeData, lastChecked, onRecheck, onOpenSplitBill, onOpenProfile, mainLogo, mascotImage }) {
+  const { t, language } = useI18n()
+  const tr = (en, id) => (language === 'id-ID' ? id : en)
   const [showTransactionModal, setShowTransactionModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
 
@@ -53,7 +56,7 @@ export function HomeDashboard({ isOffline, apiStatus, dbStatus, financeData, las
           <div className="rounded-xl border border-[#1c1c13] bg-[#fffbeb] p-6 shadow-[6px_6px_0px_0px_rgba(28,28,19,1)]">
             <div className="mb-4 flex items-start justify-between">
               <span className="rounded-full border border-[#1c1c13] bg-[#4648d4] px-3 py-1 text-[10px] font-bold tracking-widest text-white uppercase">
-                Active Limit
+                {t('activeLimit', 'Active Limit')}
               </span>
               <img
                 src={mainLogo}
@@ -62,24 +65,24 @@ export function HomeDashboard({ isOffline, apiStatus, dbStatus, financeData, las
               />
             </div>
 
-            <h2 className="mb-1 text-sm font-semibold tracking-tight text-[#464554] uppercase">Daily Spending Limit</h2>
+            <h2 className="mb-1 text-sm font-semibold tracking-tight text-[#464554] uppercase">{t('dailySpendingLimit', 'Daily Spending Limit')}</h2>
             <div className="flex items-baseline gap-1">
               <span className="text-4xl font-black">{toRupiah(dailyLimit)}</span>
             </div>
 
             <div className="mt-4 flex flex-wrap gap-2">
-              <StatusPill ok={apiStatus.ok} label="Backend" />
-              <StatusPill ok={dbStatus.ok} label="Database" />
+              <StatusPill ok={apiStatus.ok} label={t('backend', 'Backend')} />
+              <StatusPill ok={dbStatus.ok} label={t('database', 'Database')} />
               <span
                 className={`rounded-full border border-[#1c1c13] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${isOffline ? 'bg-[#ffdad6] text-[#93000a]' : 'bg-[#e1e0ff] text-[#2f2ebe]'}`}
               >
-                {isOffline ? 'Offline Mode' : 'Live Sync'}
+                {isOffline ? t('offlineMode', 'Offline Mode') : t('liveSync', 'Live Sync')}
               </span>
             </div>
 
             <div className="mt-6 border-t border-[#1c1c13] pt-6">
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs font-bold text-[#464554] uppercase">Today's Progress</span>
+                <span className="text-xs font-bold text-[#464554] uppercase">{t('todayProgress', "Today's Progress")}</span>
                 <span className="text-xs font-black text-[#4648d4]">
                   {toRupiah(averageDaily)} / {toRupiah(dailyLimit)}
                 </span>
@@ -115,7 +118,7 @@ export function HomeDashboard({ isOffline, apiStatus, dbStatus, financeData, las
                 <span className="text-xs font-black">{Math.round(progress)}%</span>
               </div>
             </div>
-            <span className="text-center text-[10px] font-bold text-[#464554] uppercase">Efficiency Score</span>
+            <span className="text-center text-[10px] font-bold text-[#464554] uppercase">{t('efficiencyScore', 'Efficiency Score')}</span>
           </div>
 
           <div className="flex flex-col justify-between rounded-xl border border-[#1c1c13] bg-[#ffc329] p-4 shadow-[4px_4px_0px_0px_rgba(28,28,19,1)]">
@@ -125,21 +128,21 @@ export function HomeDashboard({ isOffline, apiStatus, dbStatus, financeData, las
             </div>
             <div>
               <span className="block text-2xl leading-none font-black">{toRupiah(weeklySpend)}</span>
-              <span className="text-[10px] font-bold opacity-80 uppercase">Weekly Spend</span>
+              <span className="text-[10px] font-bold opacity-80 uppercase">{t('weeklySpend', 'Weekly Spend')}</span>
             </div>
           </div>
         </section>
 
         <section className="space-y-4 lg:col-span-7">
           <div className="flex items-center justify-between gap-3">
-            <h3 className="text-lg font-black tracking-tight uppercase">Recent Activity</h3>
+            <h3 className="text-lg font-black tracking-tight uppercase">{t('recentActivity', 'Recent Activity')}</h3>
             <div className="flex gap-2">
               <button
                 type="button"
                 onClick={onOpenSplitBill}
                 className="min-h-11 rounded-xl border border-[#1c1c13] bg-[#fbbf24] px-3 text-[10px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(28,28,19,1)]"
               >
-                History & Split
+                {t('historyAndSplit', 'History & Split')}
               </button>
             </div>
           </div>
@@ -158,9 +161,9 @@ export function HomeDashboard({ isOffline, apiStatus, dbStatus, financeData, las
                       <span className="material-symbols-outlined">{isIncome ? 'arrow_circle_up' : 'arrow_circle_down'}</span>
                     </div>
                     <div>
-                      <p className="text-sm font-bold">{entry.note || `${isIncome ? 'Income' : 'Expense'} Transaction`}</p>
+                      <p className="text-sm font-bold">{entry.note || (isIncome ? t('incomeTransaction', 'Income Transaction') : t('expenseTransaction', 'Expense Transaction'))}</p>
                       <p className="text-[10px] font-bold text-[#464554] opacity-60 uppercase">
-                        {entry.category || 'Other'} • {new Date(entry.createdAt).toLocaleDateString()}
+                        {entry.category || t('other', 'Other')} • {new Date(entry.createdAt).toLocaleDateString()}
                       </p>
                     </div>
                   </div>
@@ -172,7 +175,7 @@ export function HomeDashboard({ isOffline, apiStatus, dbStatus, financeData, las
               })
             ) : (
               <div className="rounded-lg border border-[#1c1c13] bg-white p-4 text-sm font-semibold">
-                Belum ada aktivitas keuangan.
+                {t('noFinancialActivity', 'Belum ada aktivitas keuangan.')}
               </div>
             )}
           </div>
@@ -182,9 +185,9 @@ export function HomeDashboard({ isOffline, apiStatus, dbStatus, financeData, las
           <div className="rounded-2xl border-2 border-white bg-[#1c1c13] p-6 text-white shadow-[6px_6px_0px_0px_rgba(28,28,19,1)]">
             <div className="flex items-center justify-between">
               <div>
-                <h4 className="mb-1 text-xl leading-none font-black">Financial Milestone</h4>
+                <h4 className="mb-1 text-xl leading-none font-black">{t('financialMilestone', 'Financial Milestone')}</h4>
                 <p className="max-w-50 text-xs opacity-80">
-                  Net balance saat ini {toRupiah(transactionSummary.netBalance)} dengan pemasukan {toRupiah(transactionSummary.totalIncome)}.
+                  {tr('Current net balance is', 'Saldo bersih saat ini')} {toRupiah(transactionSummary.netBalance)} {tr('with total income', 'dengan total pemasukan')} {toRupiah(transactionSummary.totalIncome)}.
                 </p>
               </div>
               <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white bg-[#ffc329]">
@@ -198,16 +201,16 @@ export function HomeDashboard({ isOffline, apiStatus, dbStatus, financeData, las
               type="button"
               className="mt-4 w-full rounded-lg border border-[#1c1c13] bg-white py-3 text-xs font-black text-[#1c1c13] uppercase shadow-[4px_4px_0px_0px_rgba(255,195,41,1)] transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
             >
-              View Progress
+              {t('viewProgress', 'View Progress')}
             </button>
           </div>
         </section>
 
         <section className="rounded-xl border border-[#1c1c13] bg-white p-4 shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] lg:col-span-5 lg:self-start">
-          <p className="text-xs font-bold text-[#464554] uppercase">Connection Snapshot</p>
-          <p className="mt-2 text-sm font-semibold">Backend: {apiStatus.title}</p>
-          <p className="text-sm font-semibold">Database: {dbStatus.title}</p>
-          <p className="mt-1 text-xs text-[#464554]">Last checked: {lastChecked}</p>
+          <p className="text-xs font-bold text-[#464554] uppercase">{t('connectionSnapshot', 'Connection Snapshot')}</p>
+          <p className="mt-2 text-sm font-semibold">{t('backend', 'Backend')}: {apiStatus.title}</p>
+          <p className="text-sm font-semibold">{t('database', 'Database')}: {dbStatus.title}</p>
+          <p className="mt-1 text-xs text-[#464554]">{t('lastChecked', 'Last checked')}: {lastChecked}</p>
         </section>
       </div>
     </PageLayout>

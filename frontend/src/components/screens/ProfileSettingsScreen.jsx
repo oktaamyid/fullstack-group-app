@@ -2,8 +2,12 @@ import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { clearAuthSession, getAuthToken, getAuthUser, saveAuthSession } from '../../services/auth'
 import {
+  addCategorySetting,
   fetchProfile,
+  getCategoryIcon,
   getLocalSettings,
+  isDefaultCategory,
+  removeCategorySetting,
   saveLocalSettings,
   updatePassword,
   updateProfile,
@@ -11,6 +15,7 @@ import {
 import { PageLayout } from '../layouts/PageLayout'
 import { PageHeader } from '../headers/PageHeader'
 import { Alert } from '../ui/Alert'
+import { useI18n } from '../../i18n/useI18n'
 
 const defaultProfileForm = {
   name: '',
@@ -21,6 +26,26 @@ const defaultPasswordForm = {
   currentPassword: '',
   newPassword: '',
   confirmPassword: '',
+}
+
+const CURRENCY_OPTIONS = [
+  { value: 'IDR', label: 'IDR - Indonesian Rupiah' },
+  { value: 'USD', label: 'USD - US Dollar' },
+  { value: 'SGD', label: 'SGD - Singapore Dollar' },
+  { value: 'EUR', label: 'EUR - Euro' },
+]
+
+const LANGUAGE_OPTIONS = [
+  { value: 'id-ID', label: 'Bahasa Indonesia' },
+  { value: 'en-US', label: 'English (US)' },
+]
+
+function prettifyCategory(key = '') {
+  return key
+    .toLowerCase()
+    .split('_')
+    .map((part) => (part ? `${part[0].toUpperCase()}${part.slice(1)}` : ''))
+    .join(' ')
 }
 
 function ToggleSetting({ label, description, checked, onChange }) {
@@ -41,6 +66,8 @@ function ToggleSetting({ label, description, checked, onChange }) {
 }
 
 export function ProfileSettingsScreen({ mainLogo }) {
+  const { t, language } = useI18n()
+  const tr = (en, id) => (language === 'id-ID' ? id : en)
   const navigate = useNavigate()
   const authUser = getAuthUser()
   const [isLoading, setIsLoading] = useState(true)
@@ -49,6 +76,7 @@ export function ProfileSettingsScreen({ mainLogo }) {
   const [settings, setSettings] = useState(getLocalSettings(authUser?.id || 'guest'))
   const [isProfileSubmitting, setIsProfileSubmitting] = useState(false)
   const [isPasswordSubmitting, setIsPasswordSubmitting] = useState(false)
+  const [categoryForm, setCategoryForm] = useState({ type: 'EXPENSE', label: '', icon: '' })
   const [message, setMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -111,7 +139,7 @@ export function ProfileSettingsScreen({ mainLogo }) {
           })
         }
 
-        setMessage('Profile updated successfully.')
+        setMessage(tr('Profile updated successfully.', 'Profil berhasil diperbarui.'))
       } catch (error) {
         setErrorMessage(error.message)
       } finally {
@@ -127,7 +155,7 @@ export function ProfileSettingsScreen({ mainLogo }) {
     setMessage('')
 
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      setErrorMessage('New password and confirmation password must match.')
+      setErrorMessage(tr('New password and confirmation password must match.', 'Password baru dan konfirmasi harus sama.'))
       return
     }
 
@@ -139,7 +167,7 @@ export function ProfileSettingsScreen({ mainLogo }) {
         newPassword: passwordForm.newPassword,
       })
       setPasswordForm(defaultPasswordForm)
-      setMessage('Password updated successfully.')
+      setMessage(tr('Password updated successfully.', 'Password berhasil diperbarui.'))
     } catch (error) {
       setErrorMessage(error.message)
     } finally {
@@ -165,12 +193,74 @@ export function ProfileSettingsScreen({ mainLogo }) {
     [authUser?.id]
   )
 
+  const onConfigChange = useCallback(
+    (field, value) => {
+      setSettings((prev) => {
+        const next = {
+          ...prev,
+          [field]: value,
+        }
+
+        if (authUser?.id) {
+          saveLocalSettings(authUser.id, next)
+        }
+
+        return next
+      })
+      setMessage(tr('Configuration updated.', 'Konfigurasi berhasil diperbarui.'))
+      setErrorMessage('')
+    },
+    [authUser?.id]
+  )
+
+  const onAddCategory = useCallback(
+    (event) => {
+      event.preventDefault()
+      setErrorMessage('')
+
+      if (!authUser?.id) {
+        setErrorMessage(tr('Unable to save category. Please login again.', 'Tidak bisa menyimpan kategori. Silakan login ulang.'))
+        return
+      }
+
+      try {
+        const next = addCategorySetting(authUser.id, categoryForm.type, categoryForm.label, categoryForm.icon)
+        setSettings(next)
+        setCategoryForm((prev) => ({ ...prev, label: '', icon: '' }))
+        setMessage(tr('Category added successfully.', 'Kategori berhasil ditambahkan.'))
+      } catch (error) {
+        setErrorMessage(error.message)
+      }
+    },
+    [authUser?.id, categoryForm.icon, categoryForm.label, categoryForm.type]
+  )
+
+  const onRemoveCategory = useCallback(
+    (type, categoryKey) => {
+      setErrorMessage('')
+
+      if (!authUser?.id) {
+        setErrorMessage(tr('Unable to save category. Please login again.', 'Tidak bisa menyimpan kategori. Silakan login ulang.'))
+        return
+      }
+
+      try {
+        const next = removeCategorySetting(authUser.id, type, categoryKey)
+        setSettings(next)
+        setMessage(tr('Category removed successfully.', 'Kategori berhasil dihapus.'))
+      } catch (error) {
+        setErrorMessage(error.message)
+      }
+    },
+    [authUser?.id]
+  )
+
   return (
     <PageLayout
       header={
         <PageHeader
           mainLogo={mainLogo}
-          title="Profile & Settings"
+          title={t('profileSettings', 'Profile & Settings')}
           backLink="/home"
         />
       }
@@ -227,7 +317,7 @@ export function ProfileSettingsScreen({ mainLogo }) {
                 disabled={isProfileSubmitting}
                 className="min-h-11 w-full rounded-lg border border-[#1c1c13] bg-[#4648d4] px-3 text-sm font-black text-white shadow-[2px_2px_0_#1c1c13] disabled:opacity-70"
               >
-                {isProfileSubmitting ? 'Saving...' : 'Save Profile'}
+                  {isProfileSubmitting ? t('saving', 'Saving...') : t('saveProfile', 'Save Profile')}
               </button>
             </form>
           )}
@@ -274,32 +364,162 @@ export function ProfileSettingsScreen({ mainLogo }) {
               disabled={isPasswordSubmitting}
               className="min-h-11 w-full rounded-lg border border-[#1c1c13] bg-[#fbbf24] px-3 text-sm font-black shadow-[2px_2px_0_#1c1c13] disabled:opacity-70"
             >
-              {isPasswordSubmitting ? 'Updating...' : 'Update Password'}
+              {isPasswordSubmitting ? t('updating', 'Updating...') : t('updatePassword', 'Update Password')}
             </button>
           </form>
         </section>
 
         <section className="rounded-xl border border-[#1c1c13] bg-white p-4 shadow-[3px_3px_0_#1c1c13] lg:col-span-12">
-          <h3 className="mb-3 text-sm font-black uppercase">Preferences</h3>
+          <h3 className="mb-3 text-sm font-black uppercase">{tr('Preferences', 'Preferensi')}</h3>
           <div className="space-y-3">
             <ToggleSetting
-              label="Budget Alerts"
-              description="Get red alert when spending runway is low"
+              label={tr('Budget Alerts', 'Peringatan Budget')}
+              description={tr('Get red alert when spending runway is low', 'Dapatkan peringatan saat budget harian hampir habis')}
               checked={settings.budgetAlerts}
               onChange={() => onToggleSetting('budgetAlerts')}
             />
             <ToggleSetting
-              label="Reminder Notifications"
-              description="Receive daily reminders for unpaid split bills"
+              label={tr('Reminder Notifications', 'Notifikasi Pengingat')}
+              description={tr('Receive daily reminders for unpaid split bills', 'Terima pengingat harian untuk split bill yang belum dibayar')}
               checked={settings.reminderNotifications}
               onChange={() => onToggleSetting('reminderNotifications')}
             />
             <ToggleSetting
-              label="Weekly Summary"
-              description="Send weekly spending summary suggestion"
+              label={tr('Weekly Summary', 'Ringkasan Mingguan')}
+              description={tr('Send weekly spending summary suggestion', 'Kirim ringkasan pengeluaran mingguan')}
               checked={settings.weeklySummary}
               onChange={() => onToggleSetting('weeklySummary')}
             />
+          </div>
+        </section>
+
+        <section className="rounded-xl border border-[#1c1c13] bg-[#f8f4e4] p-4 shadow-[3px_3px_0_#1c1c13] lg:col-span-6">
+          <h3 className="mb-3 text-sm font-black uppercase">{tr('Configuration', 'Konfigurasi')}</h3>
+          <div className="space-y-3">
+            <label className="block text-[11px] font-black uppercase">
+              {t('currency', 'Currency')}
+              <select
+                value={settings.currency}
+                onChange={(event) => onConfigChange('currency', event.target.value)}
+                className="mt-1 min-h-11 w-full rounded-lg border border-[#1c1c13] bg-white px-3 text-sm"
+              >
+                {CURRENCY_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+
+            <label className="block text-[11px] font-black uppercase">
+              {t('language', 'Language')}
+              <select
+                value={settings.language}
+                onChange={(event) => onConfigChange('language', event.target.value)}
+                className="mt-1 min-h-11 w-full rounded-lg border border-[#1c1c13] bg-white px-3 text-sm"
+              >
+                {LANGUAGE_OPTIONS.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+        </section>
+
+        <section className="rounded-xl border border-[#1c1c13] bg-[#fff9dc] p-4 shadow-[3px_3px_0_#1c1c13] lg:col-span-6">
+          <h3 className="mb-3 text-sm font-black uppercase">{tr('Manage Categories', 'Kelola Kategori')}</h3>
+
+          <form className="space-y-3" onSubmit={onAddCategory}>
+            <label className="block text-[11px] font-black uppercase">
+              {t('categoryType', 'Category Type')}
+              <select
+                value={categoryForm.type}
+                onChange={(event) => setCategoryForm((prev) => ({ ...prev, type: event.target.value }))}
+                className="mt-1 min-h-11 w-full rounded-lg border border-[#1c1c13] bg-white px-3 text-sm"
+              >
+                <option value="EXPENSE">Expense</option>
+                <option value="INCOME">Income</option>
+              </select>
+            </label>
+
+            <label className="block text-[11px] font-black uppercase">
+              {t('newCategoryName', 'New Category Name')}
+              <input
+                type="text"
+                value={categoryForm.label}
+                onChange={(event) => setCategoryForm((prev) => ({ ...prev, label: event.target.value }))}
+                className="mt-1 min-h-11 w-full rounded-lg border border-[#1c1c13] bg-white px-3 text-sm"
+                placeholder={tr('e.g. Side Hustle', 'contoh: Side Hustle')}
+              />
+            </label>
+
+            <label className="block text-[11px] font-black uppercase">
+              {t('iconOrEmoji', 'Icon or Emoji')}
+              <input
+                type="text"
+                value={categoryForm.icon}
+                onChange={(event) => setCategoryForm((prev) => ({ ...prev, icon: event.target.value }))}
+                className="mt-1 min-h-11 w-full rounded-lg border border-[#1c1c13] bg-white px-3 text-sm"
+                placeholder={tr('e.g. 🧋', 'contoh: 🧋')}
+                maxLength={4}
+              />
+            </label>
+
+            <div className="flex flex-wrap gap-2">
+              {['🍽️', '🧋', '🎮', '🚌', '🛒', '📦', '💸', '🪙'].map((emoji) => (
+                <button
+                  key={emoji}
+                  type="button"
+                  onClick={() => setCategoryForm((prev) => ({ ...prev, icon: emoji }))}
+                  className="min-h-11 min-w-11 rounded-lg border border-[#1c1c13] bg-white text-lg shadow-[1px_1px_0_#1c1c13]"
+                  aria-label={`Use ${emoji}`}
+                >
+                  {emoji}
+                </button>
+              ))}
+            </div>
+
+            <button
+              type="submit"
+              className="min-h-11 w-full rounded-lg border border-[#1c1c13] bg-[#4648d4] px-3 text-sm font-black text-white shadow-[2px_2px_0_#1c1c13]"
+            >
+              {t('addCategory', 'Add Category')}
+            </button>
+          </form>
+
+          <div className="mt-4 space-y-4">
+            {['EXPENSE', 'INCOME'].map((type) => (
+              <div key={type}>
+                <p className="text-[11px] font-black uppercase text-[#464554]">{type} {t('categories', 'Categories')}</p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  {(settings.categories?.[type] || []).map((categoryKey) => {
+                    const isDefault = isDefaultCategory(type, categoryKey)
+
+                    return (
+                      <span
+                        key={`${type}-${categoryKey}`}
+                        className="inline-flex items-center gap-2 rounded-full border border-[#1c1c13] bg-white px-3 py-1 text-xs font-bold"
+                      >
+                        <span>{getCategoryIcon(settings, categoryKey)}</span>
+                        <span>{prettifyCategory(categoryKey)}</span>
+                        {!isDefault ? (
+                          <button
+                            type="button"
+                            onClick={() => onRemoveCategory(type, categoryKey)}
+                            className="rounded-full border border-[#1c1c13] bg-[#fee2e2] px-2 text-[10px] leading-5"
+                            aria-label={`Remove ${categoryKey}`}
+                          >
+                            x
+                          </button>
+                        ) : null}
+                      </span>
+                    )
+                  })}
+                </div>
+              </div>
+            ))}
           </div>
         </section>
     </PageLayout>

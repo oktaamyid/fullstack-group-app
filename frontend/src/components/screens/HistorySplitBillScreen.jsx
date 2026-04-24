@@ -9,6 +9,7 @@ import {
 import { getAnalyticsOverview } from '../../services/analytics'
 import { PageLayout } from '../layouts/PageLayout'
 import { PageHeader } from '../headers/PageHeader'
+import { useI18n } from '../../i18n/useI18n'
 
 const defaultForm = {
   title: '',
@@ -66,6 +67,8 @@ function buildFormFromBill(splitBill) {
 }
 
 export function HistorySplitBillScreen({ mainLogo }) {
+  const { t, language } = useI18n()
+  const tr = (en, id) => (language === 'id-ID' ? id : en)
   const [activeTab, setActiveTab] = useState('history')
   const [form, setForm] = useState(defaultForm)
   const [splitBills, setSplitBills] = useState([])
@@ -114,7 +117,7 @@ export function HistorySplitBillScreen({ mainLogo }) {
     const friendNames = parseFriends(form.friends)
 
     if (!form.title.trim() || !Number.isFinite(parsedTotal) || parsedTotal <= 0 || friendNames.length === 0) {
-      setErrorMessage('Lengkapi judul, total tagihan, dan daftar teman.')
+      setErrorMessage(tr('Complete title, total amount, and friends list.', 'Lengkapi judul, total tagihan, dan daftar teman.'))
       return
     }
 
@@ -189,7 +192,7 @@ export function HistorySplitBillScreen({ mainLogo }) {
       header={
         <PageHeader
           mainLogo={mainLogo}
-          title="History & Split Bill"
+          title={t('historySplitBill', 'History & Split Bill')}
           backLink="/home"
         />
       }
@@ -201,15 +204,15 @@ export function HistorySplitBillScreen({ mainLogo }) {
         {/* Stats Cards */}
         <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-4">
           <article className="rounded-xl lg:rounded-2xl border border-[#1c1c13] bg-[#f8f4e4] p-4 lg:p-6 shadow-[2px_2px_0_#1c1c13]">
-            <p className="text-[10px] lg:text-xs font-bold uppercase text-[#464554]">Total Split</p>
+            <p className="text-[10px] lg:text-xs font-bold uppercase text-[#464554]">{t('totalSplit', 'Total Split')}</p>
             <p className="text-lg lg:text-3xl font-black text-[#6366f1] mt-2">{toRupiah(summary.total)}</p>
           </article>
           <article className="rounded-xl lg:rounded-2xl border border-[#1c1c13] bg-[#f8f4e4] p-4 lg:p-6 shadow-[2px_2px_0_#1c1c13]">
-            <p className="text-[10px] lg:text-xs font-bold uppercase text-[#464554]">Unpaid</p>
+            <p className="text-[10px] lg:text-xs font-bold uppercase text-[#464554]">{t('unpaid', 'Unpaid')}</p>
             <p className="text-lg lg:text-3xl font-black text-[#ba1a1a] mt-2">{toRupiah(summary.unpaid)}</p>
           </article>
           <article className="hidden lg:block rounded-2xl border border-[#1c1c13] bg-[#fff9dc] p-6 shadow-[2px_2px_0_#1c1c13]">
-            <p className="text-xs font-bold uppercase text-[#464554]">Paid</p>
+            <p className="text-xs font-bold uppercase text-[#464554]">{t('paid', 'Paid')}</p>
             <p className="text-3xl font-black text-[#4648d4] mt-2">{toRupiah(summary.paid)}</p>
           </article>
         </div>
@@ -217,25 +220,25 @@ export function HistorySplitBillScreen({ mainLogo }) {
         {/* Finance Insights merged into History page */}
         <section className="rounded-xl lg:rounded-2xl border border-[#1c1c13] bg-white p-4 lg:p-6 shadow-[2px_2px_0_#1c1c13] space-y-4">
           <div className="flex items-center justify-between gap-3">
-            <h2 className="text-sm lg:text-base font-black uppercase">Finance Insights</h2>
+            <h2 className="text-sm lg:text-base font-black uppercase">{t('financeInsights', 'Finance Insights')}</h2>
             <span className="rounded-full border border-[#1c1c13] bg-[#ffc329] px-3 py-1 text-[10px] font-black uppercase">
-              Avg/day {toCurrency(analytics?.totals?.averageDaily || 0)}
+              {t('avgPerDay', 'Avg/day')} {toCurrency(analytics?.totals?.averageDaily || 0)}
             </span>
           </div>
 
           <div className="grid grid-cols-2 gap-3">
             <article className="rounded-lg border border-[#1c1c13] bg-[#f8f4e4] p-3">
-              <p className="text-[10px] font-bold uppercase text-[#464554]">Weekly Spend</p>
+              <p className="text-[10px] font-bold uppercase text-[#464554]">{t('weeklySpend', 'Weekly Spend')}</p>
               <p className="mt-1 text-sm lg:text-base font-black text-[#1c1c13]">{toCurrency(analytics?.totals?.weeklyTotal || 0)}</p>
             </article>
             <article className="rounded-lg border border-[#1c1c13] bg-[#f8f4e4] p-3">
-              <p className="text-[10px] font-bold uppercase text-[#464554]">Top Category</p>
-              <p className="mt-1 text-sm lg:text-base font-black text-[#1c1c13]">{analytics?.topCategory?.name || 'No Data'}</p>
+              <p className="text-[10px] font-bold uppercase text-[#464554]">{t('topCategoryLabel', 'Top Category')}</p>
+              <p className="mt-1 text-sm lg:text-base font-black text-[#1c1c13]">{analytics?.topCategory?.name || t('noData', 'No Data')}</p>
             </article>
           </div>
 
           <div className="space-y-2">
-            <p className="text-[10px] font-bold uppercase text-[#464554]">Last 6 Days</p>
+              <p className="text-[10px] font-bold uppercase text-[#464554]">{t('last6Days', 'Last 6 Days')}</p>
             <div className="grid grid-cols-6 gap-2 items-end h-24">
               {weeklyTrend.length > 0 ? (
                 weeklyTrend.map((point) => (
@@ -250,7 +253,7 @@ export function HistorySplitBillScreen({ mainLogo }) {
                   </div>
                 ))
               ) : (
-                <p className="col-span-6 text-xs font-semibold">Belum ada data tren mingguan.</p>
+                <p className="col-span-6 text-xs font-semibold">{t('noWeeklyTrendData', 'Belum ada data tren mingguan.')}</p>
               )}
             </div>
           </div>
@@ -268,7 +271,7 @@ export function HistorySplitBillScreen({ mainLogo }) {
                   : 'border-transparent bg-transparent text-[#1c1c13] hover:border-[#1c1c13]'
               }`}
             >
-              History
+              {t('history', 'History')}
             </button>
             <button
               type="button"
@@ -279,7 +282,7 @@ export function HistorySplitBillScreen({ mainLogo }) {
                   : 'border-transparent bg-transparent text-[#1c1c13] hover:border-[#1c1c13]'
               }`}
             >
-              Split Bill
+              {t('splitBill', 'Split Bill')}
             </button>
           </div>
         </section>
@@ -290,7 +293,7 @@ export function HistorySplitBillScreen({ mainLogo }) {
 
         {activeTab === 'split' ? (
           <section className="rounded-xl lg:rounded-2xl border border-[#1c1c13] bg-white p-4 lg:p-6 shadow-[2px_2px_0_#1c1c13]">
-            <h2 className="text-sm font-black uppercase">{editingId ? 'Edit Split Bill' : 'Buat Split Bill Baru'}</h2>
+            <h2 className="text-sm font-black uppercase">{editingId ? t('editSplitBill', 'Edit Split Bill') : t('newSplitBill', 'Buat Split Bill Baru')}</h2>
             <form className="mt-3 space-y-3" onSubmit={onSubmit}>
               <label className="block text-[11px] font-bold uppercase">
                 Judul
@@ -298,7 +301,7 @@ export function HistorySplitBillScreen({ mainLogo }) {
                   name="title"
                   value={form.title}
                   onChange={onChange}
-                  placeholder="Contoh: Makan bareng kelas"
+                  placeholder={tr('Example: Dinner with classmates', 'Contoh: Makan bareng kelas')}
                   className="mt-1 min-h-11 w-full rounded-xl lg:rounded-2xl border border-[#1c1c13] bg-[#fffbeb] px-3 text-sm"
                 />
               </label>
@@ -311,7 +314,7 @@ export function HistorySplitBillScreen({ mainLogo }) {
                   min="1"
                   value={form.totalAmount}
                   onChange={onChange}
-                  placeholder="150000"
+                  placeholder={tr('150000', '150000')}
                   className="mt-1 min-h-11 w-full rounded-xl lg:rounded-2xl border border-[#1c1c13] bg-[#fffbeb] px-3 text-sm"
                 />
               </label>
@@ -322,7 +325,7 @@ export function HistorySplitBillScreen({ mainLogo }) {
                   name="description"
                   value={form.description}
                   onChange={onChange}
-                  placeholder="Makan malam habis UTS"
+                  placeholder={tr('Dinner after midterms', 'Makan malam habis UTS')}
                   className="mt-1 min-h-11 w-full rounded-xl lg:rounded-2xl border border-[#1c1c13] bg-[#fffbeb] px-3 text-sm"
                 />
               </label>
@@ -334,13 +337,13 @@ export function HistorySplitBillScreen({ mainLogo }) {
                   value={form.friends}
                   onChange={onChange}
                   rows={4}
-                  placeholder={'Bagas\nSiska\nDini'}
+                  placeholder={tr('Alex\nSam\nRina', 'Bagas\nSiska\nDini')}
                   className="mt-1 w-full rounded-xl lg:rounded-2xl border border-[#1c1c13] bg-[#fffbeb] px-3 py-2 text-sm"
                 />
               </label>
 
               <p className="text-[11px] font-semibold text-[#464554]">
-                Amount akan dibagi rata otomatis ke semua teman.
+                {tr('Amount will be split equally across friends.', 'Amount akan dibagi rata otomatis ke semua teman.')}
               </p>
 
               <div className="grid grid-cols-2 gap-2">
@@ -349,14 +352,14 @@ export function HistorySplitBillScreen({ mainLogo }) {
                   disabled={isSubmitting}
                   className="min-h-11 rounded-xl lg:rounded-2xl border border-[#1c1c13] bg-[#6366f1] px-3 text-xs font-black uppercase text-white shadow-[2px_2px_0_#1c1c13]"
                 >
-                  {isSubmitting ? 'Menyimpan...' : editingId ? 'Update Split' : 'Simpan Split'}
+                    {isSubmitting ? t('saving', 'Menyimpan...') : editingId ? t('updateSplit', 'Update Split') : t('saveSplit', 'Simpan Split')}
                 </button>
                 <button
                   type="button"
                   onClick={resetForm}
                   className="min-h-11 rounded-xl lg:rounded-2xl border border-[#1c1c13] bg-white px-3 text-xs font-black uppercase shadow-[1px_1px_0_#1c1c13]"
                 >
-                  Reset Form
+                    {t('resetForm', 'Reset Form')}
                 </button>
               </div>
             </form>
@@ -366,11 +369,11 @@ export function HistorySplitBillScreen({ mainLogo }) {
         {activeTab === 'history' ? (
           <section className="space-y-3 lg:col-span-2 lg:space-y-0">
             <div className="rounded-lg lg:rounded-xl border border-[#1c1c13] bg-white p-4 lg:p-6 shadow-[2px_2px_0_#1c1c13]">
-            <h2 className="text-lg lg:text-xl font-black uppercase mb-4">Split Bill History</h2>
-            {isLoading ? <p className="text-sm font-semibold">Memuat data split bill...</p> : null}
+            <h2 className="text-lg lg:text-xl font-black uppercase mb-4">{t('splitBillHistory', 'Split Bill History')}</h2>
+            {isLoading ? <p className="text-sm font-semibold">{tr('Loading split bill data...', 'Memuat data split bill...')}</p> : null}
             {!isLoading && splitBills.length === 0 ? (
               <p className="rounded-lg lg:rounded-xl border border-[#1c1c13] bg-[#fffbeb] px-4 py-3 text-sm font-semibold">
-                Belum ada split bill. Buat dari tab Split Bill.
+                {tr('No split bills yet. Create one from Split Bill tab.', 'Belum ada split bill. Buat dari tab Split Bill.')}
               </p>
             ) : null}
 
@@ -380,7 +383,7 @@ export function HistorySplitBillScreen({ mainLogo }) {
                   <div>
                     <h3 className="text-sm font-black">{splitBill.title}</h3>
                     <p className="text-[10px] font-bold uppercase text-[#464554]">
-                      {splitBill.description || 'Tanpa deskripsi'}
+                      {splitBill.description || tr('No description', 'Tanpa deskripsi')}
                     </p>
                     <p className="mt-1 text-xs font-semibold">Total: {toRupiah(splitBill.totalAmount)}</p>
                   </div>
@@ -412,7 +415,7 @@ export function HistorySplitBillScreen({ mainLogo }) {
                             member.status === 'PAID' ? 'bg-[#bbf7d0]' : 'bg-[#fbbf24]'
                           }`}
                         >
-                          {member.status === 'PAID' ? 'Mark Unpaid' : 'Mark Paid'}
+                          {member.status === 'PAID' ? t('markUnpaid', 'Mark Unpaid') : t('markPaid', 'Mark Paid')}
                         </button>
                       </div>
                     </li>
@@ -425,14 +428,14 @@ export function HistorySplitBillScreen({ mainLogo }) {
                     onClick={() => onEdit(splitBill)}
                     className="min-h-10 lg:min-h-11 rounded-lg lg:rounded-xl border border-[#1c1c13] bg-[#6366f1] px-3 text-[10px] font-black uppercase text-white shadow-[1px_1px_0_#1c1c13]"
                   >
-                    Edit
+                    {t('edit', 'Edit')}
                   </button>
                   <button
                     type="button"
                     onClick={() => onDelete(splitBill.id)}
                     className="min-h-10 lg:min-h-11 rounded-lg lg:rounded-xl border border-[#1c1c13] bg-white px-3 text-[10px] font-black uppercase shadow-[1px_1px_0_#1c1c13]"
                   >
-                    Delete
+                    {t('delete', 'Delete')}
                   </button>
                 </div>
               </article>
@@ -448,9 +451,9 @@ export function HistorySplitBillScreen({ mainLogo }) {
           <section className="rounded-lg lg:rounded-2xl border border-[#1c1c13] bg-[#6366f1] text-white p-4 lg:p-6 shadow-[2px_2px_0_#1c1c13]">
             <h2 className="text-lg lg:text-xl font-black flex items-center gap-2 uppercase">
               <span className="material-symbols-outlined">group</span>
-              Split Bills
+              {t('splitBills', 'Split Bills')}
             </h2>
-            <p className="text-xs lg:text-sm opacity-90 mt-2 font-medium">Manage shared expenses</p>
+            <p className="text-xs lg:text-sm opacity-90 mt-2 font-medium">{t('manageSharedExpenses', 'Manage shared expenses')}</p>
           </section>
 
           {/* Action Buttons */}
@@ -461,7 +464,7 @@ export function HistorySplitBillScreen({ mainLogo }) {
               className="min-h-11 lg:min-h-12 rounded-lg lg:rounded-xl border border-[#1c1c13] bg-white text-[#1c1c13] px-3 text-xs font-black uppercase shadow-[2px_2px_0_#1c1c13] active:shadow-none active:translate-y-0.5 transition-all flex items-center justify-center gap-2"
             >
               <span className="material-symbols-outlined text-sm">add</span>
-              New Split
+              {t('newSplit', 'New Split')}
             </button>
             <button
               type="button"
@@ -469,7 +472,7 @@ export function HistorySplitBillScreen({ mainLogo }) {
               className="min-h-11 lg:min-h-12 rounded-lg lg:rounded-xl border border-[#1c1c13] bg-white text-[#1c1c13] px-3 text-xs font-black uppercase shadow-[2px_2px_0_#1c1c13] active:shadow-none active:translate-y-0.5 transition-all flex items-center justify-center gap-2"
             >
               <span className="material-symbols-outlined text-sm">history</span>
-              History
+              {t('history', 'History')}
             </button>
           </div>
 
@@ -477,19 +480,19 @@ export function HistorySplitBillScreen({ mainLogo }) {
           <div className="space-y-3">
             {splitBills.length === 0 ? (
               <div className="rounded-lg lg:rounded-xl border border-[#1c1c13] bg-[#f8f4e4] p-4 lg:p-6 shadow-[2px_2px_0_#1c1c13] text-center">
-                <p className="text-xs lg:text-sm font-bold text-[#464554]">No active split bills yet</p>
-                <p className="text-[11px] text-[#464554] mt-1">Create your first split to get started</p>
+                <p className="text-xs lg:text-sm font-bold text-[#464554]">{t('noActiveSplitBills', 'No active split bills yet')}</p>
+                <p className="text-[11px] text-[#464554] mt-1">{t('createFirstSplit', 'Create your first split to get started')}</p>
               </div>
             ) : (
               splitBills.slice(0, 3).map((splitBill) =>
                 splitBill.members.slice(0, 3).map((member, idx) => {
                   const isSettled = member.status === 'PAID'
                   const amountDisplay = toRupiah(member.amount)
-                  const statusLabel = isSettled ? 'Settled' : 'Pending'
+                  const statusLabel = isSettled ? t('settled', 'Settled') : t('pending', 'Pending')
                   const amountColor = isSettled ? 'text-[#464554]' : 'text-[#ba1a1a]'
                   const statusColor = isSettled ? 'text-[#464554]' : 'text-[#ba1a1a]'
                   const bgColor = member.status === 'PAID' ? 'bg-[#f8f4e4] opacity-70' : 'bg-white'
-                  const actionButton = isSettled ? '' : 'Settle'
+                  const actionButton = isSettled ? '' : t('settle', 'Settle')
 
                   return (
                     <div

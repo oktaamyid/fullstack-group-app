@@ -1,5 +1,6 @@
 import { useCallback, useState } from 'react'
 import { createTransaction } from '../../services/transaction'
+import { useI18n } from '../../i18n/useI18n'
 
 const defaultForm = {
   type: 'EXPENSE',
@@ -47,6 +48,7 @@ function toCurrency(value) {
  * @param {function} props.onSuccess - Callback when transaction created successfully
  */
 export function CreateTransactionModal({ onClose, onSuccess }) {
+  const { t } = useI18n()
   const [form, setForm] = useState(defaultForm)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
@@ -74,7 +76,7 @@ export function CreateTransactionModal({ onClose, onSuccess }) {
       try {
         const amount = parseInt(form.amount, 10)
         if (Number.isNaN(amount) || amount <= 0) {
-          setErrorMessage('Please enter a valid amount')
+          setErrorMessage(t('pleaseEnterValidAmount', 'Please enter a valid amount'))
           setIsSubmitting(false)
           return
         }
@@ -89,14 +91,14 @@ export function CreateTransactionModal({ onClose, onSuccess }) {
 
         await createTransaction(payload)
         setForm(defaultForm)
-        setSuccessMessage('Transaction created successfully!')
+        setSuccessMessage(t('transactionCreatedSuccessfully', 'Transaction created successfully!'))
 
         setTimeout(() => {
           onSuccess?.()
           onClose?.()
         }, 1000)
       } catch (error) {
-        setErrorMessage(error.message || 'Failed to create transaction')
+        setErrorMessage(error.message || t('failedToCreateTransaction', 'Failed to create transaction'))
       } finally {
         setIsSubmitting(false)
       }
@@ -110,7 +112,7 @@ export function CreateTransactionModal({ onClose, onSuccess }) {
         <form onSubmit={onSubmit} className="space-y-4">
           {/* Header */}
           <div className="flex items-center justify-between pb-2">
-            <h3 className="text-xl font-black">Add Transaction</h3>
+            <h3 className="text-xl font-black">{t('addTransactionModalTitle', 'Add Transaction')}</h3>
             <button
               type="button"
               onClick={onClose}
@@ -136,7 +138,7 @@ export function CreateTransactionModal({ onClose, onSuccess }) {
 
           {/* Type Selection */}
           <div>
-            <label className="mb-2 block text-sm font-black">Type</label>
+            <label className="mb-2 block text-sm font-black">{t('type', 'Type')}</label>
             <div className="flex gap-2">
               {TRANSACTION_TYPES.map((type) => (
                 <label key={type} className="flex flex-1 items-center gap-2 rounded-2xl border-2 border-[#1c1c13] p-2 cursor-pointer transition-all" style={{backgroundColor: form.type === type ? '#fbbf24' : '#ffffff'}}>
@@ -156,7 +158,7 @@ export function CreateTransactionModal({ onClose, onSuccess }) {
 
           {/* Category Selection */}
           <div>
-            <label htmlFor="category" className="mb-2 block text-sm font-black">Category</label>
+            <label htmlFor="category" className="mb-2 block text-sm font-black">{t('category', 'Category')}</label>
             <select
               id="category"
               name="category"
@@ -174,7 +176,7 @@ export function CreateTransactionModal({ onClose, onSuccess }) {
 
           {/* Amount */}
           <div>
-            <label htmlFor="amount" className="mb-2 block text-sm font-black">Amount (IDR)</label>
+            <label htmlFor="amount" className="mb-2 block text-sm font-black">{t('amount', 'Amount')} (IDR)</label>
             <input
               id="amount"
               type="number"
@@ -190,21 +192,21 @@ export function CreateTransactionModal({ onClose, onSuccess }) {
 
           {/* Description */}
           <div>
-            <label htmlFor="description" className="mb-2 block text-sm font-black">Description (optional)</label>
+            <label htmlFor="description" className="mb-2 block text-sm font-black">{t('descriptionOptional', 'Description (optional)')}</label>
             <input
               id="description"
               type="text"
               name="description"
               value={form.description}
               onChange={onChange}
-              placeholder="What is this transaction about?"
+              placeholder={t('whatTransactionAbout', 'What is this transaction about?')}
               className="w-full rounded-2xl border-2 border-[#1c1c13] bg-white px-3 py-2 font-medium shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] outline-none"
             />
           </div>
 
           {/* Date */}
           <div>
-            <label htmlFor="date" className="mb-2 block text-sm font-black">Date</label>
+            <label htmlFor="date" className="mb-2 block text-sm font-black">{t('date', 'Date')}</label>
             <input
               id="date"
               type="date"
@@ -221,7 +223,7 @@ export function CreateTransactionModal({ onClose, onSuccess }) {
             disabled={isSubmitting || !form.amount}
             className="mt-6 w-full rounded-2xl border-2 border-[#1c1c13] bg-[#6366f1] px-4 py-3 font-black text-white shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] transition-all disabled:opacity-50 active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
           >
-            {isSubmitting ? 'Creating...' : 'Create Transaction'}
+            {isSubmitting ? t('creating', 'Creating...') : t('createTransaction', 'Create Transaction')}
           </button>
 
           {/* Cancel Button */}
@@ -231,7 +233,7 @@ export function CreateTransactionModal({ onClose, onSuccess }) {
             disabled={isSubmitting}
             className="w-full rounded-2xl border-2 border-[#1c1c13] bg-white px-4 py-3 font-black text-[#1c1c13] shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
           >
-            Cancel
+            {t('cancel', 'Cancel')}
           </button>
         </form>
       </div>

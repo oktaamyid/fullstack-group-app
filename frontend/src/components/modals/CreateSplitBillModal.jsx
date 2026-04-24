@@ -1,6 +1,7 @@
 import { useCallback, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createSplitBill } from '../../services/splitBill'
+import { useI18n } from '../../i18n/useI18n'
 
 const defaultForm = {
   title: '',
@@ -34,6 +35,7 @@ function parseFriends(raw) {
  * @param {function} props.onSuccess - Callback when split bill created successfully
  */
 export function CreateSplitBillModal({ onClose, onSuccess }) {
+  const { t } = useI18n()
   const navigate = useNavigate()
   const [form, setForm] = useState(defaultForm)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -53,14 +55,14 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
       try {
         const members = parseFriends(form.friends)
         if (members.length === 0) {
-          setErrorMessage('Please add at least one friend')
+          setErrorMessage(t('pleaseAddAtLeastOneFriend', 'Please add at least one friend'))
           setIsSubmitting(false)
           return
         }
 
         const totalAmount = parseInt(form.totalAmount, 10)
         if (Number.isNaN(totalAmount) || totalAmount <= 0) {
-          setErrorMessage('Please enter a valid amount')
+          setErrorMessage(t('pleaseEnterValidAmount', 'Please enter a valid amount'))
           setIsSubmitting(false)
           return
         }
@@ -69,7 +71,7 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
         const remainder = totalAmount % members.length
 
         const payload = {
-          title: form.title || 'Split Expense',
+          title: form.title || t('splitExpense', 'Split Expense'),
           description: form.description,
           totalAmount,
           members: members.map((member, index) => ({
@@ -83,7 +85,7 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
         onSuccess?.()
         navigate('/split-bill')
       } catch (error) {
-        setErrorMessage(error.message || 'Failed to create split bill')
+        setErrorMessage(error.message || t('failedToCreateSplitBill', 'Failed to create split bill'))
       } finally {
         setIsSubmitting(false)
       }
@@ -95,7 +97,7 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
     <div className="fixed inset-0 z-40 flex items-end bg-black/50">
       <div className="w-full space-y-4 rounded-t-3xl border-t border-l border-r border-[#1c1c13] bg-[#fffbeb] p-6 shadow-[0_-4px_0_#1c1c13]">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-black uppercase">Create Split</h2>
+          <h2 className="text-xl font-black uppercase">{t('createSplit', 'Create Split')}</h2>
           <button
             type="button"
             onClick={onClose}
@@ -113,7 +115,7 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
 
         <form onSubmit={onSubmit} className="space-y-3 max-h-96 overflow-y-auto">
           <label className="block text-[11px] font-bold uppercase">
-            Title
+            {t('title', 'Title')}
             <input
               type="text"
               name="title"
@@ -125,7 +127,7 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
           </label>
 
           <label className="block text-[11px] font-bold uppercase">
-            Description
+            {t('description', 'Description')}
             <input
               type="text"
               name="description"
@@ -137,7 +139,7 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
           </label>
 
           <label className="block text-[11px] font-bold uppercase">
-            Total Amount (IDR)
+            {t('totalAmount', 'Total Amount')} (IDR)
             <input
               type="number"
               name="totalAmount"
@@ -149,7 +151,7 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
           </label>
 
           <label className="block text-[11px] font-bold uppercase">
-            Friends (one per line)
+            {t('friendsOnePerLine', 'Friends (one per line)')}
             <textarea
               name="friends"
               value={form.friends}
@@ -166,14 +168,14 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
               disabled={isSubmitting}
               className="rounded-2xl border border-black bg-[#6366f1] px-3 py-2 text-xs font-black uppercase text-white shadow-[2px_2px_0_#1c1c13] disabled:opacity-60"
             >
-              {isSubmitting ? 'Creating...' : 'Create Split'}
+              {isSubmitting ? t('creating', 'Creating...') : t('createSplit', 'Create Split')}
             </button>
             <button
               type="button"
               onClick={onClose}
               className="rounded-2xl border border-black bg-white px-3 py-2 text-xs font-black uppercase shadow-[2px_2px_0_#1c1c13]"
             >
-              Cancel
+              {t('cancel', 'Cancel')}
             </button>
           </div>
         </form>

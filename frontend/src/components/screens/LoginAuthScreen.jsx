@@ -3,6 +3,7 @@ import { AuthLayout } from '../layouts/AuthLayout'
 import { FormField } from '../ui/FormField'
 import { Button } from '../ui/Button'
 import { Alert } from '../ui/Alert'
+import { useI18n } from '../../i18n/useI18n'
 
 const defaultForm = {
   name: '',
@@ -11,6 +12,8 @@ const defaultForm = {
 }
 
 export function LoginAuthScreen({ onAuthSuccess, mainLogo, mascotImage }) {
+  const { t, language } = useI18n()
+  const tr = (en, id) => (language === 'id-ID' ? id : en)
   const [mode, setMode] = useState('login')
   const [form, setForm] = useState(defaultForm)
   const [errorMessage, setErrorMessage] = useState('')
@@ -19,8 +22,8 @@ export function LoginAuthScreen({ onAuthSuccess, mainLogo, mascotImage }) {
   const isRegister = mode === 'register'
 
   const submitLabel = useMemo(() => {
-    return isRegister ? 'Create Account' : 'Sign In'
-  }, [isRegister])
+    return isRegister ? t('createAccount', 'Create Account') : t('signIn', 'Sign In')
+  }, [isRegister, t])
 
   const onChange = (event) => {
     const { name, value } = event.target
@@ -38,7 +41,7 @@ export function LoginAuthScreen({ onAuthSuccess, mainLogo, mascotImage }) {
     setErrorMessage('')
 
     if (!form.email || !form.password || (isRegister && !form.name)) {
-      setErrorMessage('Please complete all required fields.')
+      setErrorMessage(t('pleaseCompleteRequiredFields', 'Please complete all required fields.'))
       return
     }
 
@@ -59,14 +62,14 @@ export function LoginAuthScreen({ onAuthSuccess, mainLogo, mascotImage }) {
       const data = await response.json()
 
       if (!response.ok || !data?.success) {
-        throw new Error(data?.data?.detail || data?.message || 'Authentication failed.')
+        throw new Error(data?.data?.detail || data?.message || tr('Authentication failed.', 'Autentikasi gagal.'))
       }
 
       const token = data?.data?.token
       const user = data?.data?.user
 
       if (!token || !user) {
-        throw new Error('Invalid auth response from server.')
+        throw new Error(tr('Invalid auth response from server.', 'Respons autentikasi dari server tidak valid.'))
       }
 
       onAuthSuccess({ token, user })
@@ -82,9 +85,9 @@ export function LoginAuthScreen({ onAuthSuccess, mainLogo, mascotImage }) {
       <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
         <section className="hidden rounded-2xl border border-[#1c1c13] bg-[#6366f1] p-6 text-white shadow-[4px_4px_0_#1c1c13] lg:flex lg:flex-col lg:justify-between">
           <div>
-            <p className="rounded-full border border-white/70 bg-white/10 px-3 py-1 text-xs font-black tracking-widest uppercase">Desktop Access</p>
+            <p className="rounded-full border border-white/70 bg-white/10 px-3 py-1 text-xs font-black tracking-widest uppercase">{tr('Desktop Access', 'Akses Desktop')}</p>
             <h2 className="mt-4 text-4xl font-black leading-tight">LIVO Finance Management</h2>
-            <p className="mt-3 text-sm text-white/90">Track spending, split bills, and wishlist goals with one finance workspace.</p>
+            <p className="mt-3 text-sm text-white/90">{tr('Track spending, split bills, and wishlist goals with one finance workspace.', 'Pantau pengeluaran, split bill, dan target wishlist dalam satu workspace finansial.')}</p>
           </div>
           <div className="mt-6 rounded-2xl border border-white/70 bg-white p-4">
             <img src={mainLogo} alt="LIVO Logo" className="h-24 w-auto" />
@@ -99,37 +102,37 @@ export function LoginAuthScreen({ onAuthSuccess, mainLogo, mascotImage }) {
             </div>
           </div>
 
-          <h1 className="m-0 text-2xl font-extrabold">{isRegister ? 'Create Account' : 'Welcome Back'}</h1>
+          <h1 className="m-0 text-2xl font-extrabold">{isRegister ? t('createAccount', 'Create Account') : t('welcomeBack', 'Welcome Back')}</h1>
           <p className="mt-1 text-sm text-[#464554]">
-            {isRegister ? 'Start your budget journey.' : 'Sign in to continue managing your budget.'}
+            {isRegister ? t('startYourBudgetJourney', 'Start your budget journey.') : t('signInToContinue', 'Sign in to continue managing your budget.')}
           </p>
         </div>
 
         <form className="space-y-3" onSubmit={onSubmit}>
           {isRegister ? (
             <FormField
-              label="Full Name"
+              label={t('fullName', 'Full Name')}
               type="text"
               name="name"
               value={form.name}
               onChange={onChange}
-              placeholder="Your name"
+              placeholder={t('yourName', 'Your name')}
               required
             />
           ) : null}
 
           <FormField
-            label="Email Address"
+            label={t('emailAddress', 'Email Address')}
             type="email"
             name="email"
             value={form.email}
             onChange={onChange}
-            placeholder="emailkamu@gmail.com"
+            placeholder={tr('yourmail@gmail.com', 'emailkamu@gmail.com')}
             required
           />
 
           <FormField
-            label="Password"
+            label={t('password', 'Password')}
             type="password"
             name="password"
             value={form.password}
@@ -148,14 +151,14 @@ export function LoginAuthScreen({ onAuthSuccess, mainLogo, mascotImage }) {
             fullWidth
             className="bg-[#6366f1] text-white shadow-[3px_3px_0_#1c1c13]"
           >
-            {isSubmitting ? 'Submitting...' : submitLabel}
+            {isSubmitting ? t('submitting', 'Submitting...') : submitLabel}
           </Button>
         </form>
 
         <div className="mt-4 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#464554]">
-          <span>{isRegister ? 'Already have an account?' : 'Need an account?'}</span>
+          <span>{isRegister ? t('alreadyHaveAccount', 'Already have an account?') : t('needAccount', 'Need an account?')}</span>
           <button type="button" onClick={switchMode} className="rounded-full border border-[#1c1c13] bg-white px-3 py-1 font-bold">
-            {isRegister ? 'Login' : 'Register'}
+            {isRegister ? t('login', 'Login') : t('register', 'Register')}
           </button>
         </div>
         </div>

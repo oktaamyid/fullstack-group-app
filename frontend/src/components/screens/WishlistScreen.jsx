@@ -4,6 +4,7 @@ import { createWishlistItem, deleteWishlistItem, getWishlists, updateWishlistIte
 import { PageLayout } from '../layouts/PageLayout'
 import { PageHeader } from '../headers/PageHeader'
 import { Alert } from '../ui/Alert'
+import { useI18n } from '../../i18n/useI18n'
 
 const defaultForm = {
   item: '',
@@ -94,6 +95,8 @@ function getBuyability(price, balance) {
 }
 
 export function WishlistScreen({ mainLogo }) {
+  const { t, language } = useI18n()
+  const tr = (en, id) => (language === 'id-ID' ? id : en)
   const [wishlistItems, setWishlistItems] = useState([])
   const [form, setForm] = useState(defaultForm)
   const [fieldErrors, setFieldErrors] = useState({})
@@ -174,16 +177,16 @@ export function WishlistScreen({ mainLogo }) {
 
   const hamsterSuggestion = useMemo(() => {
     if (!highestPriorityItem) {
-      return 'Add your first wishlist item so LIVO can suggest your next smart purchase.'
+      return tr('Add your first wishlist item so LIVO can suggest your next smart purchase.', 'Tambahkan wishlist pertamamu agar LIVO bisa memberi saran pembelian berikutnya.')
     }
 
     const needed = Math.max(0, highestPriorityItem.price - currentBalance)
     if (needed === 0) {
-      return `You can buy ${highestPriorityItem.item} now. Great discipline and timing.`
+      return tr(`You can buy ${highestPriorityItem.item} now. Great discipline and timing.`, `Kamu sudah bisa membeli ${highestPriorityItem.item} sekarang. Disiplin yang bagus.`)
     }
 
-    return `Hold for now. You only need ${toRupiah(needed)} more to safely buy ${highestPriorityItem.item}.`
-  }, [currentBalance, highestPriorityItem])
+    return tr(`Hold for now. You only need ${toRupiah(needed)} more to safely buy ${highestPriorityItem.item}.`, `Tahan dulu. Kamu hanya butuh ${toRupiah(needed)} lagi untuk membeli ${highestPriorityItem.item} dengan aman.`)
+  }, [currentBalance, highestPriorityItem, language])
 
   const onChangeForm = (event) => {
     const { name, value } = event.target
@@ -206,15 +209,15 @@ export function WishlistScreen({ mainLogo }) {
     const parsedPriority = Number(form.priorityScore)
 
     if (item.length < 2) {
-      nextErrors.item = 'Item minimal 2 karakter.'
+      nextErrors.item = tr('Item name must be at least 2 characters.', 'Item minimal 2 karakter.')
     }
 
     if (!Number.isInteger(parsedPrice) || parsedPrice <= 0) {
-      nextErrors.price = 'Harga harus berupa angka bulat positif.'
+      nextErrors.price = tr('Price must be a positive integer.', 'Harga harus berupa angka bulat positif.')
     }
 
     if (!Number.isInteger(parsedPriority) || parsedPriority < 1 || parsedPriority > 5) {
-      nextErrors.priorityScore = 'Priority score harus 1-5.'
+      nextErrors.priorityScore = tr('Priority score must be between 1 and 5.', 'Priority score harus 1-5.')
     }
 
     setFieldErrors(nextErrors)
@@ -224,7 +227,7 @@ export function WishlistScreen({ mainLogo }) {
   const onSubmit = async (event) => {
     event.preventDefault()
     if (!validateForm()) {
-      setErrorMessage('Periksa kembali input form.')
+      setErrorMessage(tr('Please review your form input.', 'Periksa kembali input form.'))
       return
     }
 
@@ -249,7 +252,7 @@ export function WishlistScreen({ mainLogo }) {
 
       resetForm()
       await loadWishlist()
-      setSuccessMessage(editingId ? 'Wishlist item berhasil diperbarui.' : 'Wishlist item berhasil ditambahkan.')
+      setSuccessMessage(editingId ? tr('Wishlist item updated successfully.', 'Wishlist item berhasil diperbarui.') : tr('Wishlist item added successfully.', 'Wishlist item berhasil ditambahkan.'))
     } catch (error) {
       setErrorMessage(error.message)
       const incomingFieldErrors = error.fieldErrors || {}
@@ -286,7 +289,7 @@ export function WishlistScreen({ mainLogo }) {
         resetForm()
       }
       await loadWishlist()
-      setSuccessMessage('Wishlist item berhasil dihapus.')
+      setSuccessMessage(tr('Wishlist item deleted successfully.', 'Wishlist item berhasil dihapus.'))
     } catch (error) {
       setErrorMessage(error.message)
     }
@@ -306,7 +309,7 @@ export function WishlistScreen({ mainLogo }) {
         resetForm()
       }
       await loadWishlist()
-      setSuccessMessage(`Pembelian ${entry.item} ditandai selesai.`)
+      setSuccessMessage(tr(`Purchase of ${entry.item} marked as completed.`, `Pembelian ${entry.item} ditandai selesai.`))
     } catch (error) {
       setErrorMessage(error.message)
     }
@@ -317,7 +320,7 @@ export function WishlistScreen({ mainLogo }) {
       header={
         <PageHeader
           mainLogo={mainLogo}
-          title="My Wishlist"
+          title={t('myWishlist', 'My Wishlist')}
           backLink="/home"
         />
       }
@@ -332,7 +335,7 @@ export function WishlistScreen({ mainLogo }) {
               </span>
             </div>
             <div>
-              <p className="mb-1 text-[11px] font-black uppercase tracking-wider text-[#4648d4]">Hamster Suggestion</p>
+              <p className="mb-1 text-[11px] font-black uppercase tracking-wider text-[#4648d4]">{t('hamsterSuggestion', 'Hamster Suggestion')}</p>
               <p className="text-base leading-tight font-bold">{hamsterSuggestion}</p>
               </div>
             </div>
@@ -345,14 +348,14 @@ export function WishlistScreen({ mainLogo }) {
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
               savings
             </span>
-            <p className="mt-2 text-[10px] font-bold uppercase">Total Saved</p>
+            <p className="mt-2 text-[10px] font-bold uppercase">{t('totalSaved', 'Total Saved')}</p>
             <p className="text-xl font-extrabold">{toRupiah(currentBalance)}</p>
           </article>
           <article className="rounded-xl border border-[#1c1c13] bg-[#ffc329] p-4 text-[#1c1c13] shadow-[2px_2px_0_#1c1c13]">
             <span className="material-symbols-outlined" style={{ fontVariationSettings: "'FILL' 1" }}>
               stars
             </span>
-            <p className="mt-2 text-[10px] font-bold uppercase">Next Goal</p>
+            <p className="mt-2 text-[10px] font-bold uppercase">{t('nextGoal', 'Next Goal')}</p>
             <p className="text-xl font-extrabold">{goalProgress}%</p>
           </article>
         </section>
@@ -360,10 +363,10 @@ export function WishlistScreen({ mainLogo }) {
         <section className="overflow-hidden rounded-xl border border-[#1c1c13] bg-[#f8f4e4] shadow-[4px_4px_0_#1c1c13]">
           <div className="flex items-center justify-between border-b border-[#1c1c13] bg-white p-4">
             <h3 className="text-sm font-black uppercase tracking-tight">
-              Active Goal: {highestPriorityItem ? highestPriorityItem.item : 'No item yet'}
+              {t('activeGoal', 'Active Goal')}: {highestPriorityItem ? highestPriorityItem.item : t('noItemYet', 'No item yet')}
             </h3>
             <span className="rounded-full border border-[#1c1c13] bg-[#ffc329] px-2 py-0.5 text-[10px] font-black uppercase">
-              {highestPriorityItem ? `${getPriorityLabel(highestPriorityItem.priorityScore)} Priority` : 'Set Priority'}
+              {highestPriorityItem ? `${getPriorityLabel(highestPriorityItem.priorityScore)} ${t('priority', 'Priority')}` : t('setPriority', 'Set Priority')}
             </span>
           </div>
 
@@ -382,7 +385,7 @@ export function WishlistScreen({ mainLogo }) {
 
             <div className="grid grid-cols-2 gap-2">
               <label className="block text-[10px] font-black uppercase">
-                Balance (Rp)
+                {t('balance', 'Balance')} (Rp)
                 <input
                   type="number"
                   value={currentBalance}
@@ -391,7 +394,7 @@ export function WishlistScreen({ mainLogo }) {
                 />
               </label>
               <label className="block text-[10px] font-black uppercase">
-                Goal (Rp)
+                {t('goal', 'Goal')} (Rp)
                 <input
                   type="number"
                   min="1"
@@ -405,13 +408,13 @@ export function WishlistScreen({ mainLogo }) {
         </section>
 
         <section className="rounded-xl border border-[#1c1c13] bg-white p-4 shadow-[2px_2px_0_#1c1c13]">
-          <h3 className="text-sm font-black uppercase tracking-wide">{editingId ? 'Edit Wishlist Item' : 'Add Wishlist Item'}</h3>
+          <h3 className="text-sm font-black uppercase tracking-wide">{editingId ? t('editWishlistItem', 'Edit Wishlist Item') : t('addWishlistItem', 'Add Wishlist Item')}</h3>
           <form className="mt-3 grid gap-2" onSubmit={onSubmit}>
             <input
               name="item"
               value={form.item}
               onChange={onChangeForm}
-              placeholder="Item name"
+              placeholder={t('itemName', 'Item name')}
               className="min-h-11 rounded-lg border border-[#1c1c13] bg-[#fffbeb] px-3 text-sm font-semibold"
             />
             {fieldErrors.item ? <p className="text-xs font-bold text-[#b91c1c]">{fieldErrors.item}</p> : null}

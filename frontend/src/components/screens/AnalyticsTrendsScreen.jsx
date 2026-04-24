@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { getAnalyticsOverview } from '../../services/analytics'
 import { PageLayout } from '../layouts/PageLayout'
 import { PageHeader } from '../headers/PageHeader'
+import { useI18n } from '../../i18n/useI18n'
 
 function toCurrency(value) {
   return new Intl.NumberFormat('en-US', {
@@ -23,6 +24,8 @@ const CATEGORIES = [
 ]
 
 export function AnalyticsTrendsScreen({ mainLogo }) {
+  const { t, language } = useI18n()
+  const tr = (en, id) => (language === 'id-ID' ? id : en)
   const [loading, setLoading] = useState(true)
   const [errorMessage, setErrorMessage] = useState('')
   const [analytics, setAnalytics] = useState(null)
@@ -86,7 +89,7 @@ export function AnalyticsTrendsScreen({ mainLogo }) {
       header={
         <PageHeader
           mainLogo={mainLogo}
-          title="Analytics & Trends"
+          title={t('analyticsTrends', 'Analytics & Trends')}
           backLink="/home"
         />
       }
@@ -94,7 +97,7 @@ export function AnalyticsTrendsScreen({ mainLogo }) {
     >
 
         {loading ? (
-          <section className="rounded-xl border border-[#1c1c13] bg-white p-4 font-semibold">Loading analytics...</section>
+          <section className="rounded-xl border border-[#1c1c13] bg-white p-4 font-semibold">{t('loadingAnalytics', 'Loading analytics...')}</section>
         ) : null}
 
         {errorMessage ? (
@@ -108,11 +111,11 @@ export function AnalyticsTrendsScreen({ mainLogo }) {
             <section className="overflow-hidden rounded-xl border border-[#1c1c13] bg-[#f8f4e4] shadow-[4px_4px_0_#1c1c13]">
               <div className="flex items-end justify-between border-b border-[#1c1c13] p-4">
                 <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#464554]">Total Spent</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#464554]">{t('totalSpent', 'Total Spent')}</p>
                   <p className="text-3xl font-extrabold text-[#4648d4]">{toCurrency(analytics.totals.totalSpent)}</p>
                 </div>
                 <div className="rounded-full border border-[#1c1c13] bg-[#ffc329] px-3 py-1 text-xs font-bold shadow-[2px_2px_0_#1c1c13]">
-                  Avg/day {toCurrency(analytics.totals.averageDaily)}
+                  {t('avgPerDay', 'Avg/day')} {toCurrency(analytics.totals.averageDaily)}
                 </div>
               </div>
 
@@ -141,8 +144,8 @@ export function AnalyticsTrendsScreen({ mainLogo }) {
                   <span className="material-symbols-outlined">restaurant</span>
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold">Top category: {analytics.topCategory.name}</h3>
-                  <p className="text-xs text-[#464554]">{analytics.topCategory.percent}% of your total budget</p>
+                  <h3 className="text-sm font-bold">{t('topCategory', 'Top category')}: {analytics.topCategory.name}</h3>
+                  <p className="text-xs text-[#464554]">{analytics.topCategory.percent}% {t('ofTotalBudget', 'of your total budget')}</p>
                 </div>
               </article>
 
@@ -150,7 +153,7 @@ export function AnalyticsTrendsScreen({ mainLogo }) {
                 <span className="material-symbols-outlined text-[#4648d4]">savings</span>
                 <div>
                   <p className="text-xl font-extrabold">{toCurrency(analytics.savingsGoal.target)}</p>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#4648d4]">Savings Goal</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#4648d4]">{t('savingsGoal', 'Savings Goal')}</p>
                 </div>
                 <div className="h-2 w-full overflow-hidden rounded-full border border-[#1c1c13] bg-white">
                   <div className="h-full border-r border-[#1c1c13] bg-[#bbf7d0]" style={{ width: `${analytics.savingsGoal.progress}%` }} />
@@ -161,15 +164,15 @@ export function AnalyticsTrendsScreen({ mainLogo }) {
                 <span className="material-symbols-outlined">trending_up</span>
                 <div>
                   <p className="text-xl font-extrabold">{toCurrency(analytics.totals.weeklyTotal)}</p>
-                  <p className="text-[10px] font-bold uppercase tracking-widest">Weekly Spend</p>
+                  <p className="text-[10px] font-bold uppercase tracking-widest">{t('weeklySpend', 'Weekly Spend')}</p>
                 </div>
-                <p className="text-[10px] leading-tight font-semibold">Track your split bill trends and keep your budget under control.</p>
+                <p className="text-[10px] leading-tight font-semibold">{tr('Track your split bill trends and keep your budget under control.', 'Pantau tren split bill dan jaga budget tetap terkontrol.')}</p>
               </article>
             </section>
 
             <section className="space-y-3 pb-5">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold">Recent Reports</h3>
+                <h3 className="text-lg font-bold">{t('recentReports', 'Recent Reports')}</h3>
               </div>
 
               <div className="flex flex-wrap gap-2 pb-3">
@@ -183,14 +186,14 @@ export function AnalyticsTrendsScreen({ mainLogo }) {
                         : 'bg-white text-[#1c1c13] hover:bg-[#fffbeb]'
                     }`}
                   >
-                    {category}
+                    {category === 'All' ? t('all', 'All') : category}
                   </button>
                 ))}
               </div>
 
               {filteredReports.length === 0 ? (
                 <article className="rounded-lg border border-[#1c1c13] bg-white p-3 text-sm font-semibold">
-                  {selectedCategory === 'All' ? 'No reports yet. Add split bills to see analytics.' : `No reports in ${selectedCategory} category.`}
+                  {selectedCategory === 'All' ? t('noReportsYet', 'No reports yet. Add split bills to see analytics.') : `${t('noReportsInCategory', 'No reports in')} ${selectedCategory} ${t('category', 'category')}.`}
                 </article>
               ) : (
                 filteredReports.map((report) => (

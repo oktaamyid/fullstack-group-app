@@ -5,8 +5,11 @@ import {
   getTransactions,
   updateTransaction,
 } from '../../services/transaction'
+import { getAuthUser } from '../../services/auth'
+import { getCategoryIcon, getLocalSettings } from '../../services/profileSettings'
 import { PageLayout } from '../layouts/PageLayout'
 import { PageHeader } from '../headers/PageHeader'
+import { useI18n } from '../../i18n/useI18n'
 
 const defaultForm = {
   type: 'EXPENSE',
@@ -18,36 +21,19 @@ const defaultForm = {
 
 const TRANSACTION_TYPES = ['EXPENSE', 'INCOME']
 
-const CATEGORIES = {
-  EXPENSE: ['FOOD', 'TRANSPORT', 'EDUCATION', 'ENTERTAINMENT', 'UTILITIES', 'OTHER'],
-  INCOME: ['SALARY', 'ALLOWANCE', 'FREELANCE', 'INVESTMENT', 'GIFT', 'OTHER'],
-}
+function formatCurrencyByPreference(value, language, currency) {
+  const maximumFractionDigits = currency === 'IDR' ? 0 : 2
 
-const CATEGORY_LABELS = {
-  FOOD: '🍕 Food',
-  TRANSPORT: '🚗 Transport',
-  EDUCATION: '📚 Education',
-  ENTERTAINMENT: '🎬 Entertainment',
-  UTILITIES: '💡 Utilities',
-  SALARY: '💼 Salary',
-  ALLOWANCE: '💳 Allowance',
-  FREELANCE: '💻 Freelance',
-  INVESTMENT: '📈 Investment',
-  GIFT: '🎁 Gift',
-  OTHER: '📌 Other',
-}
-
-function toCurrency(value) {
-  return new Intl.NumberFormat('id-ID', {
+  return new Intl.NumberFormat(language || 'id-ID', {
     style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 0,
+    currency: currency || 'IDR',
+    maximumFractionDigits,
   }).format(value || 0)
 }
 
-function formatDate(dateString) {
+function formatDateByLanguage(dateString, language) {
   const date = new Date(dateString)
-  return date.toLocaleDateString('id-ID', {
+  return date.toLocaleDateString(language || 'id-ID', {
     weekday: 'short',
     year: 'numeric',
     month: 'short',
@@ -55,7 +41,19 @@ function formatDate(dateString) {
   })
 }
 
+function prettifyCategory(category = '') {
+  return category
+    .toLowerCase()
+    .split('_')
+    .map((part) => (part ? `${part[0].toUpperCase()}${part.slice(1)}` : ''))
+    .join(' ')
+}
+
 export function TransactionScreen({ mainLogo }) {
+  const { t, language } = useI18n()
+  const tr = (en, id) => (language === 'id-ID' ? id : en)
+  const authUser = getAuthUser()
+  const userId = authUser?.id || 'guest'
   const [activeTab, setActiveTab] = useState('list')
   const [form, setForm] = useState(defaultForm)
   const [transactions, setTransactions] = useState([])
@@ -64,6 +62,12 @@ export function TransactionScreen({ mainLogo }) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
   const [filterType, setFilterType] = useState('ALL')
+  const settings = getLocalSettings(userId)
+
+  const categoriesByType = settings.categories || {
+    EXPENSE: ['FOOD', 'TRANSPORT', 'EDUCATION', 'ENTERTAINMENT', 'UTILITIES', 'OTHER'],
+    INCOME: ['SALARY', 'ALLOWANCE', 'FREELANCE', 'INVESTMENT', 'GIFT', 'OTHER'],
+  }
 
   const refreshTransactions = useCallback(async () => {
     setIsLoading(true)
@@ -118,7 +122,7 @@ export function TransactionScreen({ mainLogo }) {
     const amount = Number(form.amount)
 
     if (!form.description.trim() || !Number.isFinite(amount) || amount <= 0 || !form.date) {
-      setErrorMessage('Lengkapi deskripsi, jumlah, tanggal, dan tipe transaksi.')
+      setErrorMessage(tr('Complete description, amount, date, and transaction type.', 'Lengkapi deskripsi, jumlah, tanggal, dan tipe transaksi.'))
       return
     }
 
@@ -176,14 +180,14 @@ export function TransactionScreen({ mainLogo }) {
     }
   }
 
-  const availableCategories = CATEGORIES[form.type] || []
+  const availableCategories = categoriesByType[form.type] || []
 
   return (
     <PageLayout
       header={
         <PageHeader
           mainLogo={mainLogo}
-          title="Transactions"
+          title={t('transactions', 'Transactions')}
           backLink="/home"
         />
       }
@@ -195,17 +199,17 @@ export function TransactionScreen({ mainLogo }) {
           {/* Summary Cards */}
           <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-4">
             <article className="rounded-xl lg:rounded-2xl border border-[#1c1c13] bg-[#f8f4e4] p-4 lg:p-6 shadow-[2px_2px_0_#1c1c13]">
-              <p className="text-[10px] lg:text-xs font-bold uppercase text-[#464554]">Income</p>
-              <p className="text-lg lg:text-3xl font-black text-[#22c55e] mt-2">{toCurrency(summary.income)}</p>
+              <p className="text-[10px] lg:text-xs font-bold uppercase text-[#464554]">{t('income', 'Income')}</p>
+              <p className="text-lg lg:text-3xl font-black text-[#22c55e] mt-2">{formatCurrencyByPreference(summary.income, settings.language, settings.currency)}</p>
             </article>
             <article className="rounded-xl lg:rounded-2xl border border-[#1c1c13] bg-[#f8f4e4] p-4 lg:p-6 shadow-[2px_2px_0_#1c1c13]">
-              <p className="text-[10px] lg:text-xs font-bold uppercase text-[#464554]">Expense</p>
-              <p className="text-lg lg:text-3xl font-black text-[#ba1a1a] mt-2">{toCurrency(summary.expense)}</p>
+              <p className="text-[10px] lg:text-xs font-bold uppercase text-[#464554]">{t('expense', 'Expense')}</p>
+              <p className="text-lg lg:text-3xl font-black text-[#ba1a1a] mt-2">{formatCurrencyByPreference(summary.expense, settings.language, settings.currency)}</p>
             </article>
             <article className="hidden lg:block rounded-2xl border border-[#1c1c13] bg-[#fff9dc] p-6 shadow-[2px_2px_0_#1c1c13]">
-              <p className="text-xs font-bold uppercase text-[#464554]">Net Balance</p>
+              <p className="text-xs font-bold uppercase text-[#464554]">{t('netBalance', 'Net Balance')}</p>
               <p className={`text-3xl font-black mt-2 ${summary.net >= 0 ? 'text-[#22c55e]' : 'text-[#ba1a1a]'}`}>
-                {toCurrency(summary.net)}
+                {formatCurrencyByPreference(summary.net, settings.language, settings.currency)}
               </p>
             </article>
           </div>
@@ -222,7 +226,7 @@ export function TransactionScreen({ mainLogo }) {
                     : 'border-transparent bg-transparent text-[#1c1c13] hover:border-[#1c1c13]'
                 }`}
               >
-                All
+                {t('all', 'All')}
               </button>
               <button
                 type="button"
@@ -233,7 +237,7 @@ export function TransactionScreen({ mainLogo }) {
                     : 'border-transparent bg-transparent text-[#1c1c13] hover:border-[#1c1c13]'
                 }`}
               >
-                Income
+                {t('income', 'Income')}
               </button>
               <button
                 type="button"
@@ -244,7 +248,7 @@ export function TransactionScreen({ mainLogo }) {
                     : 'border-transparent bg-transparent text-[#1c1c13] hover:border-[#1c1c13]'
                 }`}
               >
-                Expense
+                {t('expense', 'Expense')}
               </button>
             </div>
           </section>
@@ -257,15 +261,15 @@ export function TransactionScreen({ mainLogo }) {
 
           {/* Transaction List */}
           <section className="rounded-lg lg:rounded-xl border border-[#1c1c13] bg-white p-4 lg:p-6 shadow-[2px_2px_0_#1c1c13]">
-            <h2 className="text-lg lg:text-xl font-black uppercase mb-4">Transactions</h2>
+            <h2 className="text-lg lg:text-xl font-black uppercase mb-4">{t('transactions', 'Transactions')}</h2>
 
             {isLoading ? (
-              <p className="text-sm font-semibold">Memuat transaksi...</p>
+              <p className="text-sm font-semibold">{tr('Loading transactions...', 'Memuat transaksi...')}</p>
             ) : null}
 
             {!isLoading && filteredTransactions.length === 0 ? (
               <p className="rounded-lg lg:rounded-xl border border-[#1c1c13] bg-[#fffbeb] px-4 py-3 text-sm font-semibold">
-                Belum ada transaksi. Buat dari tab Tambah Transaksi.
+                {tr('No transactions yet. Create one from Add tab.', 'Belum ada transaksi. Buat dari tab Tambah.')}
               </p>
             ) : null}
 
@@ -277,7 +281,8 @@ export function TransactionScreen({ mainLogo }) {
                 >
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-lg">{CATEGORY_LABELS[transaction.category] || transaction.category}</span>
+                      <span className="text-lg">{getCategoryIcon(settings, transaction.category)}</span>
+                      <span className="text-lg">{prettifyCategory(transaction.category)}</span>
                       <span
                         className={`text-xs font-black px-2 py-1 rounded-full border border-[#1c1c13] ${
                           transaction.type === 'INCOME'
@@ -289,7 +294,7 @@ export function TransactionScreen({ mainLogo }) {
                       </span>
                     </div>
                     <p className="text-sm font-semibold">{transaction.description}</p>
-                    <p className="text-xs text-[#464554] font-bold uppercase">{formatDate(transaction.date)}</p>
+                    <p className="text-xs text-[#464554] font-bold uppercase">{formatDateByLanguage(transaction.date, settings.language)}</p>
                   </div>
 
                   <div className="text-right">
@@ -299,7 +304,7 @@ export function TransactionScreen({ mainLogo }) {
                       }`}
                     >
                       {transaction.type === 'INCOME' ? '+' : '-'}
-                      {toCurrency(transaction.amount)}
+                      {formatCurrencyByPreference(transaction.amount, settings.language, settings.currency)}
                     </p>
                     <div className="flex gap-2 mt-2">
                       <button
@@ -307,14 +312,14 @@ export function TransactionScreen({ mainLogo }) {
                         onClick={() => onEdit(transaction)}
                         className="text-xs font-black uppercase px-2 py-1 rounded-lg border border-[#1c1c13] bg-[#e1e0ff] hover:bg-[#6366f1] hover:text-white transition-colors"
                       >
-                        Edit
+                        {t('edit', 'Edit')}
                       </button>
                       <button
                         type="button"
                         onClick={() => onDelete(transaction.id)}
                         className="text-xs font-black uppercase px-2 py-1 rounded-lg border border-[#1c1c13] bg-[#fee2e2] hover:bg-[#ba1a1a] hover:text-white transition-colors"
                       >
-                        Delete
+                        {t('delete', 'Delete')}
                       </button>
                     </div>
                   </div>
@@ -338,7 +343,7 @@ export function TransactionScreen({ mainLogo }) {
                     : 'border-transparent bg-transparent text-[#1c1c13] hover:border-[#1c1c13]'
                 }`}
               >
-                Daftar
+                {t('list', 'Daftar')}
               </button>
               <button
                 type="button"
@@ -349,7 +354,7 @@ export function TransactionScreen({ mainLogo }) {
                     : 'border-transparent bg-transparent text-[#1c1c13] hover:border-[#1c1c13]'
                 }`}
               >
-                Tambah
+                {t('add', 'Tambah')}
               </button>
             </div>
           </section>
@@ -357,12 +362,12 @@ export function TransactionScreen({ mainLogo }) {
           {activeTab === 'create' ? (
             <section className="rounded-xl lg:rounded-2xl border border-[#1c1c13] bg-white p-4 lg:p-6 shadow-[2px_2px_0_#1c1c13]">
               <h2 className="text-sm font-black uppercase">
-                {editingId ? 'Edit Transaksi' : 'Transaksi Baru'}
+                {editingId ? tr('Edit Transaction', 'Edit Transaksi') : tr('New Transaction', 'Transaksi Baru')}
               </h2>
 
               <form className="mt-4 space-y-3" onSubmit={onSubmit}>
                 <label className="block text-[11px] font-bold uppercase">
-                  Tipe Transaksi
+                  {t('type', 'Type')}
                   <select
                     name="type"
                     value={form.type}
@@ -370,21 +375,21 @@ export function TransactionScreen({ mainLogo }) {
                       setForm((prev) => ({
                         ...prev,
                         type: e.target.value,
-                        category: CATEGORIES[e.target.value][0],
+                        category: categoriesByType[e.target.value]?.[0] || 'OTHER',
                       }))
                     }}
                     className="mt-1 min-h-11 w-full rounded-xl lg:rounded-2xl border border-[#1c1c13] bg-[#fffbeb] px-3 text-sm"
                   >
                     {TRANSACTION_TYPES.map((type) => (
                       <option key={type} value={type}>
-                        {type}
+                        {type === 'INCOME' ? t('income', 'Income') : t('expense', 'Expense')}
                       </option>
                     ))}
                   </select>
                 </label>
 
                 <label className="block text-[11px] font-bold uppercase">
-                  Kategori
+                  {t('category', 'Category')}
                   <select
                     name="category"
                     value={form.category}
@@ -393,38 +398,38 @@ export function TransactionScreen({ mainLogo }) {
                   >
                     {availableCategories.map((cat) => (
                       <option key={cat} value={cat}>
-                        {CATEGORY_LABELS[cat] || cat}
+                        {`${getCategoryIcon(settings, cat)} ${prettifyCategory(cat)}`}
                       </option>
                     ))}
                   </select>
                 </label>
 
                 <label className="block text-[11px] font-bold uppercase">
-                  Jumlah (Rp)
+                  {t('amount', 'Amount')} ({settings.currency})
                   <input
                     name="amount"
                     type="number"
                     min="1"
                     value={form.amount}
                     onChange={onChange}
-                    placeholder="50000"
+                    placeholder={tr('50000', '50000')}
                     className="mt-1 min-h-11 w-full rounded-xl lg:rounded-2xl border border-[#1c1c13] bg-[#fffbeb] px-3 text-sm"
                   />
                 </label>
 
                 <label className="block text-[11px] font-bold uppercase">
-                  Deskripsi
+                  {t('description', 'Description')}
                   <input
                     name="description"
                     value={form.description}
                     onChange={onChange}
-                    placeholder="Gaji bulanan"
+                    placeholder={tr('Monthly salary', 'Gaji bulanan')}
                     className="mt-1 min-h-11 w-full rounded-xl lg:rounded-2xl border border-[#1c1c13] bg-[#fffbeb] px-3 text-sm"
                   />
                 </label>
 
                 <label className="block text-[11px] font-bold uppercase">
-                  Tanggal
+                  {t('date', 'Date')}
                   <input
                     name="date"
                     type="date"
@@ -440,14 +445,14 @@ export function TransactionScreen({ mainLogo }) {
                     disabled={isSubmitting}
                     className="min-h-11 rounded-xl lg:rounded-2xl border border-[#1c1c13] bg-[#6366f1] px-3 text-xs font-black uppercase text-white shadow-[2px_2px_0_#1c1c13] disabled:opacity-50"
                   >
-                    {isSubmitting ? 'Menyimpan...' : editingId ? 'Update' : 'Simpan'}
+                    {isSubmitting ? t('saving', 'Saving...') : editingId ? t('update', 'Update') : t('save', 'Save')}
                   </button>
                   <button
                     type="button"
                     onClick={resetForm}
                     className="min-h-11 rounded-xl lg:rounded-2xl border border-[#1c1c13] bg-white px-3 text-xs font-black uppercase shadow-[1px_1px_0_#1c1c13] hover:bg-[#f8f4e4]"
                   >
-                    Reset
+                    {t('reset', 'Reset')}
                   </button>
                 </div>
               </form>
