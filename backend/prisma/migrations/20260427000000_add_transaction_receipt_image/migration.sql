@@ -1,0 +1,3 @@
+ALTER TABLE "Transaction"
+ADD COLUMN IF NOT EXISTS "receiptImage" TEXT,
+ADD COLUMN IF NOT EXISTS "receiptImageName" TEXT;
