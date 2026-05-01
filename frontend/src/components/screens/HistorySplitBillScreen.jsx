@@ -182,6 +182,7 @@ export function HistorySplitBillScreen({ mainLogo }) {
     }
   }
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const weeklyTrend = analytics?.weeklyTrend || []
   const maxTrendAmount = useMemo(() => {
     return weeklyTrend.reduce((max, point) => Math.max(max, point.amount), 1)

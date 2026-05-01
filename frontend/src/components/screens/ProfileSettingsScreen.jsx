@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { clearAuthSession, getAuthToken, getAuthUser, saveAuthSession } from '../../services/auth'
@@ -67,7 +68,7 @@ function ToggleSetting({ label, description, checked, onChange }) {
 
 export function ProfileSettingsScreen({ mainLogo }) {
   const { t, language } = useI18n()
-  const tr = (en, id) => (language === 'id-ID' ? id : en)
+  const tr = useCallback((en, id) => (language === 'id-ID' ? id : en))
   const navigate = useNavigate()
   const authUser = getAuthUser()
   const [isLoading, setIsLoading] = useState(true)
@@ -146,7 +147,7 @@ export function ProfileSettingsScreen({ mainLogo }) {
         setIsProfileSubmitting(false)
       }
     },
-    [profileForm.email, profileForm.name]
+    [profileForm.email, profileForm.name, tr]
   )
 
   const onSavePassword = useCallback(async (event) => {
@@ -173,7 +174,7 @@ export function ProfileSettingsScreen({ mainLogo }) {
     } finally {
       setIsPasswordSubmitting(false)
     }
-  }, [passwordForm.confirmPassword, passwordForm.currentPassword, passwordForm.newPassword])
+  }, [passwordForm.confirmPassword, passwordForm.currentPassword, passwordForm.newPassword, tr])
 
   const onToggleSetting = useCallback(
     (field) => {
@@ -210,7 +211,7 @@ export function ProfileSettingsScreen({ mainLogo }) {
       setMessage(tr('Configuration updated.', 'Konfigurasi berhasil diperbarui.'))
       setErrorMessage('')
     },
-    [authUser?.id]
+    [authUser.id, tr]
   )
 
   const onAddCategory = useCallback(
@@ -232,7 +233,7 @@ export function ProfileSettingsScreen({ mainLogo }) {
         setErrorMessage(error.message)
       }
     },
-    [authUser?.id, categoryForm.icon, categoryForm.label, categoryForm.type]
+    [authUser.id, categoryForm.icon, categoryForm.label, categoryForm.type, tr]
   )
 
   const onRemoveCategory = useCallback(
@@ -252,7 +253,7 @@ export function ProfileSettingsScreen({ mainLogo }) {
         setErrorMessage(error.message)
       }
     },
-    [authUser?.id]
+    [authUser.id, tr]
   )
 
   return (
@@ -267,7 +268,7 @@ export function ProfileSettingsScreen({ mainLogo }) {
       className="space-y-5 py-5 lg:grid lg:grid-cols-12 lg:gap-6 lg:space-y-0"
     >
         <section className="rounded-xl border border-[#1c1c13] bg-white p-4 shadow-[3px_3px_0_#1c1c13] lg:col-span-12">
-          <p className="text-[11px] font-black uppercase text-[#4648d4]">Account Snapshot</p>
+          <p className="text-[11px] font-black uppercase text-[#4648d4]">Your Account</p>
           <h2 className="mt-1 text-lg font-extrabold">{authUser?.name || 'Student'}</h2>
           <p className="text-sm text-[#464554]">{authUser?.email || '-'}</p>
         </section>
