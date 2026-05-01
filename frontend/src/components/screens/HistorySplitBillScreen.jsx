@@ -194,9 +194,10 @@ export function HistorySplitBillScreen({ mainLogo }) {
           mainLogo={mainLogo}
           title={t('historySplitBill', 'History & Split Bill')}
           backLink="/home"
+          className=''
         />
       }
-      className="space-y-6 py-6 lg:space-y-0 lg:p-8"
+      className="space-y-6 py-6 lg:space-y-0 lg:p-8 "
     >
       <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
         {/* Left Column: History (spans 2 columns on lg) */}

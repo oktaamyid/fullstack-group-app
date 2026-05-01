@@ -52,12 +52,12 @@ export function PageLayout({ children, header, className = '' }) {
           })}
         </nav>
 
-        <button
+        {/* <button
           type="button"
           className="mt-auto w-full rounded-2xl border border-[#1c1c13] bg-[#ffc329] px-4 py-3 text-sm font-black shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] transition-transform active:translate-x-px active:translate-y-px"
         >
           Upgrade Plan
-        </button>
+        </button> */}
       </aside>
 
       {/* Header */}
