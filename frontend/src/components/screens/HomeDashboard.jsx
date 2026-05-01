@@ -135,12 +135,6 @@ export function HomeDashboard({
                       {tr("Good to see you", "Senang melihatmu")}
                       {userName ? `, ${userName}` : ""}
                     </h1>
-                    <p className="mt-1 max-w-xl text-sm font-medium text-[#464554]">
-                      {tr(
-                        "Track your spending, split bills, and keep your finance state visible in one place.",
-                        "Pantau pengeluaran, bagi tagihan, dan lihat kondisi keuanganmu dalam satu tempat.",
-                      )}
-                    </p>
                   </div>
                 </div>
 
@@ -208,15 +202,6 @@ export function HomeDashboard({
                   />
                 </div>
 
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <StatusPill ok={apiStatus.ok} label={t("backend", "Backend")} />
-                  <StatusPill ok={dbStatus.ok} label={t("database", "Database")} />
-                  <span
-                    className={`rounded-full border border-[#1c1c13] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${isOffline ? "bg-[#ffdad6] text-[#93000a]" : "bg-[#e1e0ff] text-[#2f2ebe]"}`}
-                  >
-                    {isOffline ? t("offlineMode", "Offline Mode") : t("liveSync", "Live Sync")}
-                  </span>
-                </div>
               </div>
             </div>
           </section>
@@ -362,20 +347,7 @@ export function HomeDashboard({
               </button>
             </div>
 
-            <div className="mt-4 rounded-2xl border border-[#1c1c13] bg-white p-4 shadow-[2px_2px_0px_0px_rgba(28,28,19,1)]">
-              <p className="text-xs font-bold uppercase text-[#464554]">
-                {t("connectionSnapshot", "Connection Snapshot")}
-              </p>
-              <p className="mt-2 text-sm font-semibold">
-                {t("backend", "Backend")}: {apiStatus.title}
-              </p>
-              <p className="text-sm font-semibold">
-                {t("database", "Database")}: {dbStatus.title}
-              </p>
-              <p className="mt-1 text-xs text-[#464554]">
-                {t("lastChecked", "Last checked")}: {lastChecked}
-              </p>
-            </div>
+            
           </section>
         </div>
       </PageLayout>

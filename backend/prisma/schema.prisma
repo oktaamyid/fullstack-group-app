@@ -31,6 +31,7 @@ model Transaction {
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
   user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  splitBills SplitBill[]
 
   @@index([userId, createdAt])
   @@index([userId, type])
@@ -50,18 +51,23 @@ model Wishlist {
 }
 
 model SplitBill {
-  id          Int               @id @default(autoincrement())
-  userId      Int
-  title       String
-  description String?
-  totalAmount Int
-  status      SplitBillStatus   @default(UNPAID)
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-  user        User              @relation(fields: [userId], references: [id], onDelete: Cascade)
-  members     SplitBillMember[]
+  id              Int                      @id @default(autoincrement())
+  userId          Int
+  title           String
+  description     String?
+  totalAmount     Int
+  divisionMethod  SplitBillDivisionMethod  @default(CUSTOM)
+  status          SplitBillStatus          @default(UNPAID)
+  transactionId   Int?
+  createdAt       DateTime                 @default(now())
+  updatedAt       DateTime                 @updatedAt
+  user            User                     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  members         SplitBillMember[]
+  items           SplitBillItem[]
+  transaction     Transaction?             @relation(fields: [transactionId], references: [id], onDelete: SetNull)
 
   @@index([userId, createdAt])
+  @@index([transactionId])
 }
 
 model SplitBillMember {
@@ -74,8 +80,34 @@ model SplitBillMember {
   createdAt   DateTime              @default(now())
   updatedAt   DateTime              @updatedAt
   splitBill   SplitBill             @relation(fields: [splitBillId], references: [id], onDelete: Cascade)
+  itemAssignments SplitBillItemAssignment[]
 
   @@index([splitBillId, status])
+}
+
+model SplitBillItem {
+  id          Int       @id @default(autoincrement())
+  splitBillId Int
+  itemName    String
+  price       Int
+  quantity    Int       @default(1)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  splitBill   SplitBill @relation(fields: [splitBillId], references: [id], onDelete: Cascade)
+  assignedTo  SplitBillItemAssignment[]
+
+  @@index([splitBillId])
+}
+
+model SplitBillItemAssignment {
+  id       Int              @id @default(autoincrement())
+  itemId   Int
+  memberId Int
+  item     SplitBillItem    @relation(fields: [itemId], references: [id], onDelete: Cascade)
+  member   SplitBillMember  @relation(fields: [memberId], references: [id], onDelete: Cascade)
+
+  @@unique([itemId, memberId])
+  @@index([memberId])
 }
 
 enum SplitBillStatus {
@@ -89,8 +121,14 @@ enum SplitBillMemberStatus {
   PAID
 }
 
+enum SplitBillDivisionMethod {
+  EQUAL
+  CUSTOM
+}
+
 enum TransactionType {
   INCOME
   EXPENSE
+  SHARED_EXPENSE
 }
 
