@@ -201,7 +201,6 @@ export function HomeDashboard({
                     style={{ width: `${progress}%` }}
                   />
                 </div>
-
               </div>
             </div>
           </section>
@@ -241,7 +240,9 @@ export function HomeDashboard({
 
             <div className="flex flex-col justify-between rounded-2xl border border-[#1c1c13] bg-[#ffc329] p-4 shadow-[4px_4px_0px_0px_rgba(28,28,19,1)]">
               <div className="flex items-start justify-between gap-2">
-                <span className="material-symbols-outlined font-bold">trending_up</span>
+                <span className="material-symbols-outlined font-bold">
+                  trending_up
+                </span>
                 <span className="rounded border border-[#1c1c13] bg-white/40 px-2 py-0.5 text-[10px] font-black">
                   {progress}%
                 </span>
@@ -276,8 +277,12 @@ export function HomeDashboard({
                 filteredTransactions.slice(0, 4).map((entry) => {
                   const isIncome = entry.type === "INCOME";
                   const amountLabel = toRupiah(entry.amount);
-                  const title = entry.note || entry.description || tr("Transaction", "Transaksi");
-                  const categoryLabel = entry.category || tr("Uncategorized", "Tanpa kategori");
+                  const title =
+                    entry.note ||
+                    entry.description ||
+                    tr("Transaction", "Transaksi");
+                  const categoryLabel =
+                    entry.category || tr("Uncategorized", "Tanpa kategori");
 
                   return (
                     <article
@@ -296,10 +301,13 @@ export function HomeDashboard({
                           </span>
                         </div>
                         <p className="mt-1 text-xs font-semibold text-[#464554]">
-                          {categoryLabel} · {formatDate(entry.createdAt, language)}
+                          {categoryLabel} ·{" "}
+                          {formatDate(entry.createdAt, language)}
                         </p>
                       </div>
-                      <div className={`shrink-0 text-right text-sm font-black ${isIncome ? "text-[#14532d]" : "text-[#7f1d1d]"}`}>
+                      <div
+                        className={`shrink-0 text-right text-sm font-black ${isIncome ? "text-[#14532d]" : "text-[#7f1d1d]"}`}
+                      >
                         {isIncome ? "+" : "-"}
                         {amountLabel}
                       </div>
@@ -310,8 +318,14 @@ export function HomeDashboard({
                 <div className="rounded-2xl border border-[#1c1c13] bg-white p-4 shadow-[2px_2px_0px_0px_rgba(28,28,19,1)]">
                   <p className="text-sm font-semibold text-[#464554]">
                     {searchQuery
-                      ? tr("No matching transactions found.", "Tidak ada transaksi yang cocok.")
-                      : tr("No recent transactions yet.", "Belum ada transaksi terbaru.")}
+                      ? tr(
+                          "No matching transactions found.",
+                          "Tidak ada transaksi yang cocok.",
+                        )
+                      : tr(
+                          "No recent transactions yet.",
+                          "Belum ada transaksi terbaru.",
+                        )}
                   </p>
                 </div>
               )}
@@ -326,7 +340,10 @@ export function HomeDashboard({
                     {t("financialMilestone", "Financial Milestone")}
                   </h3>
                   <p className="max-w-sm text-xs opacity-80">
-                    {tr("Current net balance is", "Saldo bersih saat ini")} {toRupiah(transactionSummary.netBalance)} {tr("with total income", "dengan total pemasukan")} {toRupiah(transactionSummary.totalIncome)}.
+                    {tr("Current net balance is", "Saldo bersih saat ini")}{" "}
+                    {toRupiah(transactionSummary.netBalance)}{" "}
+                    {tr("with total income", "dengan total pemasukan")}{" "}
+                    {toRupiah(transactionSummary.totalIncome)}.
                   </p>
                 </div>
                 <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white bg-[#ffc329]">
@@ -346,8 +363,6 @@ export function HomeDashboard({
                 {t("viewProgress", "View Progress")}
               </button>
             </div>
-
-            
           </section>
         </div>
       </PageLayout>

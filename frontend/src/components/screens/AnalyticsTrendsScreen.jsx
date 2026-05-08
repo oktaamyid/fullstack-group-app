@@ -1,225 +1,333 @@
-import { useEffect, useMemo, useState } from 'react'
-import { getAnalyticsOverview } from '../../services/analytics'
-import { PageLayout } from '../layouts/PageLayout'
-import { PageHeader } from '../headers/PageHeader'
-import { useI18n } from '../../i18n/useI18n'
+import { useEffect, useMemo, useState } from "react";
+import { getAnalyticsOverview } from "../../services/analytics";
+import { PageLayout } from "../layouts/PageLayout";
+import { PageHeader } from "../headers/PageHeader";
+import { useI18n } from "../../i18n/useI18n";
 
 function toCurrency(value) {
-  return new Intl.NumberFormat('en-US', {
-    style: 'currency',
-    currency: 'USD',
-    maximumFractionDigits: 2,
-  }).format((value || 0) / 100)
+  return new Intl.NumberFormat("id-ID", {
+    style: "currency",
+    currency: "IDR",
+    maximumFractionDigits: 0,
+  }).format(value || 0);
 }
 
 const CATEGORIES = [
-  'All',
-  'Food & Drinks',
-  'Transport',
-  'Academic',
-  'Living',
-  'Entertainment',
-  'Shopping',
-  'Other',
-]
+  "All",
+  "Food & Drinks",
+  "Transport",
+  "Academic",
+  "Living",
+  "Entertainment",
+  "Shopping",
+  "Other",
+];
 
 export function AnalyticsTrendsScreen({ mainLogo }) {
-  const { t, language } = useI18n()
-  const tr = (en, id) => (language === 'id-ID' ? id : en)
-  const [loading, setLoading] = useState(true)
-  const [errorMessage, setErrorMessage] = useState('')
-  const [analytics, setAnalytics] = useState(null)
-  const [selectedCategory, setSelectedCategory] = useState('All')
+  const { t, language } = useI18n();
+  const tr = (en, id) => (language === "id-ID" ? id : en);
+  const [loading, setLoading] = useState(true);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [analytics, setAnalytics] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("All");
 
   useEffect(() => {
-    let cancelled = false
+    let cancelled = false;
 
     const load = async () => {
-      setLoading(true)
-      setErrorMessage('')
+      setLoading(true);
+      setErrorMessage("");
 
       try {
-        const data = await getAnalyticsOverview()
+        const data = await getAnalyticsOverview();
         if (!cancelled) {
-          setAnalytics(data)
+          setAnalytics(data);
         }
       } catch (error) {
         if (!cancelled) {
-          setErrorMessage(error.message)
+          setErrorMessage(error.message);
         }
       } finally {
         if (!cancelled) {
-          setLoading(false)
+          setLoading(false);
         }
       }
-    }
+    };
 
-    void load()
+    void load();
 
     return () => {
-      cancelled = true
-    }
-  }, [])
+      cancelled = true;
+    };
+  }, []);
 
   const chartPoints = useMemo(() => {
-    const trend = analytics?.weeklyTrend || []
-    if (trend.length === 0) return ''
+    const trend = analytics?.weeklyTrend || [];
+    if (trend.length === 0) return "";
 
-    const max = Math.max(...trend.map((point) => point.amount), 1)
+    const max = Math.max(...trend.map((point) => point.amount), 1);
 
     return trend
       .map((point, index) => {
-        const x = (index / Math.max(trend.length - 1, 1)) * 100
-        const y = 90 - Math.round((point.amount / max) * 80)
-        return `${x},${y}`
+        const x = (index / Math.max(trend.length - 1, 1)) * 100;
+        const y = 90 - Math.round((point.amount / max) * 80);
+        return `${x},${y}`;
       })
-      .join(' ')
-  }, [analytics])
+      .join(" ");
+  }, [analytics]);
 
-  const trend = analytics?.weeklyTrend || []
+  const trend = analytics?.weeklyTrend || [];
 
   const filteredReports = useMemo(() => {
-    if (!analytics) return []
-    if (selectedCategory === 'All') return analytics.recentReports
-    return analytics.recentReports.filter((report) => report.category === selectedCategory)
-  }, [analytics, selectedCategory])
+    if (!analytics) return [];
+    if (selectedCategory === "All") return analytics.recentReports;
+    return analytics.recentReports.filter(
+      (report) => report.category === selectedCategory,
+    );
+  }, [analytics, selectedCategory]);
 
   return (
     <PageLayout
       header={
         <PageHeader
           mainLogo={mainLogo}
-          title={t('analyticsTrends', 'Analytics & Trends')}
+          title={t("analyticsTrends", "Analytics & Trends")}
           backLink="/home"
         />
       }
       className="space-y-5 pt-5 lg:space-y-6"
     >
+      {loading ? (
+        <section className="rounded-xl border border-[#1c1c13] bg-white p-4 font-semibold">
+          {t("loadingAnalytics", "Loading analytics...")}
+        </section>
+      ) : null}
 
-        {loading ? (
-          <section className="rounded-xl border border-[#1c1c13] bg-white p-4 font-semibold">{t('loadingAnalytics', 'Loading analytics...')}</section>
-        ) : null}
+      {errorMessage ? (
+        <section className="rounded-xl border border-[#1c1c13] bg-[#fee2e2] p-4 text-sm font-semibold text-[#7f1d1d]">
+          {errorMessage}
+        </section>
+      ) : null}
 
-        {errorMessage ? (
-          <section className="rounded-xl border border-[#1c1c13] bg-[#fee2e2] p-4 text-sm font-semibold text-[#7f1d1d]">
-            {errorMessage}
+      {!loading && !errorMessage && analytics ? (
+        <>
+          <section className="overflow-hidden rounded-xl border border-[#1c1c13] bg-[#f8f4e4] shadow-[4px_4px_0_#1c1c13]">
+            <div className="flex items-end justify-between border-b border-[#1c1c13] p-4">
+              <div>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[#464554]">
+                  {t("totalSpent", "Total Spent")}
+                </p>
+                <p className="text-3xl font-extrabold text-[#4648d4]">
+                  {toCurrency(analytics.totals.totalSpent)}
+                </p>
+              </div>
+              <div className="rounded-full border border-[#1c1c13] bg-[#ffc329] px-3 py-1 text-xs font-bold shadow-[2px_2px_0_#1c1c13]">
+                {t("avgPerDay", "Avg/day")}{" "}
+                {toCurrency(analytics.totals.averageDaily)}
+              </div>
+            </div>
+
+            <div className="relative h-52 border-b border-[#1c1c13] bg-white p-4">
+              <svg
+                viewBox="0 0 100 100"
+                className="h-full w-full overflow-visible"
+              >
+                <polyline
+                  fill="none"
+                  points={chartPoints}
+                  stroke="#4648d4"
+                  strokeWidth="2.4"
+                />
+                {trend.map((point, index) => {
+                  const max = Math.max(...trend.map((item) => item.amount), 1);
+                  const x = (index / Math.max(trend.length - 1, 1)) * 100;
+                  const y = 90 - Math.round((point.amount / max) * 80);
+                  return (
+                    <circle
+                      key={`${point.day}-${index}`}
+                      cx={x}
+                      cy={y}
+                      r="2.8"
+                      fill="#ffc329"
+                      stroke="#1c1c13"
+                      strokeWidth="1"
+                    />
+                  );
+                })}
+              </svg>
+            </div>
+
+            <div className="flex justify-between px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[#464554]">
+              {trend.map((point) => (
+                <span key={point.day}>{point.day}</span>
+              ))}
+            </div>
           </section>
-        ) : null}
 
-        {!loading && !errorMessage && analytics ? (
-          <>
-            <section className="overflow-hidden rounded-xl border border-[#1c1c13] bg-[#f8f4e4] shadow-[4px_4px_0_#1c1c13]">
-              <div className="flex items-end justify-between border-b border-[#1c1c13] p-4">
-                <div>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#464554]">{t('totalSpent', 'Total Spent')}</p>
-                  <p className="text-3xl font-extrabold text-[#4648d4]">{toCurrency(analytics.totals.totalSpent)}</p>
-                </div>
-                <div className="rounded-full border border-[#1c1c13] bg-[#ffc329] px-3 py-1 text-xs font-bold shadow-[2px_2px_0_#1c1c13]">
-                  {t('avgPerDay', 'Avg/day')} {toCurrency(analytics.totals.averageDaily)}
-                </div>
+          <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+            <article className="col-span-2 flex items-center gap-3 rounded-xl border border-[#1c1c13] bg-[#ece8d9] p-4 shadow-[2px_2px_0_#1c1c13]">
+              <div className="rounded-lg border border-[#1c1c13] bg-[#4648d4] p-3 text-white shadow-[2px_2px_0_#1c1c13]">
+                <span className="material-symbols-outlined">restaurant</span>
               </div>
+              <div>
+                <h3 className="text-sm font-bold">
+                  {t("topCategory", "Top category")}:{" "}
+                  {analytics.topCategory.name}
+                </h3>
+                <p className="text-xs text-[#464554]">
+                  {analytics.topCategory.percent}%{" "}
+                  {t("ofTotalBudget", "of your total budget")}
+                </p>
+              </div>
+            </article>
 
-              <div className="relative h-52 border-b border-[#1c1c13] bg-white p-4">
-                <svg viewBox="0 0 100 100" className="h-full w-full overflow-visible">
-                  <polyline fill="none" points={chartPoints} stroke="#4648d4" strokeWidth="2.4" />
-                  {trend.map((point, index) => {
-                    const max = Math.max(...trend.map((item) => item.amount), 1)
-                    const x = (index / Math.max(trend.length - 1, 1)) * 100
-                    const y = 90 - Math.round((point.amount / max) * 80)
-                    return <circle key={`${point.day}-${index}`} cx={x} cy={y} r="2.8" fill="#ffc329" stroke="#1c1c13" strokeWidth="1" />
+            <article className="space-y-3 rounded-xl border border-[#1c1c13] bg-[#e1e0ff] p-4 shadow-[2px_2px_0_#1c1c13]">
+              <span className="material-symbols-outlined text-[#4648d4]">
+                savings
+              </span>
+              <div>
+                <p className="text-xl font-extrabold">
+                  {toCurrency(analytics.savingsGoal.target)}
+                </p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-[#4648d4]">
+                  {t("savingsGoal", "Savings Goal")}
+                </p>
+              </div>
+              <div className="h-2 w-full overflow-hidden rounded-full border border-[#1c1c13] bg-white">
+                <div
+                  className="h-full border-r border-[#1c1c13] bg-[#bbf7d0]"
+                  style={{ width: `${analytics.savingsGoal.progress}%` }}
+                />
+              </div>
+            </article>
+
+            <article className="space-y-3 rounded-xl border border-[#1c1c13] bg-[#ffc329] p-4 shadow-[2px_2px_0_#1c1c13]">
+              <span className="material-symbols-outlined">trending_up</span>
+              <div>
+                <p className="text-xl font-extrabold">
+                  {toCurrency(analytics.totals.weeklyTotal)}
+                </p>
+                <p className="text-[10px] font-bold uppercase tracking-widest">
+                  {t("weeklySpend", "Weekly Spend")}
+                </p>
+              </div>
+              <p className="text-[10px] leading-tight font-semibold">
+                {tr(
+                  "Track your split bill trends and keep your budget under control.",
+                  "Pantau tren split bill dan jaga budget tetap terkontrol.",
+                )}
+              </p>
+            </article>
+          </section>
+
+          <section className="space-y-3 pb-5">
+            <h3 className="text-lg font-bold">
+              {t("categoryBreakdown", "Category Breakdown")}
+            </h3>
+            {analytics.categoryTotals &&
+            Object.keys(analytics.categoryTotals).length > 0 ? (
+              <div className="grid grid-cols-1 gap-2 md:grid-cols-2 lg:grid-cols-3">
+                {Object.entries(analytics.categoryTotals)
+                  .sort((a, b) => b[1] - a[1])
+                  .map(([category, amount]) => {
+                    const percentage =
+                      analytics.totals.totalSpent > 0
+                        ? Math.round(
+                            (amount / analytics.totals.totalSpent) * 100,
+                          )
+                        : 0;
+                    return (
+                      <article
+                        key={category}
+                        className="flex items-center justify-between rounded-lg border border-[#1c1c13] bg-[#f8f4e4] p-3 lg:px-4 lg:py-3"
+                      >
+                        <div className="flex flex-col">
+                          <p className="text-sm font-bold">{category}</p>
+                          <p className="text-[10px] font-bold uppercase text-[#464554]">
+                            {percentage}% {t("ofTotal", "of total")}
+                          </p>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-bold text-[#4648d4]">
+                            {toCurrency(amount)}
+                          </p>
+                        </div>
+                      </article>
+                    );
                   })}
-                </svg>
               </div>
-
-              <div className="flex justify-between px-4 py-3 text-[10px] font-bold uppercase tracking-widest text-[#464554]">
-                {trend.map((point) => (
-                  <span key={point.day}>{point.day}</span>
-                ))}
-              </div>
-            </section>
-
-            <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-              <article className="col-span-2 flex items-center gap-3 rounded-xl border border-[#1c1c13] bg-[#ece8d9] p-4 shadow-[2px_2px_0_#1c1c13]">
-                <div className="rounded-lg border border-[#1c1c13] bg-[#4648d4] p-3 text-white shadow-[2px_2px_0_#1c1c13]">
-                  <span className="material-symbols-outlined">restaurant</span>
-                </div>
-                <div>
-                  <h3 className="text-sm font-bold">{t('topCategory', 'Top category')}: {analytics.topCategory.name}</h3>
-                  <p className="text-xs text-[#464554]">{analytics.topCategory.percent}% {t('ofTotalBudget', 'of your total budget')}</p>
-                </div>
+            ) : (
+              <article className="rounded-lg border border-[#1c1c13] bg-white p-3 text-sm font-semibold">
+                {t("noCategoryData", "No category data available yet.")}
               </article>
+            )}
+          </section>
 
-              <article className="space-y-3 rounded-xl border border-[#1c1c13] bg-[#e1e0ff] p-4 shadow-[2px_2px_0_#1c1c13]">
-                <span className="material-symbols-outlined text-[#4648d4]">savings</span>
-                <div>
-                  <p className="text-xl font-extrabold">{toCurrency(analytics.savingsGoal.target)}</p>
-                  <p className="text-[10px] font-bold uppercase tracking-widest text-[#4648d4]">{t('savingsGoal', 'Savings Goal')}</p>
-                </div>
-                <div className="h-2 w-full overflow-hidden rounded-full border border-[#1c1c13] bg-white">
-                  <div className="h-full border-r border-[#1c1c13] bg-[#bbf7d0]" style={{ width: `${analytics.savingsGoal.progress}%` }} />
-                </div>
+          <section className="space-y-3 pb-5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-bold">
+                {t("recentReports", "Recent Reports")}
+              </h3>
+            </div>
+
+            <div className="flex flex-wrap gap-2 pb-3">
+              {CATEGORIES.map((category) => (
+                <button
+                  key={category}
+                  onClick={() => setSelectedCategory(category)}
+                  className={`rounded-full border border-[#1c1c13] px-3 py-1 text-xs font-bold uppercase transition-colors ${
+                    selectedCategory === category
+                      ? "bg-[#4648d4] text-white shadow-[2px_2px_0_#1c1c13]"
+                      : "bg-white text-[#1c1c13] hover:bg-[#fffbeb]"
+                  }`}
+                >
+                  {category === "All" ? t("all", "All") : category}
+                </button>
+              ))}
+            </div>
+
+            {filteredReports.length === 0 ? (
+              <article className="rounded-lg border border-[#1c1c13] bg-white p-3 text-sm font-semibold">
+                {selectedCategory === "All"
+                  ? t(
+                      "noReportsYet",
+                      "No reports yet. Add split bills to see analytics.",
+                    )
+                  : `${t("noReportsInCategory", "No reports in")} ${selectedCategory} ${t("category", "category")}.`}
               </article>
-
-              <article className="space-y-3 rounded-xl border border-[#1c1c13] bg-[#ffc329] p-4 shadow-[2px_2px_0_#1c1c13]">
-                <span className="material-symbols-outlined">trending_up</span>
-                <div>
-                  <p className="text-xl font-extrabold">{toCurrency(analytics.totals.weeklyTotal)}</p>
-                  <p className="text-[10px] font-bold uppercase tracking-widest">{t('weeklySpend', 'Weekly Spend')}</p>
-                </div>
-                <p className="text-[10px] leading-tight font-semibold">{tr('Track your split bill trends and keep your budget under control.', 'Pantau tren split bill dan jaga budget tetap terkontrol.')}</p>
-              </article>
-            </section>
-
-            <section className="space-y-3 pb-5">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-bold">{t('recentReports', 'Recent Reports')}</h3>
-              </div>
-
-              <div className="flex flex-wrap gap-2 pb-3">
-                {CATEGORIES.map((category) => (
-                  <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`rounded-full border border-[#1c1c13] px-3 py-1 text-xs font-bold uppercase transition-colors ${
-                      selectedCategory === category
-                        ? 'bg-[#4648d4] text-white shadow-[2px_2px_0_#1c1c13]'
-                        : 'bg-white text-[#1c1c13] hover:bg-[#fffbeb]'
-                    }`}
-                  >
-                    {category === 'All' ? t('all', 'All') : category}
-                  </button>
-                ))}
-              </div>
-
-              {filteredReports.length === 0 ? (
-                <article className="rounded-lg border border-[#1c1c13] bg-white p-3 text-sm font-semibold">
-                  {selectedCategory === 'All' ? t('noReportsYet', 'No reports yet. Add split bills to see analytics.') : `${t('noReportsInCategory', 'No reports in')} ${selectedCategory} ${t('category', 'category')}.`}
+            ) : (
+              filteredReports.map((report) => (
+                <article
+                  key={report.id}
+                  className="flex items-center justify-between rounded-lg border border-[#1c1c13] bg-[#f8f4e4] p-3 lg:px-4 lg:py-4"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded border border-[#1c1c13] bg-white">
+                      <span className="material-symbols-outlined text-[#4648d4]">
+                        receipt_long
+                      </span>
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold">{report.title}</p>
+                      <p className="text-[10px] font-bold uppercase text-[#464554]">
+                        {new Date(report.date).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <p className="font-bold text-[#ba1a1a]">
+                      -{toCurrency(report.amount)}
+                    </p>
+                    <p className="text-[10px] font-bold uppercase text-[#464554]">
+                      {report.status}
+                    </p>
+                  </div>
                 </article>
-              ) : (
-                filteredReports.map((report) => (
-                  <article
-                    key={report.id}
-                    className="flex items-center justify-between rounded-lg border border-[#1c1c13] bg-[#f8f4e4] p-3 lg:px-4 lg:py-4"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded border border-[#1c1c13] bg-white">
-                        <span className="material-symbols-outlined text-[#4648d4]">receipt_long</span>
-                      </div>
-                      <div>
-                        <p className="text-sm font-bold">{report.title}</p>
-                        <p className="text-[10px] font-bold uppercase text-[#464554]">{new Date(report.date).toLocaleDateString()}</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-bold text-[#ba1a1a]">-{toCurrency(report.amount)}</p>
-                      <p className="text-[10px] font-bold uppercase text-[#464554]">{report.status}</p>
-                    </div>
-                  </article>
-                ))
-              )}
-            </section>
-          </>
-        ) : null}
+              ))
+            )}
+          </section>
+        </>
+      ) : null}
     </PageLayout>
-  )
+  );
 }
