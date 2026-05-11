@@ -38,7 +38,7 @@ app.use(
     },
   }),
 );
-app.use(express.json({ limit: "8mb" }));
+app.use(express.json({ limit: "16mb" }));
 app.use(jsonParseErrorHandler);
 
 app.get("/api/health", (_req, res) => {

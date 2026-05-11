@@ -86,6 +86,15 @@ async function createTransaction(req, res) {
   const payload = validation.data;
 
   try {
+    const user = await prisma.user.findUnique({
+      where: { id: req.user.id },
+      select: { id: true },
+    });
+
+    if (!user) {
+      return sendError(res, "User not found", 404);
+    }
+
     const transaction = await prisma.transaction.create({
       data: {
         userId: req.user.id,
@@ -95,9 +104,7 @@ async function createTransaction(req, res) {
         note: normalizeText(payload.note) || null,
         receiptImage: normalizeText(payload.receiptImage) || null,
         receiptImageName: normalizeText(payload.receiptImageName) || null,
-        ...(payload.createdAt
-          ? { createdAt: new Date(payload.createdAt) }
-          : {}),
+        ...(payload.createdAt ? { createdAt: payload.createdAt } : {}),
       },
     });
 
@@ -159,9 +166,7 @@ async function updateTransaction(req, res) {
               receiptImageName: normalizeText(payload.receiptImageName) || null,
             }
           : {}),
-        ...(payload.createdAt
-          ? { createdAt: new Date(payload.createdAt) }
-          : {}),
+        ...(payload.createdAt ? { createdAt: payload.createdAt } : {}),
       },
     });
 

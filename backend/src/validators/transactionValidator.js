@@ -4,7 +4,7 @@ const transactionTypeSchema = z.enum(["INCOME", "EXPENSE"]);
 
 const createTransactionSchema = z.object({
   type: transactionTypeSchema,
-  amount: z.number().int().positive("Amount must be positive"),
+  amount: z.coerce.number().int().positive("Amount must be positive"),
   category: z
     .string()
     .min(2, "Category must be at least 2 characters")
@@ -18,12 +18,16 @@ const createTransactionSchema = z.object({
     .max(255, "Receipt image name is too long")
     .optional()
     .or(z.literal("")),
-  createdAt: z.string().datetime().optional(),
+  createdAt: z.coerce.date().optional(),
 });
 
 const updateTransactionSchema = z.object({
   type: transactionTypeSchema.optional(),
-  amount: z.number().int().positive("Amount must be positive").optional(),
+  amount: z.coerce
+    .number()
+    .int()
+    .positive("Amount must be positive")
+    .optional(),
   category: z
     .string()
     .min(2, "Category must be at least 2 characters")
@@ -37,7 +41,7 @@ const updateTransactionSchema = z.object({
     .max(255, "Receipt image name is too long")
     .optional()
     .or(z.literal("")),
-  createdAt: z.string().datetime().optional(),
+  createdAt: z.coerce.date().optional(),
 });
 
 module.exports = {
