@@ -85,7 +85,6 @@ export function LoginAuthScreen({ onAuthSuccess, mainLogo, mascotImage }) {
       <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
         <section className="hidden rounded-2xl border border-[#1c1c13] bg-[#6366f1] p-6 text-white shadow-[4px_4px_0_#1c1c13] lg:flex lg:flex-col lg:justify-between">
           <div>
-            <p className="rounded-full border border-white/70 bg-white/10 px-3 py-1 text-xs font-black tracking-widest uppercase">{tr('Desktop Access', 'Akses Desktop')}</p>
             <h2 className="mt-4 text-4xl font-black leading-tight">LIVO Finance Management</h2>
             <p className="mt-3 text-sm text-white/90">{tr('Track spending, split bills, and wishlist goals with one finance workspace.', 'Pantau pengeluaran, split bill, dan target wishlist dalam satu workspace finansial.')}</p>
           </div>

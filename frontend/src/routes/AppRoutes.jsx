@@ -9,6 +9,7 @@ import {
 } from "react-router-dom";
 import { HomeDashboard } from "../components/screens/HomeDashboard";
 import { HistorySplitBillScreen } from "../components/screens/HistorySplitBillScreen";
+import { LandingPage } from "../components/screens/LandingPage";
 import { LoginAuthScreen } from "../components/screens/LoginAuthScreen";
 import { LoadingScreen } from "../components/screens/LoadingScreen";
 import { ProfileSettingsScreen } from "../components/screens/ProfileSettingsScreen";
@@ -267,7 +268,10 @@ function AnalyticsRoute() {
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<Navigate to="/splash" replace />} />
+      <Route
+        path="/"
+        element={<LandingPage mainLogo={mainLogo} mascotImage={mascotImage} />}
+      />
       <Route path="/splash" element={<SplashRoute />} />
       <Route path="/loading" element={<LoadingRoute />} />
       <Route path="/login" element={<LoginRoute />} />
