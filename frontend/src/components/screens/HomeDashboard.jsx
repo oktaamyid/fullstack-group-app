@@ -3,6 +3,7 @@ import { PageLayout } from "../layouts/PageLayout";
 import { AppHeader } from "../headers/AppHeader";
 import { StatusPill } from "../ui/StatusPill";
 import { CreateTransactionModal } from "../modals/CreateTransactionModal";
+import { Button } from "../ui/Button";
 import { useI18n } from "../../i18n/useI18n";
 
 function toRupiah(value) {
@@ -124,14 +125,14 @@ export function HomeDashboard({
       <PageLayout header={header} className="space-y-6 lg:space-y-8">
         <div className="space-y-6 lg:grid lg:grid-cols-12 lg:gap-6 lg:space-y-0">
           <section className="lg:col-span-7 space-y-4">
-            <div className="rounded-2xl border border-[#1c1c13] bg-[#fffbeb] p-5 shadow-[6px_6px_0px_0px_rgba(28,28,19,1)] sm:p-6">
+            <div className="rounded-2xl border-2 border-[#1c1c13] bg-white p-6 shadow-[4px_4px_0_#1c1c13]">
               <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
                 <div className="space-y-2">
-                  <span className="inline-flex rounded-full border border-[#1c1c13] bg-[#4648d4] px-3 py-1 text-[10px] font-black tracking-[0.2em] text-white uppercase">
-                    {t("activeLimit", "Active Limit")}
+                  <span className="inline-flex rounded-full border-2 border-[#1c1c13] bg-[#ffc329] px-3 py-1 text-[10px] font-black tracking-[0.1em] text-[#1c1c13] uppercase shadow-[2px_2px_0_#1c1c13]">
+                    {formatDate(new Date(), language)}
                   </span>
                   <div>
-                    <h1 className="text-2xl font-black tracking-tight text-[#1c1c13] sm:text-3xl">
+                    <h1 className="text-2xl font-black tracking-tight text-gray-900 sm:text-3xl">
                       {tr("Good to see you", "Senang melihatmu")}
                       {userName ? `, ${userName}` : ""}
                     </h1>
@@ -141,63 +142,63 @@ export function HomeDashboard({
                 <img
                   src={mascotImage || mainLogo}
                   alt="LIVO mascot"
-                  className="h-16 w-16 rounded-2xl border border-[#1c1c13] bg-white object-cover p-2"
+                  className="h-16 w-16 rounded-2xl bg-[#fffbeb] object-cover p-2 border-2 border-[#1c1c13] shadow-[2px_2px_0_#1c1c13]"
                 />
               </div>
 
-              <div className="mt-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <article className="rounded-2xl border border-[#1c1c13] bg-white p-4 shadow-[2px_2px_0px_0px_rgba(28,28,19,1)]">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[#464554]">
+              <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                <article className="rounded-xl border-2 border-[#1c1c13] bg-white p-4 shadow-[4px_4px_0_#1c1c13]">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
                     {t("dailyLimit", "Daily Limit")}
                   </p>
-                  <p className="mt-2 text-xl font-black text-[#1c1c13]">
+                  <p className="mt-1.5 text-xl font-black text-gray-900">
                     {toRupiah(dailyLimit)}
                   </p>
                 </article>
 
-                <article className="rounded-2xl border border-[#1c1c13] bg-white p-4 shadow-[2px_2px_0px_0px_rgba(28,28,19,1)]">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[#464554]">
+                <article className="rounded-xl border-2 border-[#1c1c13] bg-white p-4 shadow-[4px_4px_0_#1c1c13]">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
                     {t("weeklySpend", "Weekly Spend")}
                   </p>
-                  <p className="mt-2 text-xl font-black text-[#1c1c13]">
+                  <p className="mt-1.5 text-xl font-black text-gray-900">
                     {toRupiah(weeklySpend)}
                   </p>
                 </article>
 
-                <article className="rounded-2xl border border-[#1c1c13] bg-white p-4 shadow-[2px_2px_0px_0px_rgba(28,28,19,1)]">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[#464554]">
+                <article className="rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-4 shadow-[4px_4px_0_#1c1c13]">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
                     {t("netBalance", "Net Balance")}
                   </p>
                   <p
-                    className={`mt-2 text-xl font-black ${transactionSummary.netBalance >= 0 ? "text-[#14532d]" : "text-[#7f1d1d]"}`}
+                    className={`mt-1.5 text-xl font-black ${transactionSummary.netBalance >= 0 ? "text-green-700" : "text-red-600"}`}
                   >
                     {toRupiah(transactionSummary.netBalance)}
                   </p>
                 </article>
 
-                <article className="rounded-2xl border border-[#1c1c13] bg-white p-4 shadow-[2px_2px_0px_0px_rgba(28,28,19,1)]">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-[#464554]">
+                <article className="rounded-xl border-2 border-[#1c1c13] bg-white p-4 shadow-[4px_4px_0_#1c1c13]">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
                     {t("splitTotal", "Split Total")}
                   </p>
-                  <p className="mt-2 text-xl font-black text-[#1c1c13]">
+                  <p className="mt-1.5 text-xl font-black text-gray-900">
                     {toRupiah(splitSummary.total)}
                   </p>
                 </article>
               </div>
 
-              <div className="mt-5 border-t border-[#1c1c13] pt-5">
+              <div className="mt-6 border-t border-gray-100 pt-5">
                 <div className="mb-2 flex items-center justify-between gap-3">
-                  <span className="text-xs font-bold uppercase tracking-wide text-[#464554]">
+                  <span className="text-xs font-bold uppercase tracking-wide text-gray-500">
                     {t("todayProgress", "Today's Progress")}
                   </span>
-                  <span className="text-xs font-black text-[#4648d4]">
+                  <span className="text-xs font-black text-blue-600">
                     {toRupiah(averageDaily)} / {toRupiah(dailyLimit)}
                   </span>
                 </div>
 
-                <div className="h-4 w-full overflow-hidden rounded-full border border-[#1c1c13] bg-white">
+                <div className="h-4 w-full overflow-hidden rounded-full border-2 border-[#1c1c13] bg-white">
                   <div
-                    className="h-full border-r border-[#1c1c13] bg-[#ffc329]"
+                    className={`h-full border-r-2 border-[#1c1c13] ${progress > 90 ? 'bg-[#ef4444]' : progress > 75 ? 'bg-[#fbbf24]' : 'bg-[#4648d4]'}`}
                     style={{ width: `${progress}%` }}
                   />
                 </div>
@@ -206,7 +207,7 @@ export function HomeDashboard({
           </section>
 
           <section className="grid grid-cols-2 gap-4 lg:col-span-5">
-            <div className="flex flex-col items-center justify-center space-y-2 rounded-2xl border border-[#1c1c13] bg-[#f8f4e4] p-4 shadow-[4px_4px_0px_0px_rgba(28,28,19,1)]">
+            <div className="flex flex-col items-center justify-center space-y-2 rounded-2xl border-2 border-[#1c1c13] bg-white p-4 shadow-[4px_4px_0_#1c1c13]">
               <div className="relative h-20 w-20">
                 <svg className="h-full w-full -rotate-90">
                   <circle
@@ -216,34 +217,34 @@ export function HomeDashboard({
                     fill="transparent"
                     stroke="#1c1c13"
                     strokeWidth="8"
-                    opacity="0.12"
                   />
                   <circle
                     cx="40"
                     cy="40"
                     r="32"
                     fill="transparent"
-                    stroke="#4648d4"
+                    stroke={progress > 90 ? '#ef4444' : progress > 75 ? '#fbbf24' : '#4648d4'}
                     strokeWidth="8"
                     strokeDasharray="201"
                     strokeDashoffset={201 - (201 * progress) / 100}
+                    className="transition-all duration-1000 ease-out"
                   />
                 </svg>
                 <div className="absolute inset-0 flex items-center justify-center">
-                  <span className="text-xs font-black">{progress}%</span>
+                  <span className="text-sm font-black text-gray-900">{progress}%</span>
                 </div>
               </div>
-              <span className="text-center text-[10px] font-bold uppercase text-[#464554]">
+              <span className="text-center text-[10px] font-bold uppercase text-gray-500">
                 {t("efficiencyScore", "Efficiency Score")}
               </span>
             </div>
 
-            <div className="flex flex-col justify-between rounded-2xl border border-[#1c1c13] bg-[#ffc329] p-4 shadow-[4px_4px_0px_0px_rgba(28,28,19,1)]">
+            <div className="flex flex-col justify-between rounded-2xl border-2 border-[#1c1c13] bg-[#fbbf24] p-4 shadow-[4px_4px_0_#1c1c13] text-[#1c1c13]">
               <div className="flex items-start justify-between gap-2">
                 <span className="material-symbols-outlined font-bold">
                   trending_up
                 </span>
-                <span className="rounded border border-[#1c1c13] bg-white/40 px-2 py-0.5 text-[10px] font-black">
+                <span className="rounded border border-[#1c1c13] bg-white px-2 py-0.5 text-[10px] font-black">
                   {progress}%
                 </span>
               </div>
@@ -263,13 +264,14 @@ export function HomeDashboard({
               <h2 className="text-lg font-black tracking-tight uppercase">
                 {t("recentActivity", "Recent Activity")}
               </h2>
-              <button
-                type="button"
+              <Button
+                variant="accent"
+                size="sm"
                 onClick={onOpenSplitBill}
-                className="min-h-11 rounded-2xl border border-[#1c1c13] bg-[#fbbf24] px-3 text-[10px] font-black uppercase shadow-[2px_2px_0px_0px_rgba(28,28,19,1)]"
+                className="px-3 min-h-11 text-[10px] uppercase"
               >
-                {t("historyAndSplit", "History & Split")}
-              </button>
+                {t("transactions", "Transactions")}
+              </Button>
             </div>
 
             <div className="space-y-3">
@@ -287,26 +289,26 @@ export function HomeDashboard({
                   return (
                     <article
                       key={entry.id}
-                      className="flex items-center justify-between gap-4 rounded-2xl border border-[#1c1c13] bg-white p-4 shadow-[2px_2px_0px_0px_rgba(28,28,19,1)]"
+                      className="flex items-center justify-between gap-4 rounded-xl border-2 border-[#1c1c13] bg-white p-4 shadow-[4px_4px_0_#1c1c13] transition-transform hover:-translate-y-0.5 active:translate-y-0 active:shadow-[2px_2px_0_#1c1c13]"
                     >
                       <div className="min-w-0">
                         <div className="flex flex-wrap items-center gap-2">
-                          <h3 className="truncate text-sm font-black text-[#1c1c13]">
+                          <h3 className="truncate text-sm font-black text-gray-900">
                             {title}
                           </h3>
                           <span
-                            className={`rounded-full border border-[#1c1c13] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${isIncome ? "bg-[#dcfce7] text-[#14532d]" : "bg-[#fee2e2] text-[#7f1d1d]"}`}
+                            className={`rounded-full px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${isIncome ? "bg-green-50 text-green-700" : "bg-red-50 text-red-600"}`}
                           >
                             {entry.type}
                           </span>
                         </div>
-                        <p className="mt-1 text-xs font-semibold text-[#464554]">
+                        <p className="mt-1 text-xs font-semibold text-gray-500">
                           {categoryLabel} ·{" "}
                           {formatDate(entry.createdAt, language)}
                         </p>
                       </div>
                       <div
-                        className={`shrink-0 text-right text-sm font-black ${isIncome ? "text-[#14532d]" : "text-[#7f1d1d]"}`}
+                        className={`shrink-0 text-right text-sm font-black ${isIncome ? "text-green-700" : "text-red-600"}`}
                       >
                         {isIncome ? "+" : "-"}
                         {amountLabel}
@@ -315,8 +317,8 @@ export function HomeDashboard({
                   );
                 })
               ) : (
-                <div className="rounded-2xl border border-[#1c1c13] bg-white p-4 shadow-[2px_2px_0px_0px_rgba(28,28,19,1)]">
-                  <p className="text-sm font-semibold text-[#464554]">
+                <div className="rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-8 text-center shadow-[4px_4px_0_#1c1c13]">
+                  <p className="text-sm font-bold text-[#1c1c13]">
                     {searchQuery
                       ? tr(
                           "No matching transactions found.",
@@ -333,20 +335,20 @@ export function HomeDashboard({
           </section>
 
           <section className="lg:col-span-5">
-            <div className="rounded-2xl border border-[#1c1c13] bg-[#1c1c13] p-6 text-white shadow-[6px_6px_0px_0px_rgba(28,28,19,1)]">
-              <div className="flex items-center justify-between gap-3">
+            <div className="rounded-2xl border-2 border-[#1c1c13] bg-[#4648d4] p-6 text-white shadow-[6px_6px_0_#1c1c13]">
+              <div className="flex items-center justify-between gap-4">
                 <div>
-                  <h3 className="mb-1 text-xl font-black leading-none">
+                  <h3 className="mb-2 text-xl font-black leading-none text-white">
                     {t("financialMilestone", "Financial Milestone")}
                   </h3>
-                  <p className="max-w-sm text-xs opacity-80">
+                  <p className="max-w-sm text-xs text-gray-300 leading-relaxed">
                     {tr("Current net balance is", "Saldo bersih saat ini")}{" "}
-                    {toRupiah(transactionSummary.netBalance)}{" "}
+                    <strong className="text-white">{toRupiah(transactionSummary.netBalance)}</strong>{" "}
                     {tr("with total income", "dengan total pemasukan")}{" "}
-                    {toRupiah(transactionSummary.totalIncome)}.
+                    <strong className="text-white">{toRupiah(transactionSummary.totalIncome)}</strong>.
                   </p>
                 </div>
-                <div className="flex h-16 w-16 items-center justify-center rounded-full border border-white bg-[#ffc329]">
+                <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-2 border-[#1c1c13] bg-[#ffc329] shadow-[2px_2px_0_#1c1c13]">
                   <span
                     className="material-symbols-outlined text-3xl text-[#1c1c13]"
                     style={{ fontVariationSettings: "'FILL' 1" }}
@@ -356,12 +358,13 @@ export function HomeDashboard({
                 </div>
               </div>
 
-              <button
-                type="button"
-                className="mt-4 w-full rounded-2xl border border-[#1c1c13] bg-white py-3 text-xs font-black uppercase text-[#1c1c13] shadow-[4px_4px_0px_0px_rgba(255,195,41,1)] transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
+              <Button
+                variant="secondary"
+                fullWidth
+                className="mt-6 py-3 text-xs uppercase"
               >
                 {t("viewProgress", "View Progress")}
-              </button>
+              </Button>
             </div>
           </section>
         </div>

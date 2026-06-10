@@ -19,6 +19,7 @@ const createSplitBillSchema = z.object({
   members: z.array(splitBillMemberSchema).min(1, 'At least one friend is required'),
   items: z.array(splitBillItemSchema).optional(),
   divisionMethod: z.enum(['EQUAL', 'CUSTOM', 'ITEM_BASED']).optional().default('CUSTOM'),
+  syncToPersonal: z.boolean().optional().default(false),
 });
 
 const updateSplitBillSchema = z.object({
@@ -28,6 +29,7 @@ const updateSplitBillSchema = z.object({
   members: z.array(splitBillMemberSchema).min(1, 'At least one friend is required').optional(),
   items: z.array(splitBillItemSchema).optional(),
   divisionMethod: z.enum(['EQUAL', 'CUSTOM', 'ITEM_BASED']).optional(),
+  syncToPersonal: z.boolean().optional(),
 });
 
 const updateMemberStatusSchema = z.object({

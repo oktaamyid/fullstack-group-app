@@ -102,7 +102,7 @@ async function createSplitBill(req, res) {
     });
   }
 
-  const { title, description, totalAmount, members, items } = validation.data;
+  const { title, description, totalAmount, members, items, syncToPersonal } = validation.data;
 
   let memberData;
   let divisionMethod;
@@ -116,16 +116,20 @@ async function createSplitBill(req, res) {
 
   try {
     const result = await prisma.$transaction(async (tx) => {
-      // Create transaction record
-      const transaction = await tx.transaction.create({
-        data: {
-          userId: req.user.id,
-          type: 'SHARED_EXPENSE',
-          amount: totalAmount,
-          category: title || 'Shared Expense',
-          note: description || null,
-        },
-      });
+      // Create transaction record if syncToPersonal
+      let transactionId = null;
+      if (syncToPersonal) {
+        const transaction = await tx.transaction.create({
+          data: {
+            userId: req.user.id,
+            type: 'EXPENSE',
+            amount: totalAmount,
+            category: title || 'Shared Expense',
+            note: description || null,
+          },
+        });
+        transactionId = transaction.id;
+      }
 
       // Create split bill
       const created = await tx.splitBill.create({
@@ -135,7 +139,8 @@ async function createSplitBill(req, res) {
           description: description || null,
           totalAmount,
           divisionMethod,
-          transactionId: transaction.id,
+          syncToPersonal,
+          transactionId,
           members: {
             create: memberData.map((member) => ({
               friendName: member.friendName,
@@ -308,6 +313,7 @@ async function updateSplitBill(req, res) {
     const nextDescription =
       validation.data.description !== undefined ? validation.data.description : existing.description;
     const nextTotalAmount = validation.data.totalAmount ?? existing.totalAmount;
+    const nextSyncToPersonal = validation.data.syncToPersonal ?? existing.syncToPersonal;
     const nextMembers = validation.data.members;
     const nextItems = validation.data.items;
 
@@ -346,6 +352,7 @@ async function updateSplitBill(req, res) {
           description: nextDescription || null,
           totalAmount: nextTotalAmount,
           divisionMethod,
+          syncToPersonal: nextSyncToPersonal,
           ...(memberData
             ? {
                 members: {
@@ -477,6 +484,19 @@ async function updateSplitBillMemberStatus(req, res) {
         where: { id: splitBillId },
         include: { members: true },
       });
+
+      // If syncToPersonal is enabled and member was just marked PAID, create an INCOME transaction
+      if (refreshed.syncToPersonal && status === 'PAID') {
+        await tx.transaction.create({
+          data: {
+            userId: req.user.id,
+            type: 'INCOME',
+            amount: member.amount,
+            category: 'Split Bill Payment',
+            note: `Payment from ${member.friendName} for ${refreshed.title}`,
+          },
+        });
+      }
 
       const billStatus = resolveBillStatus(refreshed.members);
 

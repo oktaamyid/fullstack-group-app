@@ -1,5 +1,4 @@
 import { useMemo, useState } from 'react'
-import { AuthLayout } from '../layouts/AuthLayout'
 import { FormField } from '../ui/FormField'
 import { Button } from '../ui/Button'
 import { Alert } from '../ui/Alert'
@@ -11,7 +10,7 @@ const defaultForm = {
   password: '',
 }
 
-export function LoginAuthScreen({ onAuthSuccess, mainLogo, mascotImage }) {
+export function LoginForm({ onAuthSuccess, mainLogo }) {
   const { t, language } = useI18n()
   const tr = (en, id) => (language === 'id-ID' ? id : en)
   const [mode, setMode] = useState('login')
@@ -81,22 +80,11 @@ export function LoginAuthScreen({ onAuthSuccess, mainLogo, mascotImage }) {
   }
 
   return (
-    <AuthLayout maxWidth="max-w-5xl">
-      <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch">
-        <section className="hidden rounded-2xl border border-[#1c1c13] bg-[#6366f1] p-6 text-white shadow-[4px_4px_0_#1c1c13] lg:flex lg:flex-col lg:justify-between">
-          <div>
-            <h2 className="mt-4 text-4xl font-black leading-tight">LIVO Finance Management</h2>
-            <p className="mt-3 text-sm text-white/90">{tr('Track spending, split bills, and wishlist goals with one finance workspace.', 'Pantau pengeluaran, split bill, dan target wishlist dalam satu workspace finansial.')}</p>
-          </div>
-          <div className="mt-6 rounded-2xl border border-white/70 bg-white p-4">
-            <img src={mainLogo} alt="LIVO Logo" className="h-24 w-auto" />
-          </div>
-        </section>
-
-        <div className="rounded-2xl border border-[#1c1c13] bg-[#fff9dc] p-4 text-[#1c1c13] lg:p-6">
+    <div className="w-full max-w-md">
+      <div className="rounded-3xl bg-white p-6 shadow-xl border border-gray-100">
         <div className="mb-5 flex flex-col items-center text-center">
           <div className="relative mb-4">
-            <div className="h-28 w-28 overflow-hidden rounded-full border border-[#1c1c13] bg-[#fbbf24] shadow-[4px_4px_0_#1c1c13]">
+            <div className="h-24 w-24 overflow-hidden rounded-full bg-[#fbbf24] shadow-md border-4 border-white">
               <img src={mainLogo} alt="LIVO Logo" className="h-full w-full object-cover" />
             </div>
           </div>
@@ -148,7 +136,8 @@ export function LoginAuthScreen({ onAuthSuccess, mainLogo, mascotImage }) {
             type="submit"
             disabled={isSubmitting}
             fullWidth
-            className="bg-[#6366f1] text-white shadow-[3px_3px_0_#1c1c13]"
+            size="md"
+            variant="primary"
           >
             {isSubmitting ? t('submitting', 'Submitting...') : submitLabel}
           </Button>
@@ -156,12 +145,11 @@ export function LoginAuthScreen({ onAuthSuccess, mainLogo, mascotImage }) {
 
         <div className="mt-4 flex items-center justify-between text-[11px] font-bold uppercase tracking-wider text-[#464554]">
           <span>{isRegister ? t('alreadyHaveAccount', 'Already have an account?') : t('needAccount', 'Need an account?')}</span>
-          <button type="button" onClick={switchMode} className="rounded-full border border-[#1c1c13] bg-white px-3 py-1 font-bold">
+          <button type="button" onClick={switchMode} className="rounded-full bg-gray-100 hover:bg-gray-200 transition-colors px-3 py-1 font-bold">
             {isRegister ? t('login', 'Login') : t('register', 'Register')}
           </button>
         </div>
-        </div>
       </div>
-    </AuthLayout>
+    </div>
   )
 }

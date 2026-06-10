@@ -59,6 +59,7 @@ model SplitBill {
   totalAmount     Int
   divisionMethod  SplitBillDivisionMethod  @default(CUSTOM)
   status          SplitBillStatus          @default(UNPAID)
+  syncToPersonal  Boolean                  @default(false)
   transactionId   Int?
   createdAt       DateTime                 @default(now())
   updatedAt       DateTime                 @updatedAt

@@ -8,9 +8,8 @@ import {
   useNavigate,
 } from "react-router-dom";
 import { HomeDashboard } from "../components/screens/HomeDashboard";
-import { HistorySplitBillScreen } from "../components/screens/HistorySplitBillScreen";
+
 import { LandingPage } from "../components/screens/LandingPage";
-import { LoginAuthScreen } from "../components/screens/LoginAuthScreen";
 import { LoadingScreen } from "../components/screens/LoadingScreen";
 import { ProfileSettingsScreen } from "../components/screens/ProfileSettingsScreen";
 import { SplashScreen } from "../components/screens/SplashScreen";
@@ -60,9 +59,9 @@ function LoadingRoute() {
 
       setTimeout(() => {
         if (!isCancelled) {
-          navigate("/login", {
+          navigate("/", {
             replace: true,
-            state: result,
+            state: { ...result, showLogin: true },
           });
         }
       }, holdLoadingMs);
@@ -78,30 +77,7 @@ function LoadingRoute() {
   return <LoadingScreen bootMessage={bootMessage} mainLogo={mainLogo} />;
 }
 
-function LoginRoute() {
-  const navigate = useNavigate();
-  const location = useLocation();
 
-  if (isAuthenticated()) {
-    return <Navigate to="/home" replace />;
-  }
-
-  const handleAuthSuccess = ({ token, user }) => {
-    saveAuthSession(token, user);
-    navigate("/home", {
-      replace: true,
-      state: location.state,
-    });
-  };
-
-  return (
-    <LoginAuthScreen
-      onAuthSuccess={handleAuthSuccess}
-      mainLogo={mainLogo}
-      mascotImage={mascotImage}
-    />
-  );
-}
 
 function HomeRoute() {
   const location = useLocation();
@@ -126,7 +102,7 @@ function HomeRoute() {
   });
 
   if (!isAuthenticated()) {
-    return <Navigate to="/login" replace />;
+    return <Navigate to="/" state={{ showLogin: true }} replace />;
   }
 
   const applyCheckResult = useCallback((result) => {
@@ -170,11 +146,11 @@ function HomeRoute() {
 
   const handleLogout = useCallback(() => {
     clearAuthSession();
-    navigate("/login", { replace: true });
+    navigate("/", { replace: true, state: { showLogin: true } });
   }, [navigate]);
 
   const handleOpenSplitBill = useCallback(() => {
-    navigate("/split-bill");
+    navigate("/transactions");
   }, [navigate]);
 
   const handleOpenProfile = useCallback(() => {
@@ -225,13 +201,7 @@ function HomeRoute() {
   );
 }
 
-function SplitBillRoute() {
-  if (!isAuthenticated()) {
-    return <Navigate to="/login" replace />;
-  }
 
-  return <HistorySplitBillScreen mainLogo={mainLogo} />;
-}
 
 function TransactionRoute() {
   if (!isAuthenticated()) {
@@ -274,9 +244,7 @@ export function AppRoutes() {
       />
       <Route path="/splash" element={<SplashRoute />} />
       <Route path="/loading" element={<LoadingRoute />} />
-      <Route path="/login" element={<LoginRoute />} />
       <Route path="/home" element={<HomeRoute />} />
-      <Route path="/split-bill" element={<SplitBillRoute />} />
       <Route path="/transactions" element={<TransactionRoute />} />
       <Route path="/wishlist" element={<WishlistRoute />} />
       <Route path="/profile" element={<ProfileRoute />} />

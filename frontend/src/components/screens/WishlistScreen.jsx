@@ -8,7 +8,6 @@ import {
 } from "../../services/wishlist";
 import { PageLayout } from "../layouts/PageLayout";
 import { PageHeader } from "../headers/PageHeader";
-import { Alert } from "../ui/Alert";
 import { useI18n } from "../../i18n/useI18n";
 
 const defaultForm = {
@@ -16,6 +15,9 @@ const defaultForm = {
   price: "",
   priorityScore: "3",
 };
+
+// We enforce a minimum safe margin percentage that should remain after purchase
+const SAFE_MARGIN_PERCENTAGE = 0.2; // 20% of current balance should remain
 
 function toRupiah(value) {
   return new Intl.NumberFormat("id-ID", {
@@ -30,17 +32,17 @@ function getPriorityLabel(priorityScore) {
 }
 
 function getPriorityTone(priorityScore) {
-  if (priorityScore >= 4) return "bg-[#fee2e2]";
-  if (priorityScore <= 2) return "bg-[#dcfce7]";
-  return "bg-[#fef3c7]";
+  if (priorityScore >= 4) return "bg-red-50 text-red-700";
+  if (priorityScore <= 2) return "bg-green-50 text-green-700";
+  return "bg-amber-50 text-amber-700";
 }
 
 function getCardVisual(index) {
   const visuals = [
-    "bg-[#e1e0ff]",
-    "bg-[#ffdf9f]",
-    "bg-[#ffdcc5]",
-    "bg-[#c7f9cc]",
+    "bg-indigo-50 text-indigo-700",
+    "bg-orange-50 text-orange-700",
+    "bg-emerald-50 text-emerald-700",
+    "bg-sky-50 text-sky-700",
   ];
   return visuals[index % visuals.length];
 }
@@ -51,29 +53,51 @@ function getBuyability(price, balance) {
       label: "No price",
       percent: 0,
       needed: 0,
-      trackClass: "bg-[#f3f4f6]",
-      fillClass: "bg-[#9ca3af]",
-      badgeClass: "bg-[#f3f4f6] text-[#374151]",
-      cardBadge: "bg-[#f3f4f6] text-[#374151]",
+      trackClass: "bg-gray-100",
+      fillClass: "bg-gray-400",
+      badgeClass: "bg-gray-100 text-gray-700",
+      cardBadge: "bg-gray-100 text-gray-700",
       ctaLabel: "Set Price",
       disabled: true,
+      safeMessage: "Please set a valid price.",
     };
   }
 
-  const ratio = balance / price;
+  const safeRemaining = balance * SAFE_MARGIN_PERCENTAGE;
+  const safeTargetPrice = price + safeRemaining;
+  
+  // Progress towards safely buying the item
+  const ratio = balance / safeTargetPrice;
   const percent = Math.max(0, Math.min(100, Math.round(ratio * 100)));
+  const needed = Math.max(0, safeTargetPrice - balance);
 
-  if (ratio >= 1) {
+  if (balance >= price && balance - price >= safeRemaining) {
     return {
       label: "Buyable",
-      percent,
+      percent: 100,
       needed: 0,
-      trackClass: "bg-[#dcfce7]",
-      fillClass: "bg-[#22c55e]",
-      badgeClass: "bg-[#bbf7d0] text-[#14532d]",
-      cardBadge: "bg-[#ffc329] text-[#1c1c13]",
+      trackClass: "bg-green-50",
+      fillClass: "bg-green-500",
+      badgeClass: "bg-green-100 text-green-700",
+      cardBadge: "bg-green-100 text-green-700",
       ctaLabel: "Checkout Now",
       disabled: false,
+      safeMessage: "You can buy this and still have a safe financial buffer.",
+    };
+  }
+
+  if (balance >= price) {
+    return {
+      label: "Unsafe",
+      percent: 100,
+      needed: 0,
+      trackClass: "bg-red-50",
+      fillClass: "bg-red-500",
+      badgeClass: "bg-red-100 text-red-700",
+      cardBadge: "bg-red-100 text-red-700",
+      ctaLabel: "Buy (Risk Warning)",
+      disabled: false,
+      safeMessage: "Warning: Buying this leaves you with little to no emergency funds.",
     };
   }
 
@@ -82,12 +106,13 @@ function getBuyability(price, balance) {
       label: "Almost",
       percent,
       needed: Math.max(0, price - balance),
-      trackClass: "bg-[#fef3c7]",
-      fillClass: "bg-[#f59e0b]",
-      badgeClass: "bg-[#fde68a] text-[#78350f]",
-      cardBadge: "bg-[#fef3c7] text-[#78350f]",
+      trackClass: "bg-amber-50",
+      fillClass: "bg-amber-500",
+      badgeClass: "bg-amber-100 text-amber-700",
+      cardBadge: "bg-amber-100 text-amber-700",
       ctaLabel: "Almost There",
       disabled: true,
+      safeMessage: `Need ${toRupiah(Math.max(0, price - balance))} to afford it.`,
     };
   }
 
@@ -95,12 +120,13 @@ function getBuyability(price, balance) {
     label: "Not yet",
     percent,
     needed: Math.max(0, price - balance),
-    trackClass: "bg-[#fee2e2]",
-    fillClass: "bg-[#ef4444]",
-    badgeClass: "bg-[#fecaca] text-[#7f1d1d]",
-    cardBadge: "bg-[#ef4444] text-white",
+    trackClass: "bg-gray-100",
+    fillClass: "bg-gray-400",
+    badgeClass: "bg-gray-100 text-gray-700",
+    cardBadge: "bg-gray-100 text-gray-700",
     ctaLabel: "Insufficient Funds",
     disabled: true,
+    safeMessage: `Need ${toRupiah(Math.max(0, price - balance))} more.`,
   };
 }
 
@@ -141,7 +167,9 @@ export function WishlistScreen({ mainLogo }) {
         if (cancelled) return;
 
         setWishlistItems(wishlistData.wishlists || []);
-        setCurrentBalance(analyticsData?.savingsGoal?.achieved || 0);
+        // Fetch real netBalance instead of trusting a manual input savings goal
+        const netBal = analyticsData?.overview?.netBalance || 0;
+        setCurrentBalance(netBal > 0 ? netBal : 0);
       } catch (error) {
         if (!cancelled) {
           setErrorMessage(error.message);
@@ -212,17 +240,26 @@ export function WishlistScreen({ mainLogo }) {
       );
     }
 
-    const needed = Math.max(0, highestPriorityItem.price - currentBalance);
-    if (needed === 0) {
+    const safeMargin = currentBalance * SAFE_MARGIN_PERCENTAGE;
+    const safeTargetPrice = highestPriorityItem.price + safeMargin;
+    const neededForSafePurchase = Math.max(0, safeTargetPrice - currentBalance);
+
+    if (currentBalance >= highestPriorityItem.price) {
+      if (currentBalance - highestPriorityItem.price < safeMargin) {
+        return tr(
+          `You have enough to buy ${highestPriorityItem.item}, but it's risky! Wait until you save a bit more to keep your emergency fund safe.`,
+          `Uangmu cukup untuk ${highestPriorityItem.item}, tapi berisiko! Tahan dulu sampai dana daruratmu lebih aman.`
+        );
+      }
       return tr(
-        `You can buy ${highestPriorityItem.item} now. Great discipline and timing.`,
-        `Kamu sudah bisa membeli ${highestPriorityItem.item} sekarang. Disiplin yang bagus.`,
+        `You can safely buy ${highestPriorityItem.item} right now. Great discipline!`,
+        `Kamu sudah bisa membeli ${highestPriorityItem.item} sekarang. Bagus sekali!`,
       );
     }
 
     return tr(
-      `Hold for now. You only need ${toRupiah(needed)} more to safely buy ${highestPriorityItem.item}.`,
-      `Tahan dulu. Kamu hanya butuh ${toRupiah(needed)} lagi untuk membeli ${highestPriorityItem.item} dengan aman.`,
+      `Hold for now. Save ${toRupiah(neededForSafePurchase)} more to safely buy ${highestPriorityItem.item}.`,
+      `Tahan dulu. Tabung ${toRupiah(neededForSafePurchase)} lagi agar bisa membeli ${highestPriorityItem.item} dengan aman.`,
     );
   }, [currentBalance, highestPriorityItem, language]);
 
@@ -364,10 +401,6 @@ export function WishlistScreen({ mainLogo }) {
   };
 
   const onPurchase = async (entry) => {
-    if (getBuyability(entry.price, currentBalance).disabled) {
-      return;
-    }
-
     setErrorMessage("");
     setSuccessMessage("");
 
@@ -397,357 +430,284 @@ export function WishlistScreen({ mainLogo }) {
           backLink="/home"
         />
       }
-      className="space-y-5 lg:space-y-6"
+      className="space-y-6 py-6 lg:p-8"
     >
-      <section className="relative pt-2">
-        <div className="rounded-xl border border-[#1c1c13] bg-white p-4 shadow-[4px_4px_0_#1c1c13]">
-          <div className="flex items-start gap-3">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-full border border-[#1c1c13] bg-[#6366f1]">
-              <span
-                className="material-symbols-outlined text-white"
-                style={{ fontVariationSettings: "'FILL' 1" }}
-              >
-                pets
-              </span>
-            </div>
-            <div>
-              <p className="mb-1 text-[11px] font-black uppercase tracking-wider text-[#4648d4]">
-                {t("hamsterSuggestion", "Hamster Suggestion")}
-              </p>
-              <p className="text-base leading-tight font-bold">
-                {hamsterSuggestion}
-              </p>
-            </div>
-          </div>
+      {/* Top Banner - Hamster Suggestion Integrated */}
+      <section className="rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-5 lg:p-6 shadow-[4px_4px_0_#1c1c13] flex flex-col sm:flex-row items-center sm:items-start gap-4">
+        <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-2 border-[#1c1c13] bg-[#fbbf24] shadow-[2px_2px_0_#1c1c13]">
+          <span className="material-symbols-outlined text-3xl text-[#1c1c13]">pets</span>
         </div>
-        <div className="absolute -bottom-2 left-10 h-4 w-4 rotate-45 border-r border-b border-[#1c1c13] bg-white" />
+        <div className="text-center sm:text-left flex-1">
+          <p className="text-[11px] font-black uppercase tracking-wider text-[#1c1c13] mb-1">
+            {t("hamsterSuggestion", "Smart Suggestion")}
+          </p>
+          <p className="text-sm lg:text-base font-semibold text-[#1c1c13] leading-relaxed">
+            {hamsterSuggestion}
+          </p>
+        </div>
       </section>
 
-      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <article className="rounded-xl border border-[#1c1c13] bg-[#6063ee] p-4 text-white shadow-[2px_2px_0_#1c1c13]">
-          <span
-            className="material-symbols-outlined"
-            style={{ fontVariationSettings: "'FILL' 1" }}
-          >
-            savings
-          </span>
-          <p className="mt-2 text-[10px] font-bold uppercase">
-            {t("totalSaved", "Total Saved")}
+      {/* Summary Cards */}
+      <section className="grid grid-cols-2 gap-3 lg:grid-cols-4 lg:gap-4">
+        <article className="rounded-xl border-2 border-[#1c1c13] bg-[#6366f1] p-5 lg:p-6 text-white shadow-[4px_4px_0_#1c1c13]">
+          <span className="material-symbols-outlined text-white">account_balance_wallet</span>
+          <p className="mt-3 text-[10px] lg:text-xs font-black uppercase tracking-wide text-white">
+            {t("realBalance", "Real Balance")}
           </p>
-          <p className="text-xl font-extrabold">{toRupiah(currentBalance)}</p>
+          <p className="text-xl lg:text-2xl font-black mt-1 truncate">{toRupiah(currentBalance)}</p>
         </article>
-        <article className="rounded-xl border border-[#1c1c13] bg-[#ffc329] p-4 text-[#1c1c13] shadow-[2px_2px_0_#1c1c13]">
-          <span
-            className="material-symbols-outlined"
-            style={{ fontVariationSettings: "'FILL' 1" }}
-          >
-            stars
-          </span>
-          <p className="mt-2 text-[10px] font-bold uppercase">
+        <article className="rounded-xl border-2 border-[#1c1c13] bg-[#fbbf24] p-5 lg:p-6 text-[#1c1c13] shadow-[4px_4px_0_#1c1c13]">
+          <span className="material-symbols-outlined text-[#1c1c13]">stars</span>
+          <p className="mt-3 text-[10px] lg:text-xs font-black uppercase tracking-wide text-[#1c1c13]">
             {t("nextGoal", "Next Goal")}
           </p>
-          <p className="text-xl font-extrabold">{goalProgress}%</p>
+          <p className="text-xl lg:text-2xl font-black text-[#1c1c13] mt-1">{goalProgress}%</p>
         </article>
       </section>
 
-      <section className="overflow-hidden rounded-xl border border-[#1c1c13] bg-[#f8f4e4] shadow-[4px_4px_0_#1c1c13]">
-        <div className="flex items-center justify-between border-b border-[#1c1c13] bg-white p-4">
-          <h3 className="text-sm font-black uppercase tracking-tight">
-            {t("activeGoal", "Active Goal")}:{" "}
-            {highestPriorityItem
-              ? highestPriorityItem.item
-              : t("noItemYet", "No item yet")}
-          </h3>
-          <span className="rounded-full border border-[#1c1c13] bg-[#ffc329] px-2 py-0.5 text-[10px] font-black uppercase">
-            {highestPriorityItem
-              ? `${getPriorityLabel(highestPriorityItem.priorityScore)} ${t("priority", "Priority")}`
-              : t("setPriority", "Set Priority")}
-          </span>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Left Column: Form & Goal Settings */}
+        <div className="lg:col-span-1 space-y-6">
+          <section className="rounded-xl border-2 border-[#1c1c13] bg-white p-5 lg:p-6 shadow-[4px_4px_0_#1c1c13]">
+            <h3 className="text-sm font-black uppercase tracking-wide text-[#1c1c13] border-b-2 border-[#1c1c13] pb-3">
+              {editingId
+                ? t("editWishlistItem", "Edit Wishlist Item")
+                : t("addWishlistItem", "Add Wishlist Item")}
+            </h3>
+            <form className="mt-4 grid gap-4" onSubmit={onSubmit}>
+              <div>
+                <label className="mb-2 block text-[10px] font-black uppercase text-[#1c1c13]">Item Name</label>
+                <input
+                  name="item"
+                  value={form.item}
+                  onChange={onChangeForm}
+                  placeholder={t("itemName", "Item name")}
+                  className="min-h-[2.75rem] w-full rounded-lg border-2 border-[#1c1c13] bg-white px-3 text-sm font-bold outline-none focus:border-[#6366f1] shadow-[2px_2px_0_#1c1c13]"
+                />
+                {fieldErrors.item ? <p className="mt-1 text-xs font-black text-[#ef4444]">{fieldErrors.item}</p> : null}
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="mb-2 block text-[10px] font-black uppercase text-[#1c1c13]">Price (Rp)</label>
+                  <input
+                    name="price"
+                    type="text"
+                    inputMode="numeric"
+                    value={form.price}
+                    onChange={onChangeForm}
+                    placeholder="0"
+                    className="min-h-[2.75rem] w-full rounded-lg border-2 border-[#1c1c13] bg-white px-3 text-sm font-bold outline-none focus:border-[#6366f1] shadow-[2px_2px_0_#1c1c13]"
+                  />
+                </div>
+                <div>
+                  <label className="mb-2 block text-[10px] font-black uppercase text-[#1c1c13]">Priority</label>
+                  <select
+                    name="priorityScore"
+                    value={form.priorityScore}
+                    onChange={onChangeForm}
+                    className="min-h-[2.75rem] w-full rounded-lg border-2 border-[#1c1c13] bg-white px-3 text-sm font-bold outline-none focus:border-[#6366f1] shadow-[2px_2px_0_#1c1c13]"
+                  >
+                    <option value="5">P5 (Highest)</option>
+                    <option value="4">P4</option>
+                    <option value="3">P3</option>
+                    <option value="2">P2</option>
+                    <option value="1">P1 (Lowest)</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div className="flex gap-2 pt-2">
+                <button
+                  type="button"
+                  onClick={resetForm}
+                  className="min-h-[2.75rem] flex-1 rounded-lg border-2 border-[#1c1c13] bg-white px-3 text-[11px] font-black uppercase text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                >
+                  Reset
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSaving}
+                  className="min-h-[2.75rem] flex-[2] rounded-lg border-2 border-[#1c1c13] bg-[#6366f1] px-3 text-[11px] font-black uppercase text-white shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-50 disabled:shadow-none disabled:translate-y-0"
+                >
+                  {isSaving ? "Saving..." : editingId ? "Update Item" : "Add Item"}
+                </button>
+              </div>
+            </form>
+          </section>
+
+          {/* Goal Setting */}
+          <section className="rounded-xl border-2 border-[#1c1c13] bg-white p-5 lg:p-6 shadow-[4px_4px_0_#1c1c13]">
+             <div className="mb-4">
+              <h3 className="text-sm font-black uppercase tracking-tight text-[#1c1c13]">
+                {t("activeGoal", "Active Goal")}:{" "}
+                {highestPriorityItem ? highestPriorityItem.item : t("noItemYet", "None")}
+              </h3>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-end justify-between">
+                <p className="text-xl font-black text-[#1c1c13]">
+                  {toRupiah(Math.min(currentBalance, highestPriorityItem?.price || 0))}
+                  <span className="ml-1 text-xs font-bold text-gray-500">
+                    / {toRupiah(highestPriorityItem?.price || goalTarget)}
+                  </span>
+                </p>
+                <span className="font-black text-[#6366f1]">{featuredProgress}%</span>
+              </div>
+              <div className="h-4 w-full overflow-hidden rounded-full border-2 border-[#1c1c13] bg-white">
+                <div
+                  className="h-full bg-[#6366f1] border-r-2 border-[#1c1c13] transition-all duration-500"
+                  style={{ width: `${featuredProgress}%` }}
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-black uppercase text-[#1c1c13] mb-2">
+                  {t("savingsGoal", "Target Savings")} (Rp)
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={goalTarget}
+                  onChange={(event) => setGoalTarget(Number(event.target.value) || 0)}
+                  className="min-h-[2.75rem] w-full rounded-lg border-2 border-[#1c1c13] bg-white px-3 text-sm font-bold outline-none focus:border-[#6366f1] shadow-[2px_2px_0_#1c1c13]"
+                />
+              </div>
+            </div>
+          </section>
         </div>
 
-        <div className="space-y-4 p-4">
-          <div className="flex items-end justify-between">
-            <p className="text-2xl font-extrabold">
-              {toRupiah(
-                Math.min(currentBalance, highestPriorityItem?.price || 0),
-              )}
-              <span className="ml-1 text-sm font-semibold text-[#464554]">
-                / {toRupiah(highestPriorityItem?.price || goalTarget)}
-              </span>
-            </p>
-            <span className="font-black text-[#4648d4]">
-              {featuredProgress}%
-            </span>
-          </div>
-
-          <div className="h-7 w-full overflow-hidden rounded-full border-2 border-[#1c1c13] bg-white p-1">
-            <div
-              className="h-full rounded-full border border-[#1c1c13] bg-[#4648d4]"
-              style={{ width: `${featuredProgress}%` }}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-2">
-            <label className="block text-[10px] font-black uppercase">
-              {t("balance", "Balance")} (Rp)
-              <input
-                type="number"
-                value={currentBalance}
-                onChange={(event) =>
-                  setCurrentBalance(Number(event.target.value) || 0)
-                }
-                className="mt-1 min-h-11 w-full rounded-lg border border-[#1c1c13] bg-white px-3 text-sm"
-              />
-            </label>
-            <label className="block text-[10px] font-black uppercase">
-              {t("goal", "Goal")} (Rp)
-              <input
-                type="number"
-                min="1"
-                value={goalTarget}
-                onChange={(event) =>
-                  setGoalTarget(Number(event.target.value) || 0)
-                }
-                className="mt-1 min-h-11 w-full rounded-lg border border-[#1c1c13] bg-white px-3 text-sm"
-              />
-            </label>
-          </div>
-        </div>
-      </section>
-
-      <section className="rounded-xl border border-[#1c1c13] bg-white p-4 shadow-[2px_2px_0_#1c1c13]">
-        <h3 className="text-sm font-black uppercase tracking-wide">
-          {editingId
-            ? t("editWishlistItem", "Edit Wishlist Item")
-            : t("addWishlistItem", "Add Wishlist Item")}
-        </h3>
-        <form className="mt-3 grid gap-2" onSubmit={onSubmit}>
-          <input
-            name="item"
-            value={form.item}
-            onChange={onChangeForm}
-            placeholder={t("itemName", "Item name")}
-            className="min-h-11 rounded-lg border border-[#1c1c13] bg-[#fffbeb] px-3 text-sm font-semibold"
-          />
-          {fieldErrors.item ? (
-            <p className="text-xs font-bold text-[#b91c1c]">
-              {fieldErrors.item}
-            </p>
-          ) : null}
-          <div className="grid grid-cols-2 gap-2">
-            <input
-              name="price"
-              type="text"
-              inputMode="numeric"
-              value={form.price}
-              onChange={onChangeForm}
-              placeholder="Price (Rp)"
-              className="min-h-11 rounded-lg border border-[#1c1c13] bg-[#fffbeb] px-3 text-sm font-semibold"
-            />
-            <select
-              name="priorityScore"
-              value={form.priorityScore}
-              onChange={onChangeForm}
-              className="min-h-11 rounded-lg border border-[#1c1c13] bg-[#fffbeb] px-3 text-sm font-semibold"
-            >
-              <option value="5">Priority 5 (Highest)</option>
-              <option value="4">Priority 4</option>
-              <option value="3">Priority 3</option>
-              <option value="2">Priority 2</option>
-              <option value="1">Priority 1 (Lowest)</option>
-            </select>
-          </div>
-          {fieldErrors.price ? (
-            <p className="text-xs font-bold text-[#b91c1c]">
-              {fieldErrors.price}
-            </p>
-          ) : null}
-          {fieldErrors.priorityScore ? (
-            <p className="text-xs font-bold text-[#b91c1c]">
-              {fieldErrors.priorityScore}
-            </p>
-          ) : null}
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              type="submit"
-              disabled={isSaving}
-              className="min-h-11 rounded-lg border border-[#1c1c13] bg-[#4648d4] px-3 text-xs font-black uppercase text-white shadow-[2px_2px_0_#1c1c13]"
-            >
-              {isSaving ? "Saving..." : editingId ? "Update Item" : "Add Item"}
-            </button>
-            <button
-              type="button"
-              onClick={resetForm}
-              className="min-h-11 rounded-lg border border-[#1c1c13] bg-white px-3 text-xs font-black uppercase shadow-[2px_2px_0_#1c1c13]"
-            >
-              Reset
-            </button>
-          </div>
-        </form>
-      </section>
-
-      <section className="space-y-4">
-        <div className="flex gap-2">
-          <div className="flex-1">
+        {/* Right Column: List & Filters */}
+        <div className="lg:col-span-2 space-y-6">
+          <div className="flex gap-2">
             <input
               type="text"
               value={searchQuery}
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search wishlist..."
-              className="min-h-11 w-full rounded-lg border border-[#1c1c13] bg-white px-3 text-sm font-semibold"
+              className="min-h-[2.75rem] flex-1 rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1]"
             />
+            <select
+              value={priorityFilter}
+              onChange={(event) => setPriorityFilter(event.target.value)}
+              className="min-h-[2.75rem] rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1]"
+            >
+              <option value="ALL">All Prio</option>
+              <option value="5">P5</option>
+              <option value="4">P4</option>
+              <option value="3">P3</option>
+              <option value="2">P2</option>
+              <option value="1">P1</option>
+            </select>
           </div>
-          <select
-            value={priorityFilter}
-            onChange={(event) => setPriorityFilter(event.target.value)}
-            className="min-h-11 rounded-lg border border-[#1c1c13] bg-white px-3 text-sm font-bold"
-            aria-label="Filter by priority"
-          >
-            <option value="ALL">All</option>
-            <option value="5">P5</option>
-            <option value="4">P4</option>
-            <option value="3">P3</option>
-            <option value="2">P2</option>
-            <option value="1">P1</option>
-          </select>
-        </div>
-      </section>
 
-      {errorMessage ? (
-        <section className="rounded-xl border border-black bg-[#fee2e2] p-3 text-sm font-semibold text-[#7f1d1d]">
-          {errorMessage}
-        </section>
-      ) : null}
-      {successMessage ? (
-        <section className="rounded-xl border border-black bg-[#dcfce7] p-3 text-sm font-semibold text-[#14532d]">
-          {successMessage}
-        </section>
-      ) : null}
+          {errorMessage && (
+            <div className="rounded-lg border-2 border-[#1c1c13] bg-[#ef4444] text-white p-3 text-sm font-black shadow-[2px_2px_0_#1c1c13]">
+              {errorMessage}
+            </div>
+          )}
+          {successMessage && (
+            <div className="rounded-lg border-2 border-[#1c1c13] bg-[#22c55e] text-[#1c1c13] p-3 text-sm font-black shadow-[2px_2px_0_#1c1c13]">
+              {successMessage}
+            </div>
+          )}
 
-      <section className="pb-4">
-        <div className="mb-3 flex items-center justify-between">
-          <h3 className="text-xl font-black tracking-tight">Wishlist Items</h3>
-          <p className="text-xs font-bold uppercase text-[#464554]">
-            Total {toRupiah(totalWishlistCost)}
-          </p>
-        </div>
+          <div className="flex items-center justify-between">
+            <h3 className="text-lg lg:text-xl font-black tracking-tight text-[#1c1c13]">Wishlist Items</h3>
+            <span className="rounded border-2 border-[#1c1c13] bg-[#fbbf24] px-3 py-1 text-[10px] font-black uppercase text-[#1c1c13]">
+              Total {toRupiah(totalWishlistCost)}
+            </span>
+          </div>
 
-        {isLoading ? (
-          <p className="text-sm font-semibold">Loading wishlist...</p>
-        ) : null}
-        {!isLoading && filteredItems.length === 0 ? (
-          <article className="rounded-xl border border-[#1c1c13] bg-white p-4 text-sm font-semibold shadow-[2px_2px_0_#1c1c13]">
-            No wishlist item matches your filter.
-          </article>
-        ) : null}
+          {isLoading ? (
+            <p className="text-sm font-black text-[#1c1c13]">Loading wishlist...</p>
+          ) : filteredItems.length === 0 ? (
+            <div className="rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-8 text-center shadow-[4px_4px_0_#1c1c13]">
+              <p className="text-sm font-black text-[#1c1c13]">No wishlist item matches your filter.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {filteredItems.map((entry, index) => {
+                const buyability = getBuyability(entry.price, currentBalance);
 
-        <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
-          {filteredItems.map((entry, index) => {
-            const buyability = getBuyability(entry.price, currentBalance);
-
-            return (
-              <article
-                key={entry.id}
-                className="overflow-hidden rounded-xl border border-[#1c1c13] bg-white shadow-[4px_4px_0_#1c1c13]"
-              >
-                <div
-                  className={`relative h-36 border-b border-[#1c1c13] ${getCardVisual(index)}`}
-                >
-                  <div
-                    className={`absolute right-3 top-3 rounded border border-[#1c1c13] px-2 py-1 text-[10px] font-black uppercase shadow-[2px_2px_0_#1c1c13] ${buyability.cardBadge}`}
+                return (
+                  <article
+                    key={entry.id}
+                    className="flex flex-col overflow-hidden rounded-xl border-2 border-[#1c1c13] bg-white shadow-[4px_4px_0_#1c1c13] transition-transform hover:-translate-y-0.5 active:translate-y-0 active:shadow-[2px_2px_0_#1c1c13]"
                   >
-                    {buyability.label}
-                  </div>
-                  <div className="flex h-full items-center justify-center px-4">
-                    <p className="text-center text-xl font-black tracking-tight">
-                      {entry.item}
-                    </p>
-                  </div>
-                </div>
-
-                <div className="space-y-3 p-4">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <h4 className="text-lg font-black tracking-tight">
+                    <div className={`relative h-28 flex items-center justify-center p-4 border-b-2 border-[#1c1c13] bg-[#fffbeb]`}>
+                      <span className={`absolute right-3 top-3 rounded border-2 border-[#1c1c13] px-2 py-1 text-[10px] font-black uppercase ${buyability.cardBadge}`}>
+                        {buyability.label}
+                      </span>
+                      <h4 className="text-center text-lg font-black tracking-tight line-clamp-2 text-[#1c1c13]">
                         {entry.item}
                       </h4>
-                      <p className="text-sm font-bold text-[#464554]">
-                        {toRupiah(entry.price)}
-                      </p>
                     </div>
-                    <span
-                      className={`rounded-full border border-[#1c1c13] px-2 py-1 text-[10px] font-black uppercase ${getPriorityTone(entry.priorityScore)}`}
-                    >
-                      {getPriorityLabel(entry.priorityScore)}
-                    </span>
-                  </div>
 
-                  <div className="rounded-lg border border-[#1c1c13] bg-[#f8f4e4] p-3">
-                    <div className="mb-2 flex items-center justify-between">
-                      <span className="text-[10px] font-black uppercase text-[#464554]">
-                        Buyability Meter
-                      </span>
-                      <span
-                        className={`rounded-full border border-[#1c1c13] px-2 py-0.5 text-[10px] font-black uppercase ${buyability.badgeClass}`}
-                      >
-                        {buyability.percent}%
-                      </span>
-                    </div>
-                    <div
-                      className={`h-2.5 w-full overflow-hidden rounded-full border border-[#1c1c13] ${buyability.trackClass}`}
-                    >
-                      <div
-                        className={`h-full border-r border-[#1c1c13] ${buyability.fillClass}`}
-                        style={{ width: `${buyability.percent}%` }}
-                      />
-                    </div>
-                    {buyability.needed > 0 ? (
-                      <p className="mt-2 text-[11px] font-bold text-[#7f1d1d]">
-                        Need {toRupiah(buyability.needed)} more to buy safely.
-                      </p>
-                    ) : (
-                      <p className="mt-2 text-[11px] font-bold text-[#14532d]">
-                        Budget ready for checkout.
-                      </p>
-                    )}
-                  </div>
+                    <div className="flex flex-col flex-1 p-4 lg:p-5">
+                      <div className="flex items-start justify-between gap-2 mb-4">
+                        <div>
+                          <p className="text-lg font-black text-[#1c1c13]">{toRupiah(entry.price)}</p>
+                        </div>
+                        <span className={`rounded border-2 border-[#1c1c13] px-2 py-0.5 text-[10px] font-black uppercase bg-[#fffbeb] text-[#1c1c13]`}>
+                          {getPriorityLabel(entry.priorityScore)}
+                        </span>
+                      </div>
 
-                  <div className="grid grid-cols-[1fr_auto_auto] gap-2">
-                    <button
-                      type="button"
-                      disabled={buyability.disabled}
-                      onClick={() => onPurchase(entry)}
-                      className={`min-h-11 rounded-lg border border-[#1c1c13] px-3 text-[11px] font-black uppercase shadow-[2px_2px_0_#1c1c13] ${
-                        buyability.disabled
-                          ? "cursor-not-allowed bg-[#e6e3d3] text-[#464554]"
-                          : "bg-[#4648d4] text-white"
-                      }`}
-                    >
-                      {buyability.ctaLabel}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onEdit(entry)}
-                      className="flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-[#1c1c13] bg-[#ffc329] shadow-[2px_2px_0_#1c1c13]"
-                      aria-label={`Edit ${entry.item}`}
-                    >
-                      <span className="material-symbols-outlined">edit</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => onDelete(entry.id)}
-                      className="flex min-h-11 min-w-11 items-center justify-center rounded-lg border border-[#1c1c13] bg-white shadow-[2px_2px_0_#1c1c13]"
-                      aria-label={`Delete ${entry.item}`}
-                    >
-                      <span className="material-symbols-outlined">delete</span>
-                    </button>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
+                      <div className="rounded-lg border-2 border-[#1c1c13] bg-[#fffbeb] p-3 mb-4 shadow-[2px_2px_0_#1c1c13]">
+                        <div className="mb-2 flex items-center justify-between">
+                          <span className="text-[10px] font-black uppercase text-[#1c1c13]">Buyability</span>
+                          <span className={`rounded border-2 border-[#1c1c13] px-2 py-0.5 text-[10px] font-black uppercase ${buyability.badgeClass}`}>
+                            {buyability.percent}%
+                          </span>
+                        </div>
+                        <div className={`h-3 w-full overflow-hidden rounded-full border-2 border-[#1c1c13] bg-white`}>
+                          <div
+                            className={`h-full border-r-2 border-[#1c1c13] transition-all duration-500 ${buyability.fillClass}`}
+                            style={{ width: `${buyability.percent}%` }}
+                          />
+                        </div>
+                        <p className={`mt-2 text-[10px] font-black ${buyability.label === 'Unsafe' ? 'text-[#ef4444]' : 'text-[#1c1c13]'}`}>
+                          {buyability.safeMessage}
+                        </p>
+                      </div>
+
+                      <div className="mt-auto grid grid-cols-[1fr_auto_auto] gap-2">
+                        <button
+                          type="button"
+                          onClick={() => onPurchase(entry)}
+                          className={`rounded-lg border-2 border-[#1c1c13] px-3 text-[11px] font-black uppercase shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0 transition-all ${
+                            buyability.disabled
+                              ? "bg-gray-100 text-[#1c1c13] opacity-50 shadow-none hover:translate-y-0"
+                              : buyability.label === 'Unsafe'
+                                ? "bg-[#ef4444] text-white"
+                                : "bg-[#6366f1] text-white"
+                          }`}
+                        >
+                          {buyability.ctaLabel}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onEdit(entry)}
+                          className="flex min-h-[2.5rem] min-w-[2.5rem] items-center justify-center rounded-lg border-2 border-[#1c1c13] bg-white text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                        >
+                          <span className="material-symbols-outlined text-sm">edit</span>
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => onDelete(entry.id)}
+                          className="flex min-h-[2.5rem] min-w-[2.5rem] items-center justify-center rounded-lg border-2 border-[#1c1c13] bg-[#ef4444] text-white shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                        >
+                          <span className="material-symbols-outlined text-sm">delete</span>
+                        </button>
+                      </div>
+                    </div>
+                  </article>
+                );
+              })}
+            </div>
+          )}
         </div>
-      </section>
+      </div>
     </PageLayout>
   );
 }

@@ -1,4 +1,5 @@
 import { useI18n } from '../../i18n/useI18n'
+import { Button } from '../ui/Button'
 
 /**
  * AppHeader - Standard header for main app pages
@@ -43,36 +44,37 @@ export function AppHeader({ mainLogo, onSettingsClick, onRefreshClick, onAddTran
 
         <div className="flex items-center gap-2 lg:gap-3">
           {onSettingsClick && (
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="icon"
               onClick={onSettingsClick}
-              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[#1c1c13] bg-white shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
               aria-label={t('settings', 'Settings')}
             >
               <span className="material-symbols-outlined">settings</span>
-            </button>
+            </Button>
           )}
 
           {onRefreshClick && (
-            <button
-              type="button"
+            <Button
+              variant="secondary"
+              size="icon"
+              className="bg-[#fffbeb]"
               onClick={onRefreshClick}
-              className="flex h-10 w-10 items-center justify-center rounded-2xl border border-[#1c1c13] bg-[#fffbeb] shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none"
               aria-label={t('refresh', 'Refresh')}
             >
               <span className="material-symbols-outlined">sync</span>
-            </button>
+            </Button>
           )}
 
           {onAddTransactionClick && (
-            <button
-              type="button"
+            <Button
+              size="sm"
               onClick={onAddTransactionClick}
-              className="hidden h-11 items-center gap-2 rounded-2xl border border-[#1c1c13] bg-[#6366f1] px-4 text-sm font-black text-white shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] transition-all active:translate-x-0.5 active:translate-y-0.5 active:shadow-none lg:inline-flex"
+              className="hidden lg:inline-flex gap-2 min-h-11 rounded-2xl"
             >
               <span className="material-symbols-outlined">add</span>
               {t('addTransaction', 'Add Transaction')}
-            </button>
+            </Button>
           )}
 
           <img
