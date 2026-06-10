@@ -281,15 +281,19 @@ export function ProfileSettingsScreen({ mainLogo }) {
         </section>
 
         {message ? (
-          <Alert type="success" onClose={() => setMessage('')}>
-            {message}
-          </Alert>
+          <div className="lg:col-span-12">
+            <Alert type="success" onClose={() => setMessage('')}>
+              {message}
+            </Alert>
+          </div>
         ) : null}
 
         {errorMessage ? (
-          <Alert type="error" onClose={() => setErrorMessage('')}>
-            {errorMessage}
-          </Alert>
+          <div className="lg:col-span-12">
+            <Alert type="error" onClose={() => setErrorMessage('')}>
+              {errorMessage}
+            </Alert>
+          </div>
         ) : null}
 
         <section className="rounded-xl border-2 border-[#1c1c13] bg-white p-6 shadow-[4px_4px_0_#1c1c13] lg:col-span-6">
