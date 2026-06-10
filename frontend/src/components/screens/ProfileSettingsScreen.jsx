@@ -263,6 +263,11 @@ export function ProfileSettingsScreen({ mainLogo }) {
     [authUser?.id, tr]
   )
 
+  const handleLogout = useCallback(() => {
+    clearAuthSession()
+    navigate('/login', { replace: true })
+  }, [navigate])
+
   return (
     <PageLayout
       header={
@@ -544,6 +549,18 @@ export function ProfileSettingsScreen({ mainLogo }) {
               </Button>
             </form>
           </div>
+        </section>
+
+        <section className="lg:col-span-12 mt-4">
+          <Button
+            type="button"
+            onClick={handleLogout}
+            className="!bg-[#ef4444] text-white hover:!bg-[#dc2626]"
+            fullWidth
+          >
+            <span className="material-symbols-outlined mr-2">logout</span>
+            {t('logout', 'Log Out')}
+          </Button>
         </section>
     </PageLayout>
   )
