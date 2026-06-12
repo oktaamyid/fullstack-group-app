@@ -197,12 +197,12 @@ export function TransactionScreen({ mainLogo }) {
           {activeViewTab === "PERSONAL" ? (
             <>
               {/* Summary Cards */}
-              <div className="grid grid-cols-2 gap-3 lg:grid-cols-3 lg:gap-4">
-                <article className="rounded-xl border-2 border-[#1c1c13] bg-[#22c55e] p-4 lg:p-6 shadow-[4px_4px_0_#1c1c13] text-[#1c1c13]">
-                  <p className="text-[10px] lg:text-xs font-black uppercase">
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 lg:gap-4">
+                <article className="min-w-0 rounded-xl border-2 border-[#1c1c13] bg-[#22c55e] p-2.5 shadow-[4px_4px_0_#1c1c13] text-[#1c1c13] sm:p-4 lg:p-5">
+                  <p className="text-[9px] font-black uppercase sm:text-[10px] lg:text-xs">
                     {t("income", "Income")}
                   </p>
-                  <p className="text-lg lg:text-3xl font-black mt-2">
+                  <p className="mt-2 overflow-hidden text-ellipsis whitespace-nowrap text-[clamp(0.7rem,2.1vw,1.5rem)] font-black leading-tight">
                     {formatCurrencyByPreference(
                       txSummary.income,
                       settings.language,
@@ -210,11 +210,11 @@ export function TransactionScreen({ mainLogo }) {
                     )}
                   </p>
                 </article>
-                <article className="rounded-xl border-2 border-[#1c1c13] bg-[#ef4444] p-4 lg:p-6 shadow-[4px_4px_0_#1c1c13] text-white">
-                  <p className="text-[10px] lg:text-xs font-black uppercase">
+                <article className="min-w-0 rounded-xl border-2 border-[#1c1c13] bg-[#ef4444] p-2.5 shadow-[4px_4px_0_#1c1c13] text-white sm:p-4 lg:p-5">
+                  <p className="text-[9px] font-black uppercase sm:text-[10px] lg:text-xs">
                     {t("expense", "Expense")}
                   </p>
-                  <p className="text-lg lg:text-3xl font-black mt-2">
+                  <p className="mt-2 overflow-hidden text-ellipsis whitespace-nowrap text-[clamp(0.7rem,2.1vw,1.5rem)] font-black leading-tight">
                     {formatCurrencyByPreference(
                       txSummary.expense,
                       settings.language,
@@ -222,12 +222,12 @@ export function TransactionScreen({ mainLogo }) {
                     )}
                   </p>
                 </article>
-                <article className="hidden lg:block rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-6 shadow-[4px_4px_0_#1c1c13]">
-                  <p className="text-xs font-black uppercase text-[#1c1c13]">
+                <article className="min-w-0 rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-2.5 shadow-[4px_4px_0_#1c1c13] sm:p-4 lg:p-5">
+                  <p className="text-[9px] font-black uppercase text-[#1c1c13] sm:text-[10px] lg:text-xs">
                     {t("netBalance", "Net Balance")}
                   </p>
                   <p
-                    className={`text-3xl font-black mt-2 ${txSummary.net >= 0 ? "text-[#1c1c13]" : "text-[#ef4444]"}`}
+                    className={`mt-2 overflow-hidden text-ellipsis whitespace-nowrap text-[clamp(0.7rem,2.1vw,1.5rem)] font-black leading-tight ${txSummary.net >= 0 ? "text-[#1c1c13]" : "text-[#ef4444]"}`}
                   >
                     {formatCurrencyByPreference(
                       txSummary.net,

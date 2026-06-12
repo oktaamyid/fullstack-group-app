@@ -20,8 +20,8 @@ export function AppHeader({ mainLogo, onSettingsClick, onRefreshClick, onAddTran
     <header
       className={`sticky top-0 z-50 border-b border-[#1c1c13] bg-[#fffbeb] px-4 py-3 shadow-[4px_4px_0px_0px_rgba(28,28,19,1)] lg:py-4 ${className}`}
     >
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between gap-3 lg:max-w-none lg:justify-between">
-        <div className="flex items-center gap-3 lg:hidden">
+      <div className="mx-auto flex w-full max-w-6xl items-center gap-3 lg:max-w-none">
+        <div className="flex shrink-0 items-center gap-3 lg:hidden">
           <img src={mainLogo} alt="LIVO mascot" className="h-10 w-auto rounded-md border border-[#1c1c13] bg-white p-1" />
           <span className="text-2xl font-black tracking-tight">LIVO</span>
         </div>
@@ -42,7 +42,7 @@ export function AppHeader({ mainLogo, onSettingsClick, onRefreshClick, onAddTran
           </label>
         </div>
 
-        <div className="flex items-center gap-2 lg:gap-3">
+        <div className="ml-auto flex shrink-0 items-center gap-2 lg:gap-3">
           {onSettingsClick && (
             <Button
               variant="secondary"
@@ -67,14 +67,16 @@ export function AppHeader({ mainLogo, onSettingsClick, onRefreshClick, onAddTran
           )}
 
           {onAddTransactionClick && (
-            <Button
-              size="sm"
-              onClick={onAddTransactionClick}
-              className="hidden lg:inline-flex gap-2 min-h-11 rounded-2xl"
-            >
-              <span className="material-symbols-outlined">add</span>
-              {t('addTransaction', 'Add Transaction')}
-            </Button>
+            <div className="hidden lg:block">
+              <Button
+                size="sm"
+                onClick={onAddTransactionClick}
+                className="min-h-11 gap-2 rounded-2xl"
+              >
+                <span className="material-symbols-outlined">add</span>
+                {t('addTransaction', 'Add Transaction')}
+              </Button>
+            </div>
           )}
 
           <img
