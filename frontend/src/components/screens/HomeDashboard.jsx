@@ -168,22 +168,13 @@ export function HomeDashboard({
                 />
               </div>
 
-              <div className="mt-6 grid grid-cols-4 gap-2 sm:gap-3">
+              <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-3">
                 <article className="flex min-w-0 flex-col justify-between rounded-xl border-2 border-[#1c1c13] bg-white p-2.5 shadow-[4px_4px_0_#1c1c13] sm:min-h-24 sm:p-4">
                   <p className="text-[9px] font-bold uppercase leading-tight tracking-wide text-gray-500 sm:text-[10px]">
                     {t("dailyLimit", "Daily Limit")}
                   </p>
-                  <p className="mt-2 whitespace-nowrap text-[clamp(0.72rem,2.7vw,1.25rem)] font-black leading-none text-gray-900">
+                  <p className="mt-2 whitespace-nowrap text-[clamp(0.8rem,3.2vw,1.25rem)] font-black leading-none text-gray-900">
                     {toCompactRupiah(dailyLimit)}
-                  </p>
-                </article>
-
-                <article className="flex min-w-0 flex-col justify-between rounded-xl border-2 border-[#1c1c13] bg-white p-2.5 shadow-[4px_4px_0_#1c1c13] sm:min-h-24 sm:p-4">
-                  <p className="text-[9px] font-bold uppercase leading-tight tracking-wide text-gray-500 sm:text-[10px]">
-                    {t("weeklySpend", "Weekly Spend")}
-                  </p>
-                  <p className="mt-2 whitespace-nowrap text-[clamp(0.72rem,2.7vw,1.25rem)] font-black leading-none text-gray-900">
-                    {toCompactRupiah(weeklySpend)}
                   </p>
                 </article>
 
@@ -192,7 +183,7 @@ export function HomeDashboard({
                     {t("netBalance", "Net Balance")}
                   </p>
                   <p
-                    className={`mt-2 whitespace-nowrap text-[clamp(0.72rem,2.7vw,1.25rem)] font-black leading-none ${transactionSummary.netBalance >= 0 ? "text-green-700" : "text-red-600"}`}
+                    className={`mt-2 whitespace-nowrap text-[clamp(0.8rem,3.2vw,1.25rem)] font-black leading-none ${transactionSummary.netBalance >= 0 ? "text-green-700" : "text-red-600"}`}
                   >
                     {toCompactRupiah(transactionSummary.netBalance)}
                   </p>
@@ -202,7 +193,7 @@ export function HomeDashboard({
                   <p className="text-[9px] font-bold uppercase leading-tight tracking-wide text-gray-500 sm:text-[10px]">
                     {t("splitTotal", "Split Total")}
                   </p>
-                  <p className="mt-2 whitespace-nowrap text-[clamp(0.72rem,2.7vw,1.25rem)] font-black leading-none text-gray-900">
+                  <p className="mt-2 whitespace-nowrap text-[clamp(0.8rem,3.2vw,1.25rem)] font-black leading-none text-gray-900">
                     {toCompactRupiah(splitSummary.total)}
                   </p>
                 </article>
