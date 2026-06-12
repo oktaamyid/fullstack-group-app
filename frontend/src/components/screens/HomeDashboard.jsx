@@ -14,6 +14,28 @@ function toRupiah(value) {
   }).format(value || 0);
 }
 
+function toCompactRupiah(value) {
+  const numericValue = Number(value) || 0;
+  const absoluteValue = Math.abs(numericValue);
+  const units = [
+    { minimum: 1_000_000_000_000, divisor: 1_000_000_000_000, suffix: "Tr" },
+    { minimum: 1_000_000_000, divisor: 1_000_000_000, suffix: "M" },
+    { minimum: 1_000_000, divisor: 1_000_000, suffix: "Jt" },
+    { minimum: 1_000, divisor: 1_000, suffix: "Rb" },
+  ];
+  const unit = units.find(({ minimum }) => absoluteValue >= minimum);
+
+  if (!unit) {
+    return `Rp ${new Intl.NumberFormat("id-ID").format(numericValue)}`;
+  }
+
+  const compactValue = new Intl.NumberFormat("id-ID", {
+    maximumFractionDigits: 1,
+  }).format(numericValue / unit.divisor);
+
+  return `Rp ${compactValue} ${unit.suffix}`;
+}
+
 function formatDate(value, language) {
   if (!value) {
     return "-";
@@ -146,42 +168,42 @@ export function HomeDashboard({
                 />
               </div>
 
-              <div className="mt-6 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-                <article className="rounded-xl border-2 border-[#1c1c13] bg-white p-4 shadow-[4px_4px_0_#1c1c13]">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
+              <div className="mt-6 grid grid-cols-4 gap-2 sm:gap-3">
+                <article className="flex min-w-0 flex-col justify-between rounded-xl border-2 border-[#1c1c13] bg-white p-2.5 shadow-[4px_4px_0_#1c1c13] sm:min-h-24 sm:p-4">
+                  <p className="text-[9px] font-bold uppercase leading-tight tracking-wide text-gray-500 sm:text-[10px]">
                     {t("dailyLimit", "Daily Limit")}
                   </p>
-                  <p className="mt-1.5 text-xl font-black text-gray-900">
-                    {toRupiah(dailyLimit)}
+                  <p className="mt-2 whitespace-nowrap text-[clamp(0.72rem,2.7vw,1.25rem)] font-black leading-none text-gray-900">
+                    {toCompactRupiah(dailyLimit)}
                   </p>
                 </article>
 
-                <article className="rounded-xl border-2 border-[#1c1c13] bg-white p-4 shadow-[4px_4px_0_#1c1c13]">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
+                <article className="flex min-w-0 flex-col justify-between rounded-xl border-2 border-[#1c1c13] bg-white p-2.5 shadow-[4px_4px_0_#1c1c13] sm:min-h-24 sm:p-4">
+                  <p className="text-[9px] font-bold uppercase leading-tight tracking-wide text-gray-500 sm:text-[10px]">
                     {t("weeklySpend", "Weekly Spend")}
                   </p>
-                  <p className="mt-1.5 text-xl font-black text-gray-900">
-                    {toRupiah(weeklySpend)}
+                  <p className="mt-2 whitespace-nowrap text-[clamp(0.72rem,2.7vw,1.25rem)] font-black leading-none text-gray-900">
+                    {toCompactRupiah(weeklySpend)}
                   </p>
                 </article>
 
-                <article className="rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-4 shadow-[4px_4px_0_#1c1c13]">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
+                <article className="flex min-w-0 flex-col justify-between rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-2.5 shadow-[4px_4px_0_#1c1c13] sm:min-h-24 sm:p-4">
+                  <p className="text-[9px] font-bold uppercase leading-tight tracking-wide text-gray-500 sm:text-[10px]">
                     {t("netBalance", "Net Balance")}
                   </p>
                   <p
-                    className={`mt-1.5 text-xl font-black ${transactionSummary.netBalance >= 0 ? "text-green-700" : "text-red-600"}`}
+                    className={`mt-2 whitespace-nowrap text-[clamp(0.72rem,2.7vw,1.25rem)] font-black leading-none ${transactionSummary.netBalance >= 0 ? "text-green-700" : "text-red-600"}`}
                   >
-                    {toRupiah(transactionSummary.netBalance)}
+                    {toCompactRupiah(transactionSummary.netBalance)}
                   </p>
                 </article>
 
-                <article className="rounded-xl border-2 border-[#1c1c13] bg-white p-4 shadow-[4px_4px_0_#1c1c13]">
-                  <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
+                <article className="flex min-w-0 flex-col justify-between rounded-xl border-2 border-[#1c1c13] bg-white p-2.5 shadow-[4px_4px_0_#1c1c13] sm:min-h-24 sm:p-4">
+                  <p className="text-[9px] font-bold uppercase leading-tight tracking-wide text-gray-500 sm:text-[10px]">
                     {t("splitTotal", "Split Total")}
                   </p>
-                  <p className="mt-1.5 text-xl font-black text-gray-900">
-                    {toRupiah(splitSummary.total)}
+                  <p className="mt-2 whitespace-nowrap text-[clamp(0.72rem,2.7vw,1.25rem)] font-black leading-none text-gray-900">
+                    {toCompactRupiah(splitSummary.total)}
                   </p>
                 </article>
               </div>
