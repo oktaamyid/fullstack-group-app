@@ -11,10 +11,12 @@ import { Button } from '../ui/Button'
  * @param {function} props.onRefreshClick - Callback for refresh button
  * @param {function} props.onAddTransactionClick - Callback for add transaction button (desktop)
  * @param {function} props.onSearchChange - Callback for search input change
+ * @param {string} props.userName - User name used for the mobile profile initial
  * @param {string} props.className - Additional classes
  */
-export function AppHeader({ mainLogo, onSettingsClick, onRefreshClick, onAddTransactionClick, onSearchChange, className = '' }) {
+export function AppHeader({ mainLogo, onSettingsClick, onRefreshClick, onAddTransactionClick, onSearchChange, userName = '', className = '' }) {
   const { t } = useI18n()
+  const userInitial = userName.trim().charAt(0).toUpperCase() || 'L'
 
   return (
     <header
@@ -42,7 +44,41 @@ export function AppHeader({ mainLogo, onSettingsClick, onRefreshClick, onAddTran
           </label>
         </div>
 
-        <div className="ml-auto flex shrink-0 items-center gap-2 lg:gap-3">
+        <div className="ml-auto flex shrink-0 items-center gap-2 lg:hidden">
+          {onRefreshClick && (
+            <Button
+              variant="secondary"
+              size="icon"
+              className="bg-[#fffbeb]"
+              onClick={onRefreshClick}
+              aria-label={t('refresh', 'Refresh')}
+            >
+              <span className="material-symbols-outlined">sync</span>
+            </Button>
+          )}
+
+          {onSettingsClick && (
+            <Button
+              variant="secondary"
+              size="icon"
+              onClick={onSettingsClick}
+              aria-label={t('settings', 'Settings')}
+            >
+              <span className="material-symbols-outlined">settings</span>
+            </Button>
+          )}
+
+          <button
+            type="button"
+            onClick={onSettingsClick}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[#1c1c13] bg-[#6366f1] text-sm font-black text-white shadow-[2px_2px_0px_0px_rgba(28,28,19,1)] transition-all active:translate-x-px active:translate-y-px active:shadow-none"
+            aria-label={t('profile', 'Profile')}
+          >
+            {userInitial}
+          </button>
+        </div>
+
+        <div className="ml-auto hidden shrink-0 items-center gap-3 lg:flex">
           {onSettingsClick && (
             <Button
               variant="secondary"
@@ -67,16 +103,14 @@ export function AppHeader({ mainLogo, onSettingsClick, onRefreshClick, onAddTran
           )}
 
           {onAddTransactionClick && (
-            <div className="hidden lg:block">
-              <Button
-                size="sm"
-                onClick={onAddTransactionClick}
-                className="min-h-11 gap-2 rounded-2xl"
-              >
-                <span className="material-symbols-outlined">add</span>
-                {t('addTransaction', 'Add Transaction')}
-              </Button>
-            </div>
+            <Button
+              size="sm"
+              onClick={onAddTransactionClick}
+              className="min-h-11 gap-2 rounded-2xl"
+            >
+              <span className="material-symbols-outlined">add</span>
+              {t('addTransaction', 'Add Transaction')}
+            </Button>
           )}
 
           <img

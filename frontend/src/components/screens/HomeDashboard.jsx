@@ -139,6 +139,7 @@ export function HomeDashboard({
       onRefreshClick={onRecheck}
       onAddTransactionClick={handleAddTransactionClick}
       onSearchChange={handleSearchChange}
+      userName={userName}
     />
   );
 
