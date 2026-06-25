@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
-import { useI18n } from '../../i18n/useI18n'
 import { Dialog } from '../ui/Dialog'
 import { Button } from '../ui/Button'
 import { LoginForm } from './LoginForm'
@@ -101,10 +100,9 @@ function TeamCard({ role, name, description, image }) {
   )
 }
 
-export function LandingPage({ mainLogo, mascotImage }) {
+export function LandingPage({ mainLogo }) {
   const navigate = useNavigate()
   const location = useLocation()
-  const { t, language } = useI18n()
   const [isLoginOpen, setIsLoginOpen] = useState(false)
 
   const isLoggedIn = Boolean(localStorage.getItem('livo_auth_token'))
