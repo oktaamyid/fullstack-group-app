@@ -138,7 +138,9 @@ enum SplitBillMemberStatus {
 enum SplitBillDivisionMethod {
   EQUAL
   CUSTOM
+  ITEM_BASED
 }
+
 
 enum TransactionType {
   INCOME
