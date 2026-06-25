@@ -3,6 +3,7 @@ import { createTransaction, updateTransaction } from "../../services/transaction
 import { createSplitBill, updateSplitBill } from "../../services/splitBill";
 import { useI18n } from "../../i18n/useI18n";
 import { useProfileSettings } from "../../hooks/useProfileSettings";
+import { NumericPad } from "../ui";
 import {
   convertFromIdr,
   convertToIdr,
@@ -160,6 +161,7 @@ export function CreateTransactionModal({
   const [isReadingImage, setIsReadingImage] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
+  const [isAmountFocused, setIsAmountFocused] = useState(false);
 
   useEffect(() => {
     if (activeTab === "PERSONAL") {
@@ -546,13 +548,36 @@ export function CreateTransactionModal({
                     placeholder="0"
                     min="0"
                     inputMode="numeric"
-                    className="min-h-[3rem] w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] transition-all"
+                    onFocus={() => setIsAmountFocused(true)}
+                    onBlur={() => setIsAmountFocused(false)}
+                    className={`min-h-[3rem] w-full rounded-lg border-2 bg-white px-4 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none transition-all ${
+                      isAmountFocused ? "border-[#6366f1]" : "border-[#1c1c13]"
+                    }`}
                   />
                   {txForm.amount ? (
                     <p className="mt-1.5 text-xs font-black text-[#1c1c13]">
                       {formatAmount(txForm.amount)}
                     </p>
                   ) : null}
+                  <NumericPad
+                    className="mt-3"
+                    title={t("numPad", "Number Pad")}
+                    clearLabel={t("clear", "Clear")}
+                    helperText={t("tapToEnterAmount", "Tap the number pad to fill the amount faster.")}
+                    onPress={(value) => {
+                      setTxForm((prev) => {
+                        const current = String(prev.amount || "");
+
+                        if (value === "CLEAR") return { ...prev, amount: "" };
+                        if (value === "BACKSPACE") return { ...prev, amount: current.slice(0, -1) };
+
+                        return {
+                          ...prev,
+                          amount: current === "0" ? String(value) : `${current}${value}`,
+                        };
+                      });
+                    }}
+                  />
                 </div>
 
                 {/* Note */}
@@ -713,6 +738,25 @@ export function CreateTransactionModal({
                       {formatAmount(splitForm.totalAmount)}
                     </p>
                   ) : null}
+                  <NumericPad
+                    className="mt-3"
+                    title={tr("Number Pad", "Papan Angka")}
+                    clearLabel={t("clear", "Clear")}
+                    helperText={tr("Tap the pad to fill the split total faster.", "Ketuk papan angka untuk mengisi total split lebih cepat.")}
+                    onPress={(value) => {
+                      setSplitForm((prev) => {
+                        const current = String(prev.totalAmount || "");
+
+                        if (value === "CLEAR") return { ...prev, totalAmount: "" };
+                        if (value === "BACKSPACE") return { ...prev, totalAmount: current.slice(0, -1) };
+
+                        return {
+                          ...prev,
+                          totalAmount: current === "0" ? String(value) : `${current}${value}`,
+                        };
+                      });
+                    }}
+                  />
                 </div>
 
                 <div>

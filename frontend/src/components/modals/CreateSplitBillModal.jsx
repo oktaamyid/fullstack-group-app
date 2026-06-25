@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import { createSplitBill } from '../../services/splitBill'
 import { useI18n } from '../../i18n/useI18n'
 import { useProfileSettings } from '../../hooks/useProfileSettings'
+import { NumericPad } from '../ui'
 import { convertToIdr, formatCurrencyValue } from '../../services/currency'
 
 const defaultForm = {
@@ -342,6 +343,25 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
               onChange={onTotalAmountChange}
               placeholder="180000"
               className="mt-1 w-full rounded-2xl border border-black bg-[#fffbeb] px-3 py-2 text-sm"
+            />
+            <NumericPad
+              className="mt-3"
+              title={t('numPad', 'Number Pad')}
+              clearLabel={t('clear', 'Clear')}
+              helperText={t('tapToEnterAmount', 'Tap the number pad to fill the amount faster.')}
+              onPress={(value) => {
+                setForm((prev) => {
+                  const current = String(prev.totalAmount || '')
+
+                  if (value === 'CLEAR') return { ...prev, totalAmount: '' }
+                  if (value === 'BACKSPACE') return { ...prev, totalAmount: current.slice(0, -1) }
+
+                  return {
+                    ...prev,
+                    totalAmount: current === '0' ? String(value) : `${current}${value}`,
+                  }
+                })
+              }}
             />
           </label>
 
