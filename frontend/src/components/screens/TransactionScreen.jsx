@@ -2,24 +2,12 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { CreateTransactionModal } from "../modals/CreateTransactionModal";
 import { deleteTransaction, getTransactions } from "../../services/transaction";
 import { deleteSplitBill, getSplitBills, updateSplitBillMemberStatus } from "../../services/splitBill";
-import { getAuthUser } from "../../services/auth";
-import {
-  getCategoryIcon,
-  getLocalSettings,
-} from "../../services/profileSettings";
+import { getCategoryIcon } from "../../services/profileSettings";
 import { PageLayout } from "../layouts/PageLayout";
 import { PageHeader } from "../headers/PageHeader";
 import { useI18n } from "../../i18n/useI18n";
-
-function formatCurrencyByPreference(value, language, currency) {
-  const maximumFractionDigits = currency === "IDR" ? 0 : 2;
-
-  return new Intl.NumberFormat(language || "id-ID", {
-    style: "currency",
-    currency: currency || "IDR",
-    maximumFractionDigits,
-  }).format(value || 0);
-}
+import { useProfileSettings } from "../../hooks/useProfileSettings";
+import { formatCurrency } from "../../services/currency";
 
 function formatDateByLanguage(dateString, language) {
   const date = new Date(dateString);
@@ -42,8 +30,7 @@ function prettifyCategory(category = "") {
 export function TransactionScreen({ mainLogo }) {
   const { t, language } = useI18n();
   const tr = (en, id) => (language === "id-ID" ? id : en);
-  const authUser = getAuthUser();
-  const userId = authUser?.id || "guest";
+  const settings = useProfileSettings();
   
   const [activeViewTab, setActiveViewTab] = useState("PERSONAL"); // "PERSONAL" | "SPLIT_BILL"
   const [transactions, setTransactions] = useState([]);
@@ -58,8 +45,6 @@ export function TransactionScreen({ mainLogo }) {
     mode: "PERSONAL", // "PERSONAL" | "SPLIT_BILL"
     data: null, // the transaction or split bill
   });
-  const settings = getLocalSettings(userId);
-
   const refreshData = useCallback(async () => {
     setIsLoading(true);
     setErrorMessage("");
@@ -203,7 +188,7 @@ export function TransactionScreen({ mainLogo }) {
                     {t("income", "Income")}
                   </p>
                   <p className="mt-2 overflow-hidden text-ellipsis whitespace-nowrap text-[clamp(0.7rem,2.1vw,1.5rem)] font-black leading-tight">
-                    {formatCurrencyByPreference(
+                    {formatCurrency(
                       txSummary.income,
                       settings.language,
                       settings.currency,
@@ -215,7 +200,7 @@ export function TransactionScreen({ mainLogo }) {
                     {t("expense", "Expense")}
                   </p>
                   <p className="mt-2 overflow-hidden text-ellipsis whitespace-nowrap text-[clamp(0.7rem,2.1vw,1.5rem)] font-black leading-tight">
-                    {formatCurrencyByPreference(
+                    {formatCurrency(
                       txSummary.expense,
                       settings.language,
                       settings.currency,
@@ -229,7 +214,7 @@ export function TransactionScreen({ mainLogo }) {
                   <p
                     className={`mt-2 overflow-hidden text-ellipsis whitespace-nowrap text-[clamp(0.7rem,2.1vw,1.5rem)] font-black leading-tight ${txSummary.net >= 0 ? "text-[#1c1c13]" : "text-[#ef4444]"}`}
                   >
-                    {formatCurrencyByPreference(
+                    {formatCurrency(
                       txSummary.net,
                       settings.language,
                       settings.currency,
@@ -377,7 +362,7 @@ export function TransactionScreen({ mainLogo }) {
                             }`}
                           >
                             {isIncome ? "+" : "-"}
-                            {formatCurrencyByPreference(
+                            {formatCurrency(
                               transaction.amount,
                               settings.language,
                               settings.currency,
@@ -415,7 +400,7 @@ export function TransactionScreen({ mainLogo }) {
                     {t("totalSplit", "Total Split")}
                   </p>
                   <p className="text-lg lg:text-3xl font-black mt-2">
-                    {formatCurrencyByPreference(
+                    {formatCurrency(
                       splitSummary.total,
                       settings.language,
                       settings.currency,
@@ -427,7 +412,7 @@ export function TransactionScreen({ mainLogo }) {
                     {t("unpaid", "Unpaid")}
                   </p>
                   <p className="text-lg lg:text-3xl font-black mt-2">
-                    {formatCurrencyByPreference(
+                    {formatCurrency(
                       splitSummary.unpaid,
                       settings.language,
                       settings.currency,
@@ -439,7 +424,7 @@ export function TransactionScreen({ mainLogo }) {
                     {t("paid", "Paid")}
                   </p>
                   <p className="text-3xl font-black mt-2">
-                    {formatCurrencyByPreference(
+                    {formatCurrency(
                       splitSummary.paid,
                       settings.language,
                       settings.currency,
@@ -517,7 +502,7 @@ export function TransactionScreen({ mainLogo }) {
                               tr("No description", "Tanpa deskripsi")}
                           </p>
                           <p className="text-sm font-black text-gray-700">
-                            Total: {formatCurrencyByPreference(
+                            Total: {formatCurrency(
                               splitBill.totalAmount,
                               settings.language,
                               settings.currency
@@ -554,7 +539,7 @@ export function TransactionScreen({ mainLogo }) {
                                   {member.friendName}
                                 </p>
                                 <p className="text-xs font-black text-gray-700 mt-0.5">
-                                  {formatCurrencyByPreference(
+                                  {formatCurrency(
                                     member.amount,
                                     settings.language,
                                     settings.currency

@@ -3,14 +3,8 @@ import { getAnalyticsOverview } from "../../services/analytics";
 import { PageLayout } from "../layouts/PageLayout";
 import { PageHeader } from "../headers/PageHeader";
 import { useI18n } from "../../i18n/useI18n";
-
-function toCurrency(value) {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(value || 0);
-}
+import { useProfileSettings } from "../../hooks/useProfileSettings";
+import { formatCurrency } from "../../services/currency";
 
 const CATEGORIES = [
   "All",
@@ -25,6 +19,7 @@ const CATEGORIES = [
 
 export function AnalyticsTrendsScreen({ mainLogo }) {
   const { t, language } = useI18n();
+  const settings = useProfileSettings();
   const tr = (en, id) => (language === "id-ID" ? id : en);
   const [loading, setLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState("");
@@ -118,12 +113,12 @@ export function AnalyticsTrendsScreen({ mainLogo }) {
                   {t("totalSpent", "Total Spent")}
                 </p>
                 <p className="text-3xl font-extrabold text-[#4648d4]">
-                  {toCurrency(analytics.totals.totalSpent)}
+                  {formatCurrency(analytics.totals.totalSpent, language, settings.currency)}
                 </p>
               </div>
               <div className="rounded-full border border-[#1c1c13] bg-[#ffc329] px-3 py-1 text-xs font-bold shadow-[2px_2px_0_#1c1c13]">
                 {t("avgPerDay", "Avg/day")}{" "}
-                {toCurrency(analytics.totals.averageDaily)}
+                {formatCurrency(analytics.totals.averageDaily, language, settings.currency)}
               </div>
             </div>
 
@@ -187,7 +182,7 @@ export function AnalyticsTrendsScreen({ mainLogo }) {
               </span>
               <div>
                 <p className="text-xl font-extrabold">
-                  {toCurrency(analytics.savingsGoal.target)}
+                  {formatCurrency(analytics.savingsGoal.target, language, settings.currency)}
                 </p>
                 <p className="text-[10px] font-bold uppercase tracking-widest text-[#4648d4]">
                   {t("savingsGoal", "Savings Goal")}
@@ -205,7 +200,7 @@ export function AnalyticsTrendsScreen({ mainLogo }) {
               <span className="material-symbols-outlined">trending_up</span>
               <div>
                 <p className="text-xl font-extrabold">
-                  {toCurrency(analytics.totals.weeklyTotal)}
+                  {formatCurrency(analytics.totals.weeklyTotal, language, settings.currency)}
                 </p>
                 <p className="text-[10px] font-bold uppercase tracking-widest">
                   {t("weeklySpend", "Weekly Spend")}
@@ -249,7 +244,7 @@ export function AnalyticsTrendsScreen({ mainLogo }) {
                         </div>
                         <div className="text-right">
                           <p className="font-bold text-[#4648d4]">
-                            {toCurrency(amount)}
+                            {formatCurrency(amount, language, settings.currency)}
                           </p>
                         </div>
                       </article>
@@ -316,7 +311,7 @@ export function AnalyticsTrendsScreen({ mainLogo }) {
                   </div>
                   <div className="text-right">
                     <p className="font-bold text-[#ba1a1a]">
-                      -{toCurrency(report.amount)}
+                      -{formatCurrency(report.amount, language, settings.currency)}
                     </p>
                     <p className="text-[10px] font-bold uppercase text-[#464554]">
                       {report.status}

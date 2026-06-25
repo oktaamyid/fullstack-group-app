@@ -2,6 +2,7 @@ import { getAuthToken } from "./auth";
 
 const AUTH_BASE_URL = "/api/auth";
 const SETTINGS_KEY = "livo_profile_settings";
+const SUPPORTED_CURRENCIES = ["IDR", "USD", "SGD", "EUR"];
 
 const DEFAULT_TRANSACTION_CATEGORIES = {
   EXPENSE: [
@@ -83,14 +84,17 @@ function normalizeCategoryIcons(input = {}) {
 function normalizeSettings(input = {}) {
   const categories = input?.categories || {};
   const categoryIcons = input?.categoryIcons || {};
+  const currency =
+    typeof input?.currency === "string" && input.currency.trim()
+      ? input.currency.trim().toUpperCase()
+      : DEFAULT_SETTINGS.currency;
 
   return {
     ...DEFAULT_SETTINGS,
     ...input,
-    currency:
-      typeof input?.currency === "string" && input.currency.trim()
-        ? input.currency.trim().toUpperCase()
-        : DEFAULT_SETTINGS.currency,
+    currency: SUPPORTED_CURRENCIES.includes(currency)
+      ? currency
+      : DEFAULT_SETTINGS.currency,
     language:
       typeof input?.language === "string" && input.language.trim()
         ? input.language.trim()
@@ -316,6 +320,7 @@ export function getCategoryIcon(settings, categoryKey) {
 
 export {
   DEFAULT_SETTINGS,
+  SUPPORTED_CURRENCIES,
   DEFAULT_TRANSACTION_CATEGORIES,
   DEFAULT_CATEGORY_ICONS,
 };

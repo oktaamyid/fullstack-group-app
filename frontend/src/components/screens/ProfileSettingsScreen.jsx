@@ -10,6 +10,7 @@ import {
   isDefaultCategory,
   removeCategorySetting,
   saveLocalSettings,
+  SUPPORTED_CURRENCIES,
   updatePassword,
   updateProfile,
 } from '../../services/profileSettings'
@@ -30,12 +31,17 @@ const defaultPasswordForm = {
   confirmPassword: '',
 }
 
-const CURRENCY_OPTIONS = [
-  { value: 'IDR', label: 'IDR - Indonesian Rupiah' },
-  { value: 'USD', label: 'USD - US Dollar' },
-  { value: 'SGD', label: 'SGD - Singapore Dollar' },
-  { value: 'EUR', label: 'EUR - Euro' },
-]
+const CURRENCY_LABELS = {
+  IDR: 'IDR - Indonesian Rupiah',
+  USD: 'USD - US Dollar',
+  SGD: 'SGD - Singapore Dollar',
+  EUR: 'EUR - Euro',
+}
+
+const CURRENCY_OPTIONS = SUPPORTED_CURRENCIES.map((currency) => ({
+  value: currency,
+  label: CURRENCY_LABELS[currency] || currency,
+}))
 
 const LANGUAGE_OPTIONS = [
   { value: 'id-ID', label: 'Bahasa Indonesia' },

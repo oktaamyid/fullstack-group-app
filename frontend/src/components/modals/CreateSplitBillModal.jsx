@@ -2,6 +2,8 @@ import { useCallback, useState, useMemo } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { createSplitBill } from '../../services/splitBill'
 import { useI18n } from '../../i18n/useI18n'
+import { useProfileSettings } from '../../hooks/useProfileSettings'
+import { convertToIdr, formatCurrencyValue } from '../../services/currency'
 
 const defaultForm = {
   title: '',
@@ -12,12 +14,12 @@ const defaultForm = {
   useItems: false,
 }
 
-function toRupiah(value) {
-  return new Intl.NumberFormat('id-ID', {
-    style: 'currency',
-    currency: 'IDR',
-    maximumFractionDigits: 0,
-  }).format(value)
+function parseAmount(value) {
+  return Number(value) || 0
+}
+
+function amountsMatch(left, right) {
+  return Math.abs(left - right) < 0.01
 }
 
 /**
@@ -32,11 +34,17 @@ function toRupiah(value) {
  * @param {function} props.onSuccess - Callback when split bill created successfully
  */
 export function CreateSplitBillModal({ onClose, onSuccess }) {
-  const { t } = useI18n()
+  const { t, language } = useI18n()
+  const settings = useProfileSettings()
   const navigate = useNavigate()
   const [form, setForm] = useState(defaultForm)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+
+  const formatAmount = useCallback(
+    (value) => formatCurrencyValue(value, language, settings.currency),
+    [language, settings.currency],
+  )
 
   // Calculate total from members or items
   const { totalCalculated, isValid } = useMemo(() => {
@@ -45,20 +53,20 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
     if (form.useItems && form.items.length > 0) {
       // Calculate from items
       total = form.items.reduce((sum, item) => {
-        const price = parseInt(item.price, 10) || 0
+        const price = parseAmount(item.price)
         const qty = parseInt(item.quantity, 10) || 1
         return sum + price * qty
       }, 0)
     } else {
       // Calculate from members
       total = form.members.reduce((sum, member) => {
-        const amount = parseInt(member.amount, 10) || 0
+        const amount = parseAmount(member.amount)
         return sum + amount
       }, 0)
     }
 
     const hasEmptyName = form.members.some((m) => !m.friendName.trim())
-    const inputTotal = parseInt(form.totalAmount, 10) || 0
+    const inputTotal = parseAmount(form.totalAmount)
 
     let isFormValid = false
     if (form.useItems && form.items.length > 0) {
@@ -66,7 +74,7 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
       isFormValid =
         form.items.every((i) => i.itemName && i.price && (i.assignedTo || []).length > 0) &&
         !hasEmptyName &&
-        total === inputTotal &&
+        amountsMatch(total, inputTotal) &&
         inputTotal > 0
     } else {
       // For amount-based: members have name and amount
@@ -157,14 +165,14 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
   }, [])
 
   const autoSplitEqual = useCallback(() => {
-    const inputTotal = parseInt(form.totalAmount, 10) || 0
+    const inputTotal = parseAmount(form.totalAmount)
     if (inputTotal <= 0) return
 
     const memberCount = form.members.filter((m) => m.friendName.trim()).length
     if (memberCount === 0) return
 
-    const amountPerMember = Math.floor(inputTotal / memberCount)
-    const remainder = inputTotal % memberCount
+    const amountPerMember = Math.floor((inputTotal / memberCount) * 100) / 100
+    let remainder = Math.round((inputTotal - amountPerMember * memberCount) * 100)
 
     setForm((prev) => ({
       ...prev,
@@ -172,7 +180,7 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
         if (!member.friendName.trim()) return member
         return {
           ...member,
-          amount: String(amountPerMember + (index < remainder ? 1 : 0)),
+          amount: String(amountPerMember + (index < remainder ? 0.01 : 0)),
         }
       }),
     }))
@@ -185,7 +193,7 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
       setIsSubmitting(true)
 
       try {
-        const totalAmount = parseInt(form.totalAmount, 10)
+        const totalAmount = parseAmount(form.totalAmount)
         if (Number.isNaN(totalAmount) || totalAmount <= 0) {
           setErrorMessage(t('pleaseEnterValidAmount', 'Please enter a valid amount'))
           setIsSubmitting(false)
@@ -209,8 +217,8 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
             return
           }
 
-          const itemsTotal = validItems.reduce((sum, i) => sum + parseInt(i.price, 10) * (parseInt(i.quantity, 10) || 1), 0)
-          if (itemsTotal !== totalAmount) {
+          const itemsTotal = validItems.reduce((sum, i) => sum + parseAmount(i.price) * (parseInt(i.quantity, 10) || 1), 0)
+          if (!amountsMatch(itemsTotal, totalAmount)) {
             setErrorMessage(`Items total (${itemsTotal}) must equal total amount (${totalAmount})`)
             setIsSubmitting(false)
             return
@@ -219,14 +227,14 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
           const payload = {
             title: form.title || t('splitExpense', 'Split Expense'),
             description: form.description,
-            totalAmount,
+            totalAmount: convertToIdr(totalAmount, settings.currency),
             members: validMembers.map((m) => ({
               friendName: m.friendName.trim(),
               amount: 0,
             })),
             items: validItems.map((item) => ({
               itemName: item.itemName.trim(),
-              price: parseInt(item.price, 10),
+              price: convertToIdr(parseAmount(item.price), settings.currency),
               quantity: parseInt(item.quantity, 10) || 1,
               assignedTo: item.assignedTo || [],
             })),
@@ -235,8 +243,8 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
           await createSplitBill(payload)
         } else {
           // Amount-based validation
-          const memberAmountsTotal = validMembers.reduce((sum, m) => sum + parseInt(m.amount, 10), 0)
-          if (memberAmountsTotal !== totalAmount) {
+          const memberAmountsTotal = validMembers.reduce((sum, m) => sum + parseAmount(m.amount), 0)
+          if (!amountsMatch(memberAmountsTotal, totalAmount)) {
             setErrorMessage(
               t('memberAmountsMustEqualTotal', `Member amounts must equal total (${memberAmountsTotal} ≠ ${totalAmount})`)
             )
@@ -247,10 +255,10 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
           const payload = {
             title: form.title || t('splitExpense', 'Split Expense'),
             description: form.description,
-            totalAmount,
+            totalAmount: convertToIdr(totalAmount, settings.currency),
             members: validMembers.map((member) => ({
               friendName: member.friendName.trim(),
-              amount: parseInt(member.amount, 10),
+              amount: convertToIdr(parseAmount(member.amount), settings.currency),
             })),
           }
 
@@ -266,7 +274,7 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
         setIsSubmitting(false)
       }
     },
-    [form, navigate, onSuccess, t]
+    [form, navigate, onSuccess, settings.currency, t]
   )
 
   return (
@@ -316,9 +324,10 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
 
           {/* Total Amount */}
           <label className="block text-[11px] font-bold uppercase">
-            {t('totalAmount', 'Total Amount')} (IDR)
+            {t('totalAmount', 'Total Amount')} ({settings.currency})
             <input
               type="number"
+              step="any"
               value={form.totalAmount}
               onChange={onTotalAmountChange}
               placeholder="180000"
@@ -380,6 +389,7 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
                 {!form.useItems && (
                   <input
                     type="number"
+                    step="any"
                     value={member.amount}
                     onChange={(e) => onMemberChange(index, 'amount', e.target.value)}
                     placeholder={t('amount', 'Amount')}
@@ -423,6 +433,7 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
                     />
                     <input
                       type="number"
+                      step="any"
                       value={item.price}
                       onChange={(e) => onItemChange(itemIndex, 'price', e.target.value)}
                       placeholder={t('price', 'Price')}
@@ -481,11 +492,11 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
           <div className="rounded-2xl border border-black bg-white px-3 py-2 text-sm">
             <div className="flex justify-between font-bold">
               <span>{t('total', 'Total')}:</span>
-              <span>{toRupiah(totalCalculated)}</span>
+              <span>{formatAmount(totalCalculated)}</span>
             </div>
-            {form.totalAmount && totalCalculated !== parseInt(form.totalAmount, 10) && (
+            {form.totalAmount && !amountsMatch(totalCalculated, parseAmount(form.totalAmount)) && (
               <div className="text-[11px] text-[#ba1a1a] font-semibold mt-1">
-                {t('difference', 'Difference')}: {toRupiah(Math.abs(totalCalculated - parseInt(form.totalAmount, 10)))}
+                {t('difference', 'Difference')}: {formatAmount(Math.abs(totalCalculated - parseAmount(form.totalAmount)))}
               </div>
             )}
           </div>

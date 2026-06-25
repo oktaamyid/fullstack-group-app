@@ -1,40 +1,11 @@
 import { useCallback, useMemo, useState } from "react";
 import { PageLayout } from "../layouts/PageLayout";
 import { AppHeader } from "../headers/AppHeader";
-import { StatusPill } from "../ui/StatusPill";
 import { CreateTransactionModal } from "../modals/CreateTransactionModal";
 import { Button } from "../ui/Button";
 import { useI18n } from "../../i18n/useI18n";
-
-function toRupiah(value) {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(value || 0);
-}
-
-function toCompactRupiah(value) {
-  const numericValue = Number(value) || 0;
-  const absoluteValue = Math.abs(numericValue);
-  const units = [
-    { minimum: 1_000_000_000_000, divisor: 1_000_000_000_000, suffix: "Tr" },
-    { minimum: 1_000_000_000, divisor: 1_000_000_000, suffix: "M" },
-    { minimum: 1_000_000, divisor: 1_000_000, suffix: "Jt" },
-    { minimum: 1_000, divisor: 1_000, suffix: "Rb" },
-  ];
-  const unit = units.find(({ minimum }) => absoluteValue >= minimum);
-
-  if (!unit) {
-    return `Rp ${new Intl.NumberFormat("id-ID").format(numericValue)}`;
-  }
-
-  const compactValue = new Intl.NumberFormat("id-ID", {
-    maximumFractionDigits: 1,
-  }).format(numericValue / unit.divisor);
-
-  return `Rp ${compactValue} ${unit.suffix}`;
-}
+import { useProfileSettings } from "../../hooks/useProfileSettings";
+import { formatCompactCurrency, formatCurrency } from "../../services/currency";
 
 function formatDate(value, language) {
   if (!value) {
@@ -58,11 +29,7 @@ function normalizeText(value = "") {
 }
 
 export function HomeDashboard({
-  isOffline,
-  apiStatus,
-  dbStatus,
   financeData,
-  lastChecked,
   onRecheck,
   onOpenSplitBill,
   onOpenProfile,
@@ -72,6 +39,7 @@ export function HomeDashboard({
   mascotImage,
 }) {
   const { t, language } = useI18n();
+  const settings = useProfileSettings();
   const tr = (en, id) => (language === "id-ID" ? id : en);
   const [showTransactionModal, setShowTransactionModal] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -175,7 +143,7 @@ export function HomeDashboard({
                     {t("dailyLimit", "Daily Limit")}
                   </p>
                   <p className="mt-2 whitespace-nowrap text-[clamp(0.8rem,3.2vw,1.25rem)] font-black leading-none text-gray-900">
-                    {toCompactRupiah(dailyLimit)}
+                    {formatCompactCurrency(dailyLimit, language, settings.currency)}
                   </p>
                 </article>
 
@@ -186,7 +154,7 @@ export function HomeDashboard({
                   <p
                     className={`mt-2 whitespace-nowrap text-[clamp(0.8rem,3.2vw,1.25rem)] font-black leading-none ${transactionSummary.netBalance >= 0 ? "text-green-700" : "text-red-600"}`}
                   >
-                    {toCompactRupiah(transactionSummary.netBalance)}
+                    {formatCompactCurrency(transactionSummary.netBalance, language, settings.currency)}
                   </p>
                 </article>
 
@@ -195,7 +163,7 @@ export function HomeDashboard({
                     {t("splitTotal", "Split Total")}
                   </p>
                   <p className="mt-2 whitespace-nowrap text-[clamp(0.8rem,3.2vw,1.25rem)] font-black leading-none text-gray-900">
-                    {toCompactRupiah(splitSummary.total)}
+                    {formatCompactCurrency(splitSummary.total, language, settings.currency)}
                   </p>
                 </article>
               </div>
@@ -206,7 +174,7 @@ export function HomeDashboard({
                     {t("todayProgress", "Today's Progress")}
                   </span>
                   <span className="text-xs font-black text-blue-600">
-                    {toRupiah(averageDaily)} / {toRupiah(dailyLimit)}
+                    {formatCurrency(averageDaily, language, settings.currency)} / {formatCurrency(dailyLimit, language, settings.currency)}
                   </span>
                 </div>
 
@@ -264,7 +232,7 @@ export function HomeDashboard({
               </div>
               <div>
                 <span className="block text-2xl font-black leading-none">
-                  {toRupiah(weeklySpend)}
+                  {formatCurrency(weeklySpend, language, settings.currency)}
                 </span>
                 <span className="text-[10px] font-bold uppercase opacity-80">
                   {t("weeklySpend", "Weekly Spend")}
@@ -292,7 +260,11 @@ export function HomeDashboard({
               {filteredTransactions.length > 0 ? (
                 filteredTransactions.slice(0, 4).map((entry) => {
                   const isIncome = entry.type === "INCOME";
-                  const amountLabel = toRupiah(entry.amount);
+                  const amountLabel = formatCurrency(
+                    entry.amount,
+                    language,
+                    settings.currency,
+                  );
                   const title =
                     entry.note ||
                     entry.description ||
@@ -357,9 +329,9 @@ export function HomeDashboard({
                   </h3>
                   <p className="max-w-sm text-xs text-gray-300 leading-relaxed">
                     {tr("Current net balance is", "Saldo bersih saat ini")}{" "}
-                    <strong className="text-white">{toRupiah(transactionSummary.netBalance)}</strong>{" "}
+                    <strong className="text-white">{formatCurrency(transactionSummary.netBalance, language, settings.currency)}</strong>{" "}
                     {tr("with total income", "dengan total pemasukan")}{" "}
-                    <strong className="text-white">{toRupiah(transactionSummary.totalIncome)}</strong>.
+                    <strong className="text-white">{formatCurrency(transactionSummary.totalIncome, language, settings.currency)}</strong>.
                   </p>
                 </div>
                 <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-xl border-2 border-[#1c1c13] bg-[#ffc329] shadow-[2px_2px_0_#1c1c13]">

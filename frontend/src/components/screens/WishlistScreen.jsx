@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { getAnalyticsOverview } from "../../services/analytics";
 import {
   createWishlistItem,
@@ -9,6 +9,12 @@ import {
 import { PageLayout } from "../layouts/PageLayout";
 import { PageHeader } from "../headers/PageHeader";
 import { useI18n } from "../../i18n/useI18n";
+import { useProfileSettings } from "../../hooks/useProfileSettings";
+import {
+  convertFromIdr,
+  convertToIdr,
+  formatCurrency,
+} from "../../services/currency";
 
 const defaultForm = {
   item: "",
@@ -19,35 +25,16 @@ const defaultForm = {
 // We enforce a minimum safe margin percentage that should remain after purchase
 const SAFE_MARGIN_PERCENTAGE = 0.2; // 20% of current balance should remain
 
-function toRupiah(value) {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(value || 0);
-}
-
 function getPriorityLabel(priorityScore) {
   return `P${priorityScore}`;
 }
 
-function getPriorityTone(priorityScore) {
-  if (priorityScore >= 4) return "bg-red-50 text-red-700";
-  if (priorityScore <= 2) return "bg-green-50 text-green-700";
-  return "bg-amber-50 text-amber-700";
+function toInputAmount(value, currency) {
+  const converted = convertFromIdr(value, currency);
+  return Number.isInteger(converted) ? String(converted) : converted.toFixed(2);
 }
 
-function getCardVisual(index) {
-  const visuals = [
-    "bg-indigo-50 text-indigo-700",
-    "bg-orange-50 text-orange-700",
-    "bg-emerald-50 text-emerald-700",
-    "bg-sky-50 text-sky-700",
-  ];
-  return visuals[index % visuals.length];
-}
-
-function getBuyability(price, balance) {
+function getBuyability(price, balance, formatAmount) {
   if (price <= 0) {
     return {
       label: "No price",
@@ -69,8 +56,6 @@ function getBuyability(price, balance) {
   // Progress towards safely buying the item
   const ratio = balance / safeTargetPrice;
   const percent = Math.max(0, Math.min(100, Math.round(ratio * 100)));
-  const needed = Math.max(0, safeTargetPrice - balance);
-
   if (balance >= price && balance - price >= safeRemaining) {
     return {
       label: "Buyable",
@@ -112,7 +97,7 @@ function getBuyability(price, balance) {
       cardBadge: "bg-amber-100 text-amber-700",
       ctaLabel: "Almost There",
       disabled: true,
-      safeMessage: `Need ${toRupiah(Math.max(0, price - balance))} to afford it.`,
+      safeMessage: `Need ${formatAmount(Math.max(0, price - balance))} to afford it.`,
     };
   }
 
@@ -126,13 +111,21 @@ function getBuyability(price, balance) {
     cardBadge: "bg-gray-100 text-gray-700",
     ctaLabel: "Insufficient Funds",
     disabled: true,
-    safeMessage: `Need ${toRupiah(Math.max(0, price - balance))} more.`,
+    safeMessage: `Need ${formatAmount(Math.max(0, price - balance))} more.`,
   };
 }
 
 export function WishlistScreen({ mainLogo }) {
   const { t, language } = useI18n();
-  const tr = (en, id) => (language === "id-ID" ? id : en);
+  const settings = useProfileSettings();
+  const tr = useCallback(
+    (en, id) => (language === "id-ID" ? id : en),
+    [language],
+  );
+  const formatAmount = useCallback(
+    (value) => formatCurrency(value, language, settings.currency),
+    [language, settings.currency],
+  );
   const [wishlistItems, setWishlistItems] = useState([]);
   const [form, setForm] = useState(defaultForm);
   const [fieldErrors, setFieldErrors] = useState({});
@@ -258,14 +251,17 @@ export function WishlistScreen({ mainLogo }) {
     }
 
     return tr(
-      `Hold for now. Save ${toRupiah(neededForSafePurchase)} more to safely buy ${highestPriorityItem.item}.`,
-      `Tahan dulu. Tabung ${toRupiah(neededForSafePurchase)} lagi agar bisa membeli ${highestPriorityItem.item} dengan aman.`,
+      `Hold for now. Save ${formatAmount(neededForSafePurchase)} more to safely buy ${highestPriorityItem.item}.`,
+      `Tahan dulu. Tabung ${formatAmount(neededForSafePurchase)} lagi agar bisa membeli ${highestPriorityItem.item} dengan aman.`,
     );
-  }, [currentBalance, highestPriorityItem, language]);
+  }, [currentBalance, formatAmount, highestPriorityItem, tr]);
 
   const onChangeForm = (event) => {
     const { name, value } = event.target;
-    const nextValue = name === "price" ? value.replace(/\D/g, "") : value;
+    const nextValue =
+      name === "price"
+        ? value.replace(/[^\d.]/g, "").replace(/(\..*)\./g, "$1")
+        : value;
 
     setFieldErrors((prev) => ({ ...prev, [name]: "" }));
     setForm((prev) => ({ ...prev, [name]: nextValue }));
@@ -290,10 +286,10 @@ export function WishlistScreen({ mainLogo }) {
       );
     }
 
-    if (!Number.isInteger(parsedPrice) || parsedPrice <= 0) {
+    if (!Number.isFinite(parsedPrice) || parsedPrice <= 0) {
       nextErrors.price = tr(
-        "Price must be a positive integer.",
-        "Harga harus berupa angka bulat positif.",
+        "Price must be a positive number.",
+        "Harga harus berupa angka positif.",
       );
     }
 
@@ -330,7 +326,7 @@ export function WishlistScreen({ mainLogo }) {
     try {
       const payload = {
         item: form.item.trim(),
-        price,
+        price: convertToIdr(price, settings.currency),
         priorityScore: Number(form.priorityScore),
       };
 
@@ -374,7 +370,7 @@ export function WishlistScreen({ mainLogo }) {
     setEditingId(entry.id);
     setForm({
       item: entry.item,
-      price: String(entry.price),
+      price: toInputAmount(entry.price, settings.currency),
       priorityScore: String(entry.priorityScore),
     });
   };
@@ -454,7 +450,7 @@ export function WishlistScreen({ mainLogo }) {
           <p className="mt-3 text-[10px] lg:text-xs font-black uppercase tracking-wide text-white">
             {t("realBalance", "Real Balance")}
           </p>
-          <p className="text-xl lg:text-2xl font-black mt-1 truncate">{toRupiah(currentBalance)}</p>
+          <p className="text-xl lg:text-2xl font-black mt-1 truncate">{formatAmount(currentBalance)}</p>
         </article>
         <article className="rounded-xl border-2 border-[#1c1c13] bg-[#fbbf24] p-5 lg:p-6 text-[#1c1c13] shadow-[4px_4px_0_#1c1c13]">
           <span className="material-symbols-outlined text-[#1c1c13]">stars</span>
@@ -489,11 +485,11 @@ export function WishlistScreen({ mainLogo }) {
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="mb-2 block text-[10px] font-black uppercase text-[#1c1c13]">Price (Rp)</label>
+                  <label className="mb-2 block text-[10px] font-black uppercase text-[#1c1c13]">Price ({settings.currency})</label>
                   <input
                     name="price"
                     type="text"
-                    inputMode="numeric"
+                    inputMode="decimal"
                     value={form.price}
                     onChange={onChangeForm}
                     placeholder="0"
@@ -547,9 +543,9 @@ export function WishlistScreen({ mainLogo }) {
             <div className="space-y-4">
               <div className="flex items-end justify-between">
                 <p className="text-xl font-black text-[#1c1c13]">
-                  {toRupiah(Math.min(currentBalance, highestPriorityItem?.price || 0))}
+                  {formatAmount(Math.min(currentBalance, highestPriorityItem?.price || 0))}
                   <span className="ml-1 text-xs font-bold text-gray-500">
-                    / {toRupiah(highestPriorityItem?.price || goalTarget)}
+                    / {formatAmount(highestPriorityItem?.price || goalTarget)}
                   </span>
                 </p>
                 <span className="font-black text-[#6366f1]">{featuredProgress}%</span>
@@ -562,13 +558,18 @@ export function WishlistScreen({ mainLogo }) {
               </div>
               <div>
                 <label className="block text-[10px] font-black uppercase text-[#1c1c13] mb-2">
-                  {t("savingsGoal", "Target Savings")} (Rp)
+                  {t("savingsGoal", "Target Savings")} ({settings.currency})
                 </label>
                 <input
                   type="number"
-                  min="1"
-                  value={goalTarget}
-                  onChange={(event) => setGoalTarget(Number(event.target.value) || 0)}
+                  step="any"
+                  min="0"
+                  value={toInputAmount(goalTarget, settings.currency)}
+                  onChange={(event) =>
+                    setGoalTarget(
+                      convertToIdr(Number(event.target.value), settings.currency),
+                    )
+                  }
                   className="min-h-[2.75rem] w-full rounded-lg border-2 border-[#1c1c13] bg-white px-3 text-sm font-bold outline-none focus:border-[#6366f1] shadow-[2px_2px_0_#1c1c13]"
                 />
               </div>
@@ -614,7 +615,7 @@ export function WishlistScreen({ mainLogo }) {
           <div className="flex items-center justify-between">
             <h3 className="text-lg lg:text-xl font-black tracking-tight text-[#1c1c13]">Wishlist Items</h3>
             <span className="rounded border-2 border-[#1c1c13] bg-[#fbbf24] px-3 py-1 text-[10px] font-black uppercase text-[#1c1c13]">
-              Total {toRupiah(totalWishlistCost)}
+              Total {formatAmount(totalWishlistCost)}
             </span>
           </div>
 
@@ -626,8 +627,12 @@ export function WishlistScreen({ mainLogo }) {
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {filteredItems.map((entry, index) => {
-                const buyability = getBuyability(entry.price, currentBalance);
+              {filteredItems.map((entry) => {
+                const buyability = getBuyability(
+                  entry.price,
+                  currentBalance,
+                  formatAmount,
+                );
 
                 return (
                   <article
@@ -646,7 +651,7 @@ export function WishlistScreen({ mainLogo }) {
                     <div className="flex flex-col flex-1 p-4 lg:p-5">
                       <div className="flex items-start justify-between gap-2 mb-4">
                         <div>
-                          <p className="text-lg font-black text-[#1c1c13]">{toRupiah(entry.price)}</p>
+                          <p className="text-lg font-black text-[#1c1c13]">{formatAmount(entry.price)}</p>
                         </div>
                         <span className={`rounded border-2 border-[#1c1c13] px-2 py-0.5 text-[10px] font-black uppercase bg-[#fffbeb] text-[#1c1c13]`}>
                           {getPriorityLabel(entry.priorityScore)}

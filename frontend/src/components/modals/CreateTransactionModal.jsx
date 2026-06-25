@@ -1,7 +1,13 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { createTransaction, updateTransaction } from "../../services/transaction";
 import { createSplitBill, updateSplitBill } from "../../services/splitBill";
 import { useI18n } from "../../i18n/useI18n";
+import { useProfileSettings } from "../../hooks/useProfileSettings";
+import {
+  convertFromIdr,
+  convertToIdr,
+  formatCurrencyValue,
+} from "../../services/currency";
 
 const DEFAULT_TYPE = "EXPENSE";
 const DEFAULT_CATEGORY = "FOOD";
@@ -35,14 +41,6 @@ const CATEGORY_LABELS = {
   OTHER: "📌 Other",
 };
 
-function toCurrency(value) {
-  return new Intl.NumberFormat("id-ID", {
-    style: "currency",
-    currency: "IDR",
-    maximumFractionDigits: 0,
-  }).format(value || 0);
-}
-
 function parseFriends(raw) {
   return raw
     .split("\n")
@@ -66,7 +64,12 @@ function allocateMembers(totalAmount, friendNames) {
   });
 }
 
-function getDefaultTransactionForm(initialValues = {}) {
+function toInputAmount(value, currency) {
+  const converted = convertFromIdr(value, currency);
+  return Number.isInteger(converted) ? String(converted) : converted.toFixed(2);
+}
+
+function getDefaultTransactionForm(initialValues = {}, currency = "IDR") {
   const getLocalDatetime = (dateVal) => {
     const d = dateVal ? new Date(dateVal) : new Date();
     const tzOffset = d.getTimezoneOffset() * 60000;
@@ -78,7 +81,7 @@ function getDefaultTransactionForm(initialValues = {}) {
   return {
     type: initialValues.type || DEFAULT_TYPE,
     category: initialValues.category || DEFAULT_CATEGORY,
-    amount: initialValues.amount ? String(initialValues.amount) : "",
+    amount: initialValues.amount ? toInputAmount(initialValues.amount, currency) : "",
     note: initialValues.note || initialValues.description || "",
     date: sourceDate,
     receiptImage: initialValues.receiptImage || "",
@@ -86,11 +89,13 @@ function getDefaultTransactionForm(initialValues = {}) {
   };
 }
 
-function getDefaultSplitBillForm(initialValues = {}) {
+function getDefaultSplitBillForm(initialValues = {}, currency = "IDR") {
   return {
     title: initialValues.title || "",
     description: initialValues.description || "",
-    totalAmount: initialValues.totalAmount ? String(initialValues.totalAmount) : "",
+    totalAmount: initialValues.totalAmount
+      ? toInputAmount(initialValues.totalAmount, currency)
+      : "",
     friends: initialValues.members
       ? initialValues.members.map((member) => member.friendName).join("\n")
       : "",
@@ -126,7 +131,15 @@ export function CreateTransactionModal({
   splitBillId = null,
 }) {
   const { t, language } = useI18n();
-  const tr = (en, id) => (language === "id-ID" ? id : en);
+  const settings = useProfileSettings();
+  const tr = useCallback(
+    (en, id) => (language === "id-ID" ? id : en),
+    [language],
+  );
+  const formatAmount = useCallback(
+    (value) => formatCurrencyValue(value, language, settings.currency),
+    [language, settings.currency],
+  );
 
   const isEditingTx = Boolean(transactionId);
   const isEditingSplit = Boolean(splitBillId);
@@ -136,8 +149,12 @@ export function CreateTransactionModal({
     isEditingSplit ? "SPLIT_BILL" : isEditingTx ? "PERSONAL" : initialMode
   );
 
-  const [txForm, setTxForm] = useState(() => getDefaultTransactionForm(initialValues || {}));
-  const [splitForm, setSplitForm] = useState(() => getDefaultSplitBillForm(initialValues || {}));
+  const [txForm, setTxForm] = useState(() =>
+    getDefaultTransactionForm(initialValues || {}, settings.currency),
+  );
+  const [splitForm, setSplitForm] = useState(() =>
+    getDefaultSplitBillForm(initialValues || {}, settings.currency),
+  );
   
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isReadingImage, setIsReadingImage] = useState(false);
@@ -146,11 +163,11 @@ export function CreateTransactionModal({
 
   useEffect(() => {
     if (activeTab === "PERSONAL") {
-      setTxForm(getDefaultTransactionForm(initialValues || {}));
+      setTxForm(getDefaultTransactionForm(initialValues || {}, settings.currency));
     } else {
-      setSplitForm(getDefaultSplitBillForm(initialValues || {}));
+      setSplitForm(getDefaultSplitBillForm(initialValues || {}, settings.currency));
     }
-  }, [initialValues, activeTab]);
+  }, [initialValues, activeTab, settings.currency]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -248,7 +265,7 @@ export function CreateTransactionModal({
     }));
   }, []);
 
-  const submitPersonal = async () => {
+  const submitPersonal = useCallback(async () => {
     const amount = Number(txForm.amount);
 
     if (Number.isNaN(amount) || amount <= 0) {
@@ -261,7 +278,7 @@ export function CreateTransactionModal({
     const payload = {
       type: txForm.type,
       category: txForm.category,
-      amount,
+      amount: convertToIdr(amount, settings.currency),
       note: txForm.note.trim(),
       createdAt: txForm.date ? new Date(txForm.date).toISOString() : undefined,
       receiptImage: txForm.receiptImage || "",
@@ -284,9 +301,9 @@ export function CreateTransactionModal({
     );
 
     return savedData;
-  };
+  }, [isEditingTx, settings.currency, t, transactionId, txForm]);
 
-  const submitSplitBill = async () => {
+  const submitSplitBill = useCallback(async () => {
     const parsedTotal = Number(splitForm.totalAmount);
     const friendNames = parseFriends(splitForm.friends);
 
@@ -305,12 +322,13 @@ export function CreateTransactionModal({
       return;
     }
 
-    const members = allocateMembers(parsedTotal, friendNames);
+    const totalAmount = convertToIdr(parsedTotal, settings.currency);
+    const members = allocateMembers(totalAmount, friendNames);
 
     const payload = {
       title: splitForm.title.trim(),
       description: splitForm.description,
-      totalAmount: parsedTotal,
+      totalAmount,
       members,
       syncToPersonal: splitForm.syncToPersonal,
     };
@@ -331,7 +349,7 @@ export function CreateTransactionModal({
     );
 
     return savedData;
-  };
+  }, [isEditingSplit, settings.currency, splitBillId, splitForm, t, tr]);
 
   const onSubmit = useCallback(
     async (e) => {
@@ -365,7 +383,7 @@ export function CreateTransactionModal({
         setIsSubmitting(false);
       }
     },
-    [activeTab, txForm, splitForm, isEditingTx, isEditingSplit, onClose, onSuccess, t, transactionId, splitBillId],
+    [activeTab, onClose, onSuccess, submitPersonal, submitSplitBill, t],
   );
 
   const dialogTitle = isEditing
@@ -516,11 +534,12 @@ export function CreateTransactionModal({
                     htmlFor="amount"
                     className="mb-2 block text-[10px] font-black uppercase text-[#1c1c13]"
                   >
-                    {t("amount", "Amount")} (IDR)
+                    {t("amount", "Amount")} ({settings.currency})
                   </label>
                   <input
                     id="amount"
                     type="number"
+                    step="any"
                     name="amount"
                     value={txForm.amount}
                     onChange={onTxChange}
@@ -531,7 +550,7 @@ export function CreateTransactionModal({
                   />
                   {txForm.amount ? (
                     <p className="mt-1.5 text-xs font-black text-[#1c1c13]">
-                      {toCurrency(txForm.amount)}
+                      {formatAmount(txForm.amount)}
                     </p>
                   ) : null}
                 </div>
@@ -677,11 +696,12 @@ export function CreateTransactionModal({
 
                 <div>
                   <label className="mb-2 block text-[10px] font-black uppercase text-[#1c1c13]">
-                    {tr("Total Amount (Rp)", "Total Tagihan (Rp)")}
+                    {t("totalAmount", "Total Amount")} ({settings.currency})
                   </label>
                   <input
                     name="totalAmount"
                     type="number"
+                    step="any"
                     min="1"
                     value={splitForm.totalAmount}
                     onChange={onSplitChange}
@@ -690,7 +710,7 @@ export function CreateTransactionModal({
                   />
                   {splitForm.totalAmount ? (
                     <p className="mt-1.5 text-xs font-black text-[#1c1c13]">
-                      {toCurrency(splitForm.totalAmount)}
+                      {formatAmount(splitForm.totalAmount)}
                     </p>
                   ) : null}
                 </div>
