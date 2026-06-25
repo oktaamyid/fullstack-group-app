@@ -9,9 +9,13 @@ const defaultForm = {
   title: '',
   description: '',
   totalAmount: '',
-  members: [{ friendName: '', amount: '' }],
+  members: [{ friendName: '', amount: '', clientId: '' }],
   items: [],
   useItems: false,
+}
+
+function genClientId() {
+  return `c_${Math.random().toString(36).slice(2, 9)}`
 }
 
 function parseAmount(value) {
@@ -37,7 +41,10 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
   const { t, language } = useI18n()
   const settings = useProfileSettings()
   const navigate = useNavigate()
-  const [form, setForm] = useState(defaultForm)
+  const [form, setForm] = useState(() => ({
+    ...defaultForm,
+    members: [{ ...defaultForm.members[0], clientId: genClientId() }],
+  }))
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
 
@@ -113,7 +120,7 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
   const addMember = useCallback(() => {
     setForm((prev) => ({
       ...prev,
-      members: [...prev.members, { friendName: '', amount: '' }],
+      members: [...prev.members, { friendName: '', amount: '', clientId: genClientId() }],
     }))
   }, [])
 
@@ -137,12 +144,13 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
       items: prev.items.map((item, i) => {
         if (i === itemIndex) {
           const assignedTo = item.assignedTo || []
-          const isAssigned = assignedTo.includes(memberIndex)
+          const clientId = prev.members[memberIndex]?.clientId || genClientId()
+          const isAssigned = assignedTo.includes(clientId)
           return {
             ...item,
             assignedTo: isAssigned
-              ? assignedTo.filter((m) => m !== memberIndex)
-              : [...assignedTo, memberIndex],
+              ? assignedTo.filter((m) => m !== clientId)
+              : [...assignedTo, clientId],
           }
         }
         return item
@@ -208,7 +216,7 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
           return
         }
 
-        if (form.useItems) {
+          if (form.useItems) {
           // Item-based validation
           const validItems = form.items.filter((i) => i.itemName && i.price)
           if (validItems.length === 0) {
@@ -231,6 +239,7 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
             members: validMembers.map((m) => ({
               friendName: m.friendName.trim(),
               amount: 0,
+              clientId: m.clientId || genClientId(),
             })),
             items: validItems.map((item) => ({
               itemName: item.itemName.trim(),
@@ -259,13 +268,14 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
             members: validMembers.map((member) => ({
               friendName: member.friendName.trim(),
               amount: convertToIdr(parseAmount(member.amount), settings.currency),
+              clientId: member.clientId || genClientId(),
             })),
           }
 
           await createSplitBill(payload)
         }
 
-        setForm(defaultForm)
+        setForm(() => ({ ...defaultForm, members: [{ ...defaultForm.members[0], clientId: genClientId() }] }))
         onSuccess?.()
         navigate('/split-bill')
       } catch (error) {
@@ -465,7 +475,7 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
                           type="button"
                           onClick={() => toggleItemAssignment(itemIndex, memberIndex)}
                           className={`rounded-full px-2 py-1 text-[10px] font-bold border ${
-                            (item.assignedTo || []).includes(memberIndex)
+                            (item.assignedTo || []).includes(member.clientId)
                               ? 'bg-[#6366f1] border-[#6366f1] text-white'
                               : 'bg-white border-[#6366f1] text-[#6366f1]'
                           }`}
