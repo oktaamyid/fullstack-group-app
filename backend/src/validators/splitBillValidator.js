@@ -2,6 +2,7 @@ const { z } = require('zod');
 
 const splitBillMemberSchema = z.object({
   friendName: z.string().min(2, 'Friend name must be at least 2 characters').max(100, 'Friend name is too long'),
+  clientId: z.string().optional(),
   amount: z.number().int().positive('Amount must be positive').optional(),
 });
 
@@ -9,7 +10,7 @@ const splitBillItemSchema = z.object({
   itemName: z.string().min(2, 'Item name must be at least 2 characters').max(100, 'Item name is too long'),
   price: z.number().int().positive('Price must be positive'),
   quantity: z.number().int().positive('Quantity must be positive').default(1),
-  assignedTo: z.array(z.number().int()).optional(),
+  assignedTo: z.array(z.union([z.string(), z.number().int()])).optional(),
 });
 
 const createSplitBillSchema = z.object({

@@ -12,8 +12,9 @@ const {
  */
 function calculateAmountsFromItems(items, members) {
   const memberAmounts = {};
+  // initialize using string keys to support string clientIds
   members.forEach((m) => {
-    memberAmounts[m.id] = 0;
+    memberAmounts[String(m.id)] = 0;
   });
 
   // For each item, divide its total price among assigned members
@@ -26,7 +27,9 @@ function calculateAmountsFromItems(items, members) {
       const remainder = itemTotal % assignedMemberIds.length;
 
       assignedMemberIds.forEach((memberId, index) => {
-        memberAmounts[memberId] += amountPerMember + (index < remainder ? 1 : 0);
+        const key = String(memberId);
+        if (memberAmounts[key] === undefined) memberAmounts[key] = 0;
+        memberAmounts[key] += amountPerMember + (index < remainder ? 1 : 0);
       });
     }
   });
@@ -41,10 +44,13 @@ function calculateAmountsFromItems(items, members) {
 function validateAndPrepareMemberAllocations(totalAmount, members, items = null) {
   // If items provided, calculate from items
   if (items && items.length > 0) {
-    const memberIds = members.map((_, idx) => idx);
+    // support members providing a clientId (string) or fallback to indices
+    const memberIdentifiers = members.map((m, idx) => (m.clientId ? m.clientId : idx));
+    const memberObjs = memberIdentifiers.map((id) => ({ id }));
+
     const memberAmounts = calculateAmountsFromItems(
-      items.map((item, idx) => ({ ...item, itemIndex: idx })),
-      memberIds.map((id) => ({ id }))
+      items.map((item) => item),
+      memberObjs
     );
 
     const allocatedAmount = Object.values(memberAmounts).reduce((a, b) => a + b, 0);
@@ -57,7 +63,7 @@ function validateAndPrepareMemberAllocations(totalAmount, members, items = null)
     return {
       members: members.map((member, idx) => ({
         friendName: member.friendName,
-        amount: memberAmounts[idx] || 0,
+        amount: memberAmounts[String(member.clientId ? member.clientId : idx)] || 0,
       })),
       divisionMethod: 'ITEM_BASED',
     };
@@ -131,8 +137,8 @@ async function createSplitBill(req, res) {
         transactionId = transaction.id;
       }
 
-      // Create split bill
-      const created = await tx.splitBill.create({
+      // Create split bill (without nested members/items)
+      const createdBill = await tx.splitBill.create({
         data: {
           userId: req.user.id,
           title,
@@ -141,53 +147,64 @@ async function createSplitBill(req, res) {
           divisionMethod,
           syncToPersonal,
           transactionId,
-          members: {
-            create: memberData.map((member) => ({
-              friendName: member.friendName,
-              amount: member.amount,
-            })),
-          },
-          ...(items && items.length > 0
-            ? {
-                items: {
-                  create: items.map((item) => ({
-                    itemName: item.itemName,
-                    price: item.price,
-                    quantity: item.quantity || 1,
-                  })),
-                },
-              }
-            : {}),
-        },
-        include: {
-          members: true,
-          items: true,
-          transaction: true,
         },
       });
 
-      // If items exist, create assignments
+      // Create members explicitly to capture DB ids and allow client-side clientId mapping
+      const createdMembers = [];
+      for (const m of memberData) {
+        const cm = await tx.splitBillMember.create({
+          data: {
+            splitBillId: createdBill.id,
+            friendName: m.friendName,
+            amount: m.amount,
+          },
+        });
+        createdMembers.push(cm);
+      }
+
+      // Create items explicitly
+      const createdItems = [];
       if (items && items.length > 0) {
-        const createdItems = await tx.splitBillItem.findMany({
-          where: { splitBillId: created.id },
+        for (const item of items) {
+          const ci = await tx.splitBillItem.create({
+            data: {
+              splitBillId: createdBill.id,
+              itemName: item.itemName,
+              price: item.price,
+              quantity: item.quantity || 1,
+            },
+          });
+          createdItems.push(ci);
+        }
+
+        // Create assignments: support client-side clientId strings or numeric indices
+        // Build a map for clientId -> memberId if clientId provided in request members
+        const clientIdToMemberId = {};
+        members.forEach((m, idx) => {
+          if (m.clientId) {
+            clientIdToMemberId[m.clientId] = createdMembers[idx].id;
+          }
         });
 
-        for (const item of items) {
-          const createdItem = createdItems.find((ci) => ci.itemName === item.itemName);
-          if (createdItem && item.assignedTo && item.assignedTo.length > 0) {
-            // Get member IDs for this split bill
-            const billMembers = await tx.splitBillMember.findMany({
-              where: { splitBillId: created.id },
-            });
+        for (let i = 0; i < items.length; i++) {
+          const item = items[i];
+          const createdItem = createdItems[i];
+          if (item.assignedTo && item.assignedTo.length > 0) {
+            for (const assigned of item.assignedTo) {
+              let memberIdToUse = null;
+              if (typeof assigned === 'string') {
+                memberIdToUse = clientIdToMemberId[assigned] || null;
+              } else if (typeof assigned === 'number') {
+                const member = createdMembers[assigned];
+                memberIdToUse = member ? member.id : null;
+              }
 
-            // Assign item to members (use indices from input)
-            for (const memberIndex of item.assignedTo) {
-              const member = billMembers[memberIndex];
-              if (member) {
+              if (memberIdToUse) {
                 await tx.splitBillItemAssignment.create({
                   data: {
                     itemId: createdItem.id,
-                    memberId: member.id,
+                    memberId: memberIdToUse,
                   },
                 });
               }
@@ -196,7 +213,13 @@ async function createSplitBill(req, res) {
         }
       }
 
-      return created;
+      // Return full split bill with relations
+      const final = await tx.splitBill.findUnique({
+        where: { id: createdBill.id },
+        include: { members: true, items: { include: { assignedTo: true } }, transaction: true },
+      });
+
+      return final;
     });
 
     return sendSuccess(res, { splitBill: result }, 'Split bill created successfully', 201);
@@ -388,20 +411,39 @@ async function updateSplitBill(req, res) {
           where: { splitBillId },
         });
 
-        for (const item of nextItems) {
+        const billMembers = await tx.splitBillMember.findMany({
+          where: { splitBillId },
+        });
+
+        // Build clientId -> memberId map if nextMembers provided
+        const clientIdToMemberId = {};
+        if (nextMembers) {
+          nextMembers.forEach((m, idx) => {
+            if (m.clientId) {
+              const createdMember = splitBill.members && splitBill.members[idx];
+              if (createdMember) clientIdToMemberId[m.clientId] = createdMember.id;
+            }
+          });
+        }
+
+        for (let i = 0; i < nextItems.length; i++) {
+          const item = nextItems[i];
           const createdItem = createdItems.find((ci) => ci.itemName === item.itemName);
           if (createdItem && item.assignedTo && item.assignedTo.length > 0) {
-            const billMembers = await tx.splitBillMember.findMany({
-              where: { splitBillId },
-            });
+            for (const assigned of item.assignedTo) {
+              let memberIdToUse = null;
+              if (typeof assigned === 'string') {
+                memberIdToUse = clientIdToMemberId[assigned] || null;
+              } else if (typeof assigned === 'number') {
+                const member = billMembers[assigned];
+                memberIdToUse = member ? member.id : null;
+              }
 
-            for (const memberIndex of item.assignedTo) {
-              const member = billMembers[memberIndex];
-              if (member) {
+              if (memberIdToUse) {
                 await tx.splitBillItemAssignment.create({
                   data: {
                     itemId: createdItem.id,
-                    memberId: member.id,
+                    memberId: memberIdToUse,
                   },
                 });
               }
