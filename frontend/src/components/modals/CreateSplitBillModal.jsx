@@ -48,6 +48,7 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
   }))
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [errorMessage, setErrorMessage] = useState('')
+  const [isTotalAmountFocused, setIsTotalAmountFocused] = useState(false)
 
   const formatAmount = useCallback(
     (value) => formatCurrencyValue(value, language, settings.currency),
@@ -342,27 +343,33 @@ export function CreateSplitBillModal({ onClose, onSuccess }) {
               value={form.totalAmount}
               onChange={onTotalAmountChange}
               placeholder="180000"
+              onFocus={() => setIsTotalAmountFocused(true)}
+              onBlur={() => setIsTotalAmountFocused(false)}
               className="mt-1 w-full rounded-2xl border border-black bg-[#fffbeb] px-3 py-2 text-sm"
             />
-            <NumericPad
-              className="mt-3"
-              title={t('numPad', 'Number Pad')}
-              clearLabel={t('clear', 'Clear')}
-              helperText={t('tapToEnterAmount', 'Tap the number pad to fill the amount faster.')}
-              onPress={(value) => {
-                setForm((prev) => {
-                  const current = String(prev.totalAmount || '')
+            {isTotalAmountFocused ? (
+              <div onMouseDown={(event) => event.preventDefault()}>
+                <NumericPad
+                  className="mt-3"
+                  title={t('numPad', 'Number Pad')}
+                  clearLabel={t('clear', 'Clear')}
+                  helperText={t('tapToEnterAmount', 'Tap the number pad to fill the amount faster.')}
+                  onPress={(value) => {
+                    setForm((prev) => {
+                      const current = String(prev.totalAmount || '')
 
-                  if (value === 'CLEAR') return { ...prev, totalAmount: '' }
-                  if (value === 'BACKSPACE') return { ...prev, totalAmount: current.slice(0, -1) }
+                      if (value === 'CLEAR') return { ...prev, totalAmount: '' }
+                      if (value === 'BACKSPACE') return { ...prev, totalAmount: current.slice(0, -1) }
 
-                  return {
-                    ...prev,
-                    totalAmount: current === '0' ? String(value) : `${current}${value}`,
-                  }
-                })
-              }}
-            />
+                      return {
+                        ...prev,
+                        totalAmount: current === '0' ? String(value) : `${current}${value}`,
+                      }
+                    })
+                  }}
+                />
+              </div>
+            ) : null}
           </label>
 
           {/* Toggle between Amount-based and Item-based */}
