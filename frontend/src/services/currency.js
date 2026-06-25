@@ -1,8 +1,8 @@
 const IDR_PER_CURRENCY = {
   IDR: 1,
-  USD: 16400,
-  SGD: 12800,
-  EUR: 19000,
+  USD: 17900,
+  SGD: 13800,
+  EUR: 20300,
 };
 
 export function normalizeCurrency(currency = "IDR") {
