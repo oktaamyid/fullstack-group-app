@@ -559,25 +559,29 @@ export function CreateTransactionModal({
                       {formatAmount(txForm.amount)}
                     </p>
                   ) : null}
-                  <NumericPad
-                    className="mt-3"
-                    title={t("numPad", "Number Pad")}
-                    clearLabel={t("clear", "Clear")}
-                    helperText={t("tapToEnterAmount", "Tap the number pad to fill the amount faster.")}
-                    onPress={(value) => {
-                      setTxForm((prev) => {
-                        const current = String(prev.amount || "");
+                  {isAmountFocused ? (
+                    <div onMouseDown={(event) => event.preventDefault()}>
+                      <NumericPad
+                        className="mt-3"
+                        title={t("numPad", "Number Pad")}
+                        clearLabel={t("clear", "Clear")}
+                        helperText={t("tapToEnterAmount", "Tap the number pad to fill the amount faster.")}
+                        onPress={(value) => {
+                          setTxForm((prev) => {
+                            const current = String(prev.amount || "");
 
-                        if (value === "CLEAR") return { ...prev, amount: "" };
-                        if (value === "BACKSPACE") return { ...prev, amount: current.slice(0, -1) };
+                            if (value === "CLEAR") return { ...prev, amount: "" };
+                            if (value === "BACKSPACE") return { ...prev, amount: current.slice(0, -1) };
 
-                        return {
-                          ...prev,
-                          amount: current === "0" ? String(value) : `${current}${value}`,
-                        };
-                      });
-                    }}
-                  />
+                            return {
+                              ...prev,
+                              amount: current === "0" ? String(value) : `${current}${value}`,
+                            };
+                          });
+                        }}
+                      />
+                    </div>
+                  ) : null}
                 </div>
 
                 {/* Note */}
