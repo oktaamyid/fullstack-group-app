@@ -236,7 +236,11 @@ async function listSplitBills(req, res) {
       where: { userId: req.user.id },
       include: {
         members: true,
-        items: true,
+        items: {
+          include: {
+            assignedTo: true,
+          },
+        },
         transaction: true,
       },
       orderBy: { createdAt: 'desc' },
@@ -400,7 +404,11 @@ async function updateSplitBill(req, res) {
         },
         include: {
           members: true,
-          items: true,
+          items: {
+            include: {
+              assignedTo: true,
+            },
+          },
           transaction: true,
         },
       });
@@ -457,11 +465,15 @@ async function updateSplitBill(req, res) {
         return tx.splitBill.update({
           where: { id: splitBillId },
           data: { status },
-          include: {
-            members: true,
-            items: true,
-            transaction: true,
-          },
+            include: {
+              members: true,
+              items: {
+                include: {
+                  assignedTo: true,
+                },
+              },
+              transaction: true,
+            },
         });
       }
 
