@@ -10,6 +10,7 @@ import { PageLayout } from "../layouts/PageLayout";
 import { PageHeader } from "../headers/PageHeader";
 import { useI18n } from "../../i18n/useI18n";
 import { useProfileSettings } from "../../hooks/useProfileSettings";
+import { getAuthUser } from "../../services/auth";
 import {
   convertFromIdr,
   convertToIdr,
@@ -24,14 +25,52 @@ const defaultForm = {
 
 // We enforce a minimum safe margin percentage that should remain after purchase
 const SAFE_MARGIN_PERCENTAGE = 0.2; // 20% of current balance should remain
+const SAVINGS_PLAN_KEY = "livo_wishlist_savings_plans";
+const defaultSavingsPlan = {
+  savedAmount: 0,
+  installmentAmount: 0,
+  frequency: "WEEKLY",
+};
 
 function getPriorityLabel(priorityScore) {
   return `P${priorityScore}`;
 }
 
+function getNumericValue(value) {
+  return Number(value) || 0;
+}
+
 function toInputAmount(value, currency) {
   const converted = convertFromIdr(value, currency);
   return Number.isInteger(converted) ? String(converted) : converted.toFixed(2);
+}
+
+function getSavingsPlanInput(value, currency) {
+  if (!value) return "";
+  return toInputAmount(value, currency);
+}
+
+function getSavingsStorageKey() {
+  const authUser = getAuthUser();
+  return `${SAVINGS_PLAN_KEY}:${authUser?.id || "guest"}`;
+}
+
+function readSavingsPlans() {
+  const raw = localStorage.getItem(getSavingsStorageKey());
+
+  if (!raw) {
+    return {};
+  }
+
+  try {
+    return JSON.parse(raw) || {};
+  } catch {
+    return {};
+  }
+}
+
+function writeSavingsPlans(plans) {
+  localStorage.setItem(getSavingsStorageKey(), JSON.stringify(plans));
 }
 
 function getBuyability(price, balance, formatAmount) {
@@ -50,11 +89,11 @@ function getBuyability(price, balance, formatAmount) {
     };
   }
 
+  const safeRequiredBalance = price / (1 - SAFE_MARGIN_PERCENTAGE);
   const safeRemaining = balance * SAFE_MARGIN_PERCENTAGE;
-  const safeTargetPrice = price + safeRemaining;
-  
-  // Progress towards safely buying the item
-  const ratio = balance / safeTargetPrice;
+
+  // Progress towards buying the item while keeping a 20% balance buffer.
+  const ratio = balance / safeRequiredBalance;
   const percent = Math.max(0, Math.min(100, Math.round(ratio * 100)));
   if (balance >= price && balance - price >= safeRemaining) {
     return {
@@ -90,28 +129,28 @@ function getBuyability(price, balance, formatAmount) {
     return {
       label: "Almost",
       percent,
-      needed: Math.max(0, price - balance),
+      needed: Math.max(0, safeRequiredBalance - balance),
       trackClass: "bg-amber-50",
       fillClass: "bg-amber-500",
       badgeClass: "bg-amber-100 text-amber-700",
       cardBadge: "bg-amber-100 text-amber-700",
       ctaLabel: "Almost There",
       disabled: true,
-      safeMessage: `Need ${formatAmount(Math.max(0, price - balance))} to afford it.`,
+      safeMessage: `Need ${formatAmount(Math.max(0, safeRequiredBalance - balance))} to buy safely.`,
     };
   }
 
   return {
     label: "Not yet",
     percent,
-    needed: Math.max(0, price - balance),
+    needed: Math.max(0, safeRequiredBalance - balance),
     trackClass: "bg-gray-100",
     fillClass: "bg-gray-400",
     badgeClass: "bg-gray-100 text-gray-700",
     cardBadge: "bg-gray-100 text-gray-700",
     ctaLabel: "Insufficient Funds",
     disabled: true,
-    safeMessage: `Need ${formatAmount(Math.max(0, price - balance))} more.`,
+    safeMessage: `Need ${formatAmount(Math.max(0, safeRequiredBalance - balance))} more.`,
   };
 }
 
@@ -134,6 +173,8 @@ export function WishlistScreen({ mainLogo }) {
   const [goalTarget, setGoalTarget] = useState(1000000);
   const [searchQuery, setSearchQuery] = useState("");
   const [priorityFilter, setPriorityFilter] = useState("ALL");
+  const [sortMode, setSortMode] = useState("SMART");
+  const [savingsPlans, setSavingsPlans] = useState(() => readSavingsPlans());
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
@@ -182,25 +223,62 @@ export function WishlistScreen({ mainLogo }) {
   }, []);
 
   const totalWishlistCost = useMemo(
-    () => wishlistItems.reduce((sum, entry) => sum + (entry.price || 0), 0),
+    () =>
+      wishlistItems.reduce((sum, entry) => sum + getNumericValue(entry.price), 0),
     [wishlistItems],
   );
+
+  const totalSavedForWishlist = useMemo(
+    () =>
+      wishlistItems.reduce((sum, entry) => {
+        const plan = savingsPlans[entry.id] || defaultSavingsPlan;
+        return (
+          sum +
+          Math.min(getNumericValue(entry.price), getNumericValue(plan.savedAmount))
+        );
+      }, 0),
+    [savingsPlans, wishlistItems],
+  );
+
+  const wishlistInsights = useMemo(() => {
+    const entries = wishlistItems.map((entry) => ({
+      entry,
+      buyability: getBuyability(
+        getNumericValue(entry.price),
+        currentBalance,
+        formatAmount,
+      ),
+    }));
+
+    const nextBestItem =
+      entries
+        .slice()
+        .sort((a, b) => {
+          const priorityDelta =
+            getNumericValue(b.entry.priorityScore) -
+            getNumericValue(a.entry.priorityScore);
+
+          if (priorityDelta !== 0) return priorityDelta;
+
+          const progressDelta = b.buyability.percent - a.buyability.percent;
+          if (progressDelta !== 0) return progressDelta;
+
+          return getNumericValue(a.entry.price) - getNumericValue(b.entry.price);
+        })[0] || null;
+
+    return {
+      itemCount: wishlistItems.length,
+      nextBestItem,
+    };
+  }, [currentBalance, formatAmount, wishlistItems]);
 
   const highestPriorityItem = useMemo(
     () =>
       wishlistItems
         .slice()
-        .sort((a, b) => b.priorityScore - a.priorityScore)[0] || null,
+        .sort((a, b) => Number(b.priorityScore) - Number(a.priorityScore))[0] || null,
     [wishlistItems],
   );
-
-  const goalProgress = useMemo(() => {
-    if (goalTarget <= 0) return 0;
-    return Math.max(
-      0,
-      Math.min(100, Math.round((currentBalance / goalTarget) * 100)),
-    );
-  }, [currentBalance, goalTarget]);
 
   const featuredProgress = useMemo(() => {
     if (!highestPriorityItem || highestPriorityItem.price <= 0) return 0;
@@ -214,16 +292,63 @@ export function WishlistScreen({ mainLogo }) {
   }, [currentBalance, highestPriorityItem]);
 
   const filteredItems = useMemo(() => {
+    const query = searchQuery.trim().toLowerCase();
+
     return wishlistItems.filter((entry) => {
-      const matchQuery = entry.item
+      const matchQuery = String(entry.item || "")
         .toLowerCase()
-        .includes(searchQuery.toLowerCase());
+        .includes(query);
       const matchPriority =
         priorityFilter === "ALL" ||
-        entry.priorityScore === Number(priorityFilter);
+        Number(entry.priorityScore) === Number(priorityFilter);
       return matchQuery && matchPriority;
     });
   }, [wishlistItems, searchQuery, priorityFilter]);
+
+  const managedItems = useMemo(() => {
+    return filteredItems
+      .map((entry) => ({
+        entry,
+        buyability: getBuyability(
+          getNumericValue(entry.price),
+          currentBalance,
+          formatAmount,
+        ),
+        savingsPlan: savingsPlans[entry.id] || defaultSavingsPlan,
+      }))
+      .sort((a, b) => {
+        if (sortMode === "PRICE_ASC") {
+          return getNumericValue(a.entry.price) - getNumericValue(b.entry.price);
+        }
+
+        if (sortMode === "PRICE_DESC") {
+          return getNumericValue(b.entry.price) - getNumericValue(a.entry.price);
+        }
+
+        if (sortMode === "PROGRESS") {
+          return b.buyability.percent - a.buyability.percent;
+        }
+
+        if (sortMode === "SAVINGS") {
+          const aProgress =
+            getNumericValue(a.savingsPlan.savedAmount) /
+            Math.max(1, getNumericValue(a.entry.price));
+          const bProgress =
+            getNumericValue(b.savingsPlan.savedAmount) /
+            Math.max(1, getNumericValue(b.entry.price));
+
+          return bProgress - aProgress;
+        }
+
+        const priorityDelta =
+          getNumericValue(b.entry.priorityScore) -
+          getNumericValue(a.entry.priorityScore);
+
+        if (priorityDelta !== 0) return priorityDelta;
+
+        return b.buyability.percent - a.buyability.percent;
+      });
+  }, [currentBalance, filteredItems, formatAmount, savingsPlans, sortMode]);
 
   const hamsterSuggestion = useMemo(() => {
     if (!highestPriorityItem) {
@@ -233,9 +358,13 @@ export function WishlistScreen({ mainLogo }) {
       );
     }
 
+    const safeRequiredBalance =
+      highestPriorityItem.price / (1 - SAFE_MARGIN_PERCENTAGE);
     const safeMargin = currentBalance * SAFE_MARGIN_PERCENTAGE;
-    const safeTargetPrice = highestPriorityItem.price + safeMargin;
-    const neededForSafePurchase = Math.max(0, safeTargetPrice - currentBalance);
+    const neededForSafePurchase = Math.max(
+      0,
+      safeRequiredBalance - currentBalance,
+    );
 
     if (currentBalance >= highestPriorityItem.price) {
       if (currentBalance - highestPriorityItem.price < safeMargin) {
@@ -271,6 +400,94 @@ export function WishlistScreen({ mainLogo }) {
     setForm(defaultForm);
     setFieldErrors({});
     setEditingId(null);
+  };
+
+  const resetFilters = () => {
+    setSearchQuery("");
+    setPriorityFilter("ALL");
+    setSortMode("SMART");
+  };
+
+  const updateSavingsPlan = useCallback((entryId, updater) => {
+    setSavingsPlans((prev) => {
+      const current = prev[entryId] || defaultSavingsPlan;
+      const nextPlan =
+        typeof updater === "function" ? updater(current) : { ...current, ...updater };
+      const next = {
+        ...prev,
+        [entryId]: {
+          ...defaultSavingsPlan,
+          ...nextPlan,
+        },
+      };
+
+      writeSavingsPlans(next);
+      return next;
+    });
+  }, []);
+
+  const removeSavingsPlan = useCallback((entryId) => {
+    setSavingsPlans((prev) => {
+      const next = { ...prev };
+      delete next[entryId];
+      writeSavingsPlans(next);
+      return next;
+    });
+  }, []);
+
+  const onSavingsAmountChange = (entryId, field, value) => {
+    const sanitizedValue = value.replace(/[^\d.]/g, "").replace(/(\..*)\./g, "$1");
+    const nextAmount = sanitizedValue
+      ? convertToIdr(Number(sanitizedValue), settings.currency)
+      : 0;
+
+    updateSavingsPlan(entryId, {
+      [field]: nextAmount,
+    });
+  };
+
+  const onSavingsFrequencyChange = (entryId, frequency) => {
+    updateSavingsPlan(entryId, {
+      frequency,
+    });
+  };
+
+  const onAddInstallment = (entry) => {
+    const price = getNumericValue(entry.price);
+
+    updateSavingsPlan(entry.id, (plan) => {
+      const installmentAmount = getNumericValue(plan.installmentAmount);
+      const savedAmount = Math.min(
+        price,
+        getNumericValue(plan.savedAmount) + installmentAmount,
+      );
+
+      return {
+        ...plan,
+        savedAmount,
+      };
+    });
+
+    setSuccessMessage(
+      tr(
+        `Savings installment added for ${entry.item}.`,
+        `Cicilan tabungan untuk ${entry.item} ditambahkan.`,
+      ),
+    );
+    setErrorMessage("");
+  };
+
+  const onResetSavings = (entry) => {
+    const confirmed = window.confirm(
+      tr(
+        `Reset savings progress for ${entry.item}?`,
+        `Reset progress tabungan untuk ${entry.item}?`,
+      ),
+    );
+
+    if (!confirmed) return;
+
+    removeSavingsPlan(entry.id);
   };
 
   const validateForm = () => {
@@ -375,15 +592,25 @@ export function WishlistScreen({ mainLogo }) {
     });
   };
 
-  const onDelete = async (id) => {
+  const onDelete = async (entry) => {
+    const confirmed = window.confirm(
+      tr(
+        `Delete ${entry.item} from your wishlist?`,
+        `Hapus ${entry.item} dari wishlist?`,
+      ),
+    );
+
+    if (!confirmed) return;
+
     setErrorMessage("");
     setSuccessMessage("");
 
     try {
-      await deleteWishlistItem(id);
-      if (editingId === id) {
+      await deleteWishlistItem(entry.id);
+      if (editingId === entry.id) {
         resetForm();
       }
+      removeSavingsPlan(entry.id);
       await loadWishlist();
       setSuccessMessage(
         tr(
@@ -397,6 +624,15 @@ export function WishlistScreen({ mainLogo }) {
   };
 
   const onPurchase = async (entry) => {
+    const confirmed = window.confirm(
+      tr(
+        `Mark ${entry.item} as purchased? This will remove it from your wishlist.`,
+        `Tandai ${entry.item} sudah dibeli? Item akan dihapus dari wishlist.`,
+      ),
+    );
+
+    if (!confirmed) return;
+
     setErrorMessage("");
     setSuccessMessage("");
 
@@ -405,6 +641,7 @@ export function WishlistScreen({ mainLogo }) {
       if (editingId === entry.id) {
         resetForm();
       }
+      removeSavingsPlan(entry.id);
       await loadWishlist();
       setSuccessMessage(
         tr(
@@ -453,11 +690,22 @@ export function WishlistScreen({ mainLogo }) {
           <p className="text-xl lg:text-2xl font-black mt-1 truncate">{formatAmount(currentBalance)}</p>
         </article>
         <article className="rounded-xl border-2 border-[#1c1c13] bg-[#fbbf24] p-5 lg:p-6 text-[#1c1c13] shadow-[4px_4px_0_#1c1c13]">
-          <span className="material-symbols-outlined text-[#1c1c13]">stars</span>
+          <span className="material-symbols-outlined text-[#1c1c13]">savings</span>
           <p className="mt-3 text-[10px] lg:text-xs font-black uppercase tracking-wide text-[#1c1c13]">
-            {t("nextGoal", "Next Goal")}
+            {tr("Saved So Far", "Tabungan Cicilan")}
           </p>
-          <p className="text-xl lg:text-2xl font-black text-[#1c1c13] mt-1">{goalProgress}%</p>
+          <p className="text-xl lg:text-2xl font-black text-[#1c1c13] mt-1 truncate">
+            {formatAmount(totalSavedForWishlist)}
+          </p>
+        </article>
+        <article className="rounded-xl border-2 border-[#1c1c13] bg-white p-5 lg:p-6 text-[#1c1c13] shadow-[4px_4px_0_#1c1c13]">
+          <span className="material-symbols-outlined text-[#1c1c13]">inventory_2</span>
+          <p className="mt-3 text-[10px] lg:text-xs font-black uppercase tracking-wide text-[#1c1c13]">
+            {tr("Total Items", "Total Item")}
+          </p>
+          <p className="text-xl lg:text-2xl font-black text-[#1c1c13] mt-1">
+            {wishlistInsights.itemCount}
+          </p>
         </article>
       </section>
 
@@ -495,6 +743,7 @@ export function WishlistScreen({ mainLogo }) {
                     placeholder="0"
                     className="min-h-[2.75rem] w-full rounded-lg border-2 border-[#1c1c13] bg-white px-3 text-sm font-bold outline-none focus:border-[#6366f1] shadow-[2px_2px_0_#1c1c13]"
                   />
+                  {fieldErrors.price ? <p className="mt-1 text-xs font-black text-[#ef4444]">{fieldErrors.price}</p> : null}
                 </div>
                 <div>
                   <label className="mb-2 block text-[10px] font-black uppercase text-[#1c1c13]">Priority</label>
@@ -510,6 +759,7 @@ export function WishlistScreen({ mainLogo }) {
                     <option value="2">P2</option>
                     <option value="1">P1 (Lowest)</option>
                   </select>
+                  {fieldErrors.priorityScore ? <p className="mt-1 text-xs font-black text-[#ef4444]">{fieldErrors.priorityScore}</p> : null}
                 </div>
               </div>
               
@@ -579,7 +829,34 @@ export function WishlistScreen({ mainLogo }) {
 
         {/* Right Column: List & Filters */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="flex gap-2">
+          {wishlistInsights.nextBestItem ? (
+            <section className="rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-4 shadow-[4px_4px_0_#1c1c13]">
+              <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                <div className="min-w-0">
+                  <p className="text-[10px] font-black uppercase tracking-wide text-[#1c1c13]">
+                    {tr("Recommended to manage next", "Rekomendasi berikutnya")}
+                  </p>
+                  <h3 className="mt-1 truncate text-lg font-black text-[#1c1c13]">
+                    {wishlistInsights.nextBestItem.entry.item}
+                  </h3>
+                  <p className="mt-1 text-xs font-bold text-[#1c1c13]">
+                    {formatAmount(wishlistInsights.nextBestItem.entry.price)} |{" "}
+                    {getPriorityLabel(wishlistInsights.nextBestItem.entry.priorityScore)} |{" "}
+                    {wishlistInsights.nextBestItem.buyability.percent}%
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => onEdit(wishlistInsights.nextBestItem.entry)}
+                  className="min-h-[2.75rem] rounded-lg border-2 border-[#1c1c13] bg-[#6366f1] px-4 text-[11px] font-black uppercase text-white shadow-[2px_2px_0_#1c1c13] transition-all hover:-translate-y-0.5 active:translate-y-0"
+                >
+                  {tr("Manage Item", "Kelola Item")}
+                </button>
+              </div>
+            </section>
+          ) : null}
+
+          <div className="grid gap-2 sm:grid-cols-[1fr_auto_auto_auto]">
             <input
               type="text"
               value={searchQuery}
@@ -599,6 +876,24 @@ export function WishlistScreen({ mainLogo }) {
               <option value="2">P2</option>
               <option value="1">P1</option>
             </select>
+            <select
+              value={sortMode}
+              onChange={(event) => setSortMode(event.target.value)}
+              className="min-h-[2.75rem] rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1]"
+            >
+              <option value="SMART">{tr("Smart Sort", "Urut Pintar")}</option>
+              <option value="PROGRESS">{tr("Best Progress", "Progress Terbaik")}</option>
+              <option value="SAVINGS">{tr("Savings Progress", "Progress Nabung")}</option>
+              <option value="PRICE_ASC">{tr("Lowest Price", "Harga Termurah")}</option>
+              <option value="PRICE_DESC">{tr("Highest Price", "Harga Termahal")}</option>
+            </select>
+            <button
+              type="button"
+              onClick={resetFilters}
+              className="min-h-[2.75rem] rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-[11px] font-black uppercase text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] transition-all hover:-translate-y-0.5 active:translate-y-0"
+            >
+              Reset
+            </button>
           </div>
 
           {errorMessage && (
@@ -621,18 +916,40 @@ export function WishlistScreen({ mainLogo }) {
 
           {isLoading ? (
             <p className="text-sm font-black text-[#1c1c13]">Loading wishlist...</p>
-          ) : filteredItems.length === 0 ? (
+          ) : managedItems.length === 0 ? (
             <div className="rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-8 text-center shadow-[4px_4px_0_#1c1c13]">
               <p className="text-sm font-black text-[#1c1c13]">No wishlist item matches your filter.</p>
             </div>
           ) : (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {filteredItems.map((entry) => {
-                const buyability = getBuyability(
-                  entry.price,
-                  currentBalance,
-                  formatAmount,
+              {managedItems.map(({ entry, buyability, savingsPlan }) => {
+                const price = getNumericValue(entry.price);
+                const savedAmount = Math.min(
+                  price,
+                  getNumericValue(savingsPlan.savedAmount),
                 );
+                const installmentAmount = getNumericValue(
+                  savingsPlan.installmentAmount,
+                );
+                const savingsPercent = Math.max(
+                  0,
+                  Math.min(100, Math.round((savedAmount / Math.max(1, price)) * 100)),
+                );
+                const remainingSavings = Math.max(0, price - savedAmount);
+                const remainingInstallments =
+                  installmentAmount > 0
+                    ? Math.ceil(remainingSavings / installmentAmount)
+                    : 0;
+                const isSavingsComplete = price > 0 && remainingSavings <= 0;
+                const completionDisabled = buyability.disabled && !isSavingsComplete;
+                const completionLabel = isSavingsComplete
+                  ? tr("Complete Item", "Selesaikan")
+                  : buyability.ctaLabel;
+                const completionButtonClass = isSavingsComplete
+                  ? "bg-[#22c55e] text-[#1c1c13]"
+                  : buyability.label === 'Unsafe'
+                    ? "bg-[#ef4444] text-white"
+                    : "bg-[#6366f1] text-white";
 
                 return (
                   <article
@@ -640,8 +957,8 @@ export function WishlistScreen({ mainLogo }) {
                     className="flex flex-col overflow-hidden rounded-xl border-2 border-[#1c1c13] bg-white shadow-[4px_4px_0_#1c1c13] transition-transform hover:-translate-y-0.5 active:translate-y-0 active:shadow-[2px_2px_0_#1c1c13]"
                   >
                     <div className={`relative h-28 flex items-center justify-center p-4 border-b-2 border-[#1c1c13] bg-[#fffbeb]`}>
-                      <span className={`absolute right-3 top-3 rounded border-2 border-[#1c1c13] px-2 py-1 text-[10px] font-black uppercase ${buyability.cardBadge}`}>
-                        {buyability.label}
+                      <span className={`absolute right-3 top-3 rounded border-2 border-[#1c1c13] px-2 py-1 text-[10px] font-black uppercase ${isSavingsComplete ? "bg-green-100 text-green-700" : buyability.cardBadge}`}>
+                        {isSavingsComplete ? tr("Saved", "Tercapai") : buyability.label}
                       </span>
                       <h4 className="text-center text-lg font-black tracking-tight line-clamp-2 text-[#1c1c13]">
                         {entry.item}
@@ -676,19 +993,117 @@ export function WishlistScreen({ mainLogo }) {
                         </p>
                       </div>
 
+                      <div className="rounded-lg border-2 border-[#1c1c13] bg-white p-3 mb-4 shadow-[2px_2px_0_#1c1c13]">
+                        <div className="mb-2 flex items-center justify-between gap-2">
+                          <span className="text-[10px] font-black uppercase text-[#1c1c13]">
+                            {tr("Savings Plan", "Cicil Nabung")}
+                          </span>
+                          <span className="rounded border-2 border-[#1c1c13] bg-[#fbbf24] px-2 py-0.5 text-[10px] font-black uppercase text-[#1c1c13]">
+                            {savingsPercent}%
+                          </span>
+                        </div>
+                        <div className="h-3 w-full overflow-hidden rounded-full border-2 border-[#1c1c13] bg-white">
+                          <div
+                            className="h-full border-r-2 border-[#1c1c13] bg-[#22c55e] transition-all duration-500"
+                            style={{ width: `${savingsPercent}%` }}
+                          />
+                        </div>
+                        <div className="mt-3 grid grid-cols-2 gap-2">
+                          <label className="block">
+                            <span className="mb-1 block text-[9px] font-black uppercase text-[#1c1c13]">
+                              {tr("Saved", "Terkumpul")}
+                            </span>
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              value={getSavingsPlanInput(savedAmount, settings.currency)}
+                              onChange={(event) =>
+                                onSavingsAmountChange(
+                                  entry.id,
+                                  "savedAmount",
+                                  event.target.value,
+                                )
+                              }
+                              className="min-h-[2.5rem] w-full rounded-lg border-2 border-[#1c1c13] bg-white px-2 text-xs font-black outline-none focus:border-[#6366f1]"
+                            />
+                          </label>
+                          <label className="block">
+                            <span className="mb-1 block text-[9px] font-black uppercase text-[#1c1c13]">
+                              {tr("Installment", "Cicilan")}
+                            </span>
+                            <input
+                              type="text"
+                              inputMode="decimal"
+                              value={getSavingsPlanInput(
+                                installmentAmount,
+                                settings.currency,
+                              )}
+                              onChange={(event) =>
+                                onSavingsAmountChange(
+                                  entry.id,
+                                  "installmentAmount",
+                                  event.target.value,
+                                )
+                              }
+                              className="min-h-[2.5rem] w-full rounded-lg border-2 border-[#1c1c13] bg-white px-2 text-xs font-black outline-none focus:border-[#6366f1]"
+                            />
+                          </label>
+                        </div>
+                        <div className="mt-2 grid grid-cols-[1fr_auto] gap-2">
+                          <select
+                            value={savingsPlan.frequency}
+                            onChange={(event) =>
+                              onSavingsFrequencyChange(entry.id, event.target.value)
+                            }
+                            className="min-h-[2.5rem] rounded-lg border-2 border-[#1c1c13] bg-white px-2 text-xs font-black outline-none focus:border-[#6366f1]"
+                          >
+                            <option value="DAILY">{tr("Daily", "Harian")}</option>
+                            <option value="WEEKLY">{tr("Weekly", "Mingguan")}</option>
+                            <option value="MONTHLY">{tr("Monthly", "Bulanan")}</option>
+                          </select>
+                          <button
+                            type="button"
+                            onClick={() => onAddInstallment(entry)}
+                            disabled={installmentAmount <= 0 || remainingSavings <= 0}
+                            className="min-h-[2.5rem] rounded-lg border-2 border-[#1c1c13] bg-[#22c55e] px-3 text-[10px] font-black uppercase text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] transition-all hover:-translate-y-0.5 active:translate-y-0 disabled:cursor-not-allowed disabled:bg-gray-100 disabled:opacity-50 disabled:shadow-none disabled:hover:translate-y-0"
+                          >
+                            + {tr("Cicil", "Cicil")}
+                          </button>
+                        </div>
+                        <div className="mt-2 flex items-center justify-between gap-2">
+                          <p className="text-[10px] font-black text-[#1c1c13]">
+                            {remainingSavings <= 0
+                              ? tr(
+                                  "Target reached. You can complete this item.",
+                                  "Target tercapai. Item bisa diselesaikan.",
+                                )
+                              : tr(
+                                  `${remainingInstallments || "-"} installments left`,
+                                  `${remainingInstallments || "-"}x cicilan lagi`,
+                                )}
+                          </p>
+                          <button
+                            type="button"
+                            onClick={() => onResetSavings(entry)}
+                            className="text-[10px] font-black uppercase text-[#ef4444]"
+                          >
+                            Reset
+                          </button>
+                        </div>
+                      </div>
+
                       <div className="mt-auto grid grid-cols-[1fr_auto_auto] gap-2">
                         <button
                           type="button"
                           onClick={() => onPurchase(entry)}
+                          disabled={completionDisabled}
                           className={`rounded-lg border-2 border-[#1c1c13] px-3 text-[11px] font-black uppercase shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0 transition-all ${
-                            buyability.disabled
-                              ? "bg-gray-100 text-[#1c1c13] opacity-50 shadow-none hover:translate-y-0"
-                              : buyability.label === 'Unsafe'
-                                ? "bg-[#ef4444] text-white"
-                                : "bg-[#6366f1] text-white"
+                            completionDisabled
+                              ? "cursor-not-allowed bg-gray-100 text-[#1c1c13] opacity-50 shadow-none hover:translate-y-0"
+                              : completionButtonClass
                           }`}
                         >
-                          {buyability.ctaLabel}
+                          {completionLabel}
                         </button>
                         <button
                           type="button"
@@ -699,7 +1114,7 @@ export function WishlistScreen({ mainLogo }) {
                         </button>
                         <button
                           type="button"
-                          onClick={() => onDelete(entry.id)}
+                          onClick={() => onDelete(entry)}
                           className="flex min-h-[2.5rem] min-w-[2.5rem] items-center justify-center rounded-lg border-2 border-[#1c1c13] bg-[#ef4444] text-white shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0 transition-all"
                         >
                           <span className="material-symbols-outlined text-sm">delete</span>

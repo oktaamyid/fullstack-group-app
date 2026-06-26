@@ -13,7 +13,7 @@ function formatDate(value, language) {
   }
 
   const date = new Date(value);
-  if (Number.isNaN(date.getTime())) {
+  if (Number.isNaN(date.getTime())) { 
     return "-";
   }
 
