@@ -21,8 +21,8 @@ export function TransactionScreen({ mainLogo }) {
   const [errorMessage, setErrorMessage] = useState("");
   const [, setAnalytics] = useState(null);
   const [transactions, setTransactions] = useState([]);
-  
   const [selectedDate, setSelectedDate] = useState(new Date());
+  const [categoryTab, setCategoryTab] = useState("EXPENSE"); // EXPENSE | INCOME
 
   useEffect(() => {
     let cancelled = false;
@@ -75,14 +75,62 @@ export function TransactionScreen({ mainLogo }) {
     };
   }, [monthTransactions]);
 
+  const lastMonthTransactions = useMemo(() => {
+    return transactions.filter(tx => {
+      const date = new Date(tx.createdAt);
+      const lastMonthDate = new Date(selectedDate.getFullYear(), selectedDate.getMonth() - 1, 1);
+      return date.getMonth() === lastMonthDate.getMonth() && date.getFullYear() === lastMonthDate.getFullYear();
+    });
+  }, [transactions, selectedDate]);
+
+  const lastMonthSummary = useMemo(() => {
+    const income = lastMonthTransactions.filter(t => t.type === "INCOME").reduce((sum, t) => sum + t.amount, 0);
+    const expense = lastMonthTransactions.filter(t => t.type === "EXPENSE" || t.type === "SHARED_EXPENSE").reduce((sum, t) => sum + t.amount, 0);
+    return { income, expense, net: income - expense };
+  }, [lastMonthTransactions]);
+
+  const calculateChange = useCallback((current, previous) => {
+    if (previous === 0) return current > 0 ? "+100%" : "0%";
+    const diff = current - previous;
+    const percentage = (diff / previous) * 100;
+    return `${percentage > 0 ? '+' : ''}${percentage.toFixed(1)}%`;
+  }, []);
+
   const categoryTotals = useMemo(() => {
     const totals = {};
-    monthTransactions.filter(t => t.type === "EXPENSE" || t.type === "SHARED_EXPENSE").forEach(tx => {
-      const cat = tx.category || "Other";
-      totals[cat] = (totals[cat] || 0) + tx.amount;
+    monthTransactions.forEach(tx => {
+      if (categoryTab === "EXPENSE" && (tx.type === "EXPENSE" || tx.type === "SHARED_EXPENSE")) {
+        const cat = tx.category || "Other";
+        totals[cat] = (totals[cat] || 0) + tx.amount;
+      } else if (categoryTab === "INCOME" && tx.type === "INCOME") {
+        const cat = tx.category || "Other";
+        totals[cat] = (totals[cat] || 0) + tx.amount;
+      }
     });
     return totals;
-  }, [monthTransactions]);
+  }, [monthTransactions, categoryTab]);
+
+  const COLORS = useMemo(() => ["#4648d4", "#ffc329", "#10b981", "#ef4444", "#8b5cf6", "#f97316", "#06b6d4"], []);
+  
+  const pieChartData = useMemo(() => {
+    const totalAmount = categoryTab === "EXPENSE" ? monthSummary.expense : monthSummary.income;
+    if (totalAmount === 0) return null;
+    
+    let currentAngle = 0;
+    const segments = Object.entries(categoryTotals)
+      .sort((a, b) => b[1] - a[1])
+      .map(([cat, amt], index) => {
+        const percentage = amt / totalAmount;
+        const angle = percentage * 360;
+        const color = COLORS[index % COLORS.length];
+        const str = `${color} ${currentAngle}deg ${currentAngle + angle}deg`;
+        currentAngle += angle;
+        return { cat, amt, percentage, color, str };
+      });
+      
+    const gradient = segments.map(s => s.str).join(', ');
+    return { segments, gradient, totalAmount };
+  }, [categoryTotals, categoryTab, monthSummary, COLORS]);
 
   const trend = useMemo(() => {
     const year = selectedDate.getFullYear();
@@ -168,26 +216,41 @@ export function TransactionScreen({ mainLogo }) {
             {/* Cashflow Summary */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div className="rounded-2xl border-2 border-[#1c1c13] bg-[#ecfdf5] p-5 shadow-[4px_4px_0_#1c1c13]">
-                <p className="text-[10px] font-bold uppercase tracking-wide text-green-700">
-                  {tr("Total Income", "Total Pemasukan")}
-                </p>
-                <p className="mt-1 text-2xl font-black text-green-800">
+                <div className="flex justify-between items-start mb-1">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-green-700">
+                    {tr("Total Income", "Total Pemasukan")}
+                  </p>
+                  <span className={`text-[10px] font-bold ${monthSummary.income >= lastMonthSummary.income ? 'text-green-600' : 'text-red-500'}`}>
+                    {calculateChange(monthSummary.income, lastMonthSummary.income)} vs {tr("Last Month", "Bulan Lalu")}
+                  </span>
+                </div>
+                <p className="text-2xl font-black text-green-800">
                   {formatCurrency(monthSummary.income, language, settings.currency)}
                 </p>
               </div>
               <div className="rounded-2xl border-2 border-[#1c1c13] bg-[#fef2f2] p-5 shadow-[4px_4px_0_#1c1c13]">
-                <p className="text-[10px] font-bold uppercase tracking-wide text-red-600">
-                  {tr("Total Expense", "Total Pengeluaran")}
-                </p>
-                <p className="mt-1 text-2xl font-black text-red-700">
+                <div className="flex justify-between items-start mb-1">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-red-600">
+                    {tr("Total Expense", "Total Pengeluaran")}
+                  </p>
+                  <span className={`text-[10px] font-bold ${monthSummary.expense <= lastMonthSummary.expense ? 'text-green-600' : 'text-red-500'}`}>
+                    {calculateChange(monthSummary.expense, lastMonthSummary.expense)} vs {tr("Last Month", "Bulan Lalu")}
+                  </span>
+                </div>
+                <p className="text-2xl font-black text-red-700">
                   {formatCurrency(monthSummary.expense, language, settings.currency)}
                 </p>
               </div>
               <div className="rounded-2xl border-2 border-[#1c1c13] bg-white p-5 shadow-[4px_4px_0_#1c1c13]">
-                <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
-                  {tr("Net Balance", "Saldo Bersih")}
-                </p>
-                <p className={`mt-1 text-2xl font-black ${monthSummary.net >= 0 ? "text-green-700" : "text-red-600"}`}>
+                <div className="flex justify-between items-start mb-1">
+                  <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
+                    {tr("Net Balance", "Saldo Bersih")}
+                  </p>
+                  <span className={`text-[10px] font-bold ${monthSummary.net >= lastMonthSummary.net ? 'text-green-600' : 'text-red-500'}`}>
+                    {calculateChange(monthSummary.net, lastMonthSummary.net)} vs {tr("Last Month", "Bulan Lalu")}
+                  </span>
+                </div>
+                <p className={`text-2xl font-black ${monthSummary.net >= 0 ? "text-green-700" : "text-red-600"}`}>
                   {formatCurrency(monthSummary.net, language, settings.currency)}
                 </p>
               </div>
@@ -233,35 +296,65 @@ export function TransactionScreen({ mainLogo }) {
               </div>
             </section>
 
-            {/* Category Breakdown */}
+            {/* Category Pie Chart & Breakdown */}
             <section className="space-y-4 pb-5">
-              <h3 className="text-lg font-black uppercase tracking-tight">
-                {tr("Expense per Category", "Pengeluaran per Kategori")}
-              </h3>
-              {Object.keys(categoryTotals).length > 0 ? (
-                <div className="grid grid-cols-1 gap-3 md:grid-cols-2 lg:grid-cols-3">
-                  {Object.entries(categoryTotals)
-                    .sort((a, b) => b[1] - a[1])
-                    .map(([category, amount]) => {
-                      const percentage = monthSummary.expense > 0 ? Math.round((amount / monthSummary.expense) * 100) : 0;
-                      return (
-                        <article key={category} className="flex flex-col justify-between rounded-xl border-2 border-[#1c1c13] bg-white p-4 shadow-[4px_4px_0_#1c1c13]">
-                          <div className="flex justify-between items-start mb-2">
-                            <p className="text-sm font-black text-gray-900">{category}</p>
-                            <span className="rounded bg-gray-100 px-2 py-0.5 text-[10px] font-bold text-gray-600">
-                              {percentage}%
-                            </span>
-                          </div>
-                          <p className="text-lg font-black text-[#4648d4]">
-                            {formatCurrency(amount, language, settings.currency)}
-                          </p>
-                        </article>
-                      );
-                    })}
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+                <h3 className="text-lg font-black uppercase tracking-tight">
+                  {tr("Category Details", "Rincian Kategori")}
+                </h3>
+                <div className="flex gap-2 bg-[#fffbeb] p-1 rounded-lg border-2 border-[#1c1c13] shadow-[2px_2px_0_#1c1c13]">
+                  <button 
+                    onClick={() => setCategoryTab("EXPENSE")}
+                    className={`px-4 py-1.5 text-xs font-black uppercase rounded ${categoryTab === "EXPENSE" ? "bg-[#ef4444] text-white shadow-sm" : "text-[#1c1c13] hover:bg-[#ffc329]"} transition-colors`}
+                  >
+                    {tr("Expense", "Pengeluaran")}
+                  </button>
+                  <button 
+                    onClick={() => setCategoryTab("INCOME")}
+                    className={`px-4 py-1.5 text-xs font-black uppercase rounded ${categoryTab === "INCOME" ? "bg-[#10b981] text-white shadow-sm" : "text-[#1c1c13] hover:bg-[#ffc329]"} transition-colors`}
+                  >
+                    {tr("Income", "Pemasukan")}
+                  </button>
+                </div>
+              </div>
+
+              {pieChartData ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-center bg-white border-2 border-[#1c1c13] rounded-2xl p-6 shadow-[4px_4px_0_#1c1c13]">
+                  {/* Pie Chart Donut */}
+                  <div className="flex justify-center">
+                    <div 
+                      className="relative w-48 h-48 sm:w-56 sm:h-56 rounded-full border-4 border-[#1c1c13] shadow-[4px_4px_0_#1c1c13]"
+                      style={{ background: `conic-gradient(${pieChartData.gradient})` }}
+                    >
+                      {/* Inner white circle for donut effect */}
+                      <div className="absolute inset-0 m-auto w-32 h-32 sm:w-36 sm:h-36 bg-white rounded-full border-4 border-[#1c1c13] flex flex-col items-center justify-center">
+                         <span className="text-[10px] font-bold text-gray-500 uppercase tracking-widest">{tr("Total", "Total")}</span>
+                         <span className="text-sm sm:text-base font-black text-[#1c1c13] truncate max-w-[100px] sm:max-w-[120px]" title={formatCurrency(pieChartData.totalAmount, language, settings.currency)}>
+                           {formatCurrency(pieChartData.totalAmount, language, settings.currency)}
+                         </span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Legend & List */}
+                  <div className="space-y-2 max-h-64 overflow-y-auto pr-2">
+                    {pieChartData.segments.map((seg) => (
+                      <div key={seg.cat} className="flex items-center justify-between p-2 rounded-lg hover:bg-[#f8f4e4] border-2 border-transparent hover:border-[#1c1c13] transition-all">
+                        <div className="flex items-center gap-3">
+                          <div className="w-4 h-4 rounded-full border-2 border-[#1c1c13]" style={{ backgroundColor: seg.color }}></div>
+                          <span className="font-bold text-sm text-gray-800">{seg.cat}</span>
+                        </div>
+                        <div className="text-right">
+                          <p className="font-black text-sm text-[#1c1c13]">{formatCurrency(seg.amt, language, settings.currency)}</p>
+                          <p className="text-[10px] font-bold text-gray-500">{Math.round(seg.percentage * 100)}%</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <article className="rounded-xl border-2 border-dashed border-gray-300 bg-gray-50 p-8 text-center text-sm font-bold text-gray-500">
-                  {tr("No expenses for this month.", "Belum ada pengeluaran di bulan ini.")}
+                  {tr("No data for this category in the selected month.", "Belum ada data untuk kategori ini di bulan terpilih.")}
                 </article>
               )}
             </section>
