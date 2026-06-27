@@ -5,7 +5,7 @@
  * @param {Object} props
  * @param {boolean} props.ok - Status state (true = success, false = error, undefined = pending)
  * @param {string} props.label - Status label
- * @param {string} props.className - Additional classes
+ * @param {string} props.className - Additional classes 
  */
 export function StatusPill({ ok, label, className = '' }) {
   const base = `rounded-full border border-[#1c1c13] px-2 py-0.5 text-[10px] font-black uppercase tracking-wide ${className}`

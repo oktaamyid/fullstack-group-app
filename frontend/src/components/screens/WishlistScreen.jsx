@@ -49,10 +49,16 @@ export function WishlistScreen({ mainLogo }) {
     
     setIsSaving(true);
     try {
+      const payload = {
+        item: form.item,
+        price: Number(form.price),
+        priorityScore: Number(form.priorityScore)
+      };
+      
       if (editingId) {
-        await updateWishlistItem(editingId, form);
+        await updateWishlistItem(editingId, payload);
       } else {
-        await createWishlistItem(form);
+        await createWishlistItem(payload);
       }
       setForm(defaultForm);
       setEditingId(null);

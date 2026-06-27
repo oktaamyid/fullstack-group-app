@@ -8,14 +8,14 @@ const priorityScoreSchema = z.coerce
 
 const createWishlistSchema = z.object({
   item: z.string().trim().min(2, 'Item must be at least 2 characters').max(120, 'Item is too long'),
-  price: z.number().int().positive('Price must be positive'),
+  price: z.coerce.number().int().positive('Price must be positive'),
   priorityScore: priorityScoreSchema.default(3),
 });
 
 const updateWishlistSchema = z
   .object({
     item: z.string().trim().min(2, 'Item must be at least 2 characters').max(120, 'Item is too long').optional(),
-    price: z.number().int().positive('Price must be positive').optional(),
+    price: z.coerce.number().int().positive('Price must be positive').optional(),
     priorityScore: priorityScoreSchema.optional(),
   })
   .refine((payload) => Object.keys(payload).length > 0, {
