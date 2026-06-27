@@ -31,6 +31,13 @@ async function register(req, res) {
         name,
         email,
         password: hashedPassword,
+        wallets: {
+          create: {
+            name: "Cash (Default)",
+            type: "CASH",
+            balance: 0,
+          },
+        },
       },
     });
     const token = signToken(createdUser);

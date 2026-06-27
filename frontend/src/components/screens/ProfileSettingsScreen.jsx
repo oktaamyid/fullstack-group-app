@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 import { useCallback, useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { clearAuthSession, getAuthToken, getAuthUser, saveAuthSession } from '../../services/auth'
@@ -20,16 +19,8 @@ import { Alert } from '../ui/Alert'
 import { Button } from '../ui/Button'
 import { useI18n } from '../../i18n/useI18n'
 
-const defaultProfileForm = {
-  name: '',
-  email: '',
-}
-
-const defaultPasswordForm = {
-  currentPassword: '',
-  newPassword: '',
-  confirmPassword: '',
-}
+const defaultProfileForm = { name: '', email: '' }
+const defaultPasswordForm = { currentPassword: '', newPassword: '', confirmPassword: '' }
 
 const CURRENCY_LABELS = {
   IDR: 'IDR - Indonesian Rupiah',
@@ -75,7 +66,7 @@ function ToggleSetting({ label, description, checked, onChange }) {
 
 export function ProfileSettingsScreen({ mainLogo }) {
   const { t, language } = useI18n()
-  const tr = useCallback((en, id) => (language === 'id-ID' ? id : en))
+  const tr = useCallback((en, id) => (language === 'id-ID' ? id : en), [language])
   const navigate = useNavigate()
   const authUser = getAuthUser()
   const [isLoading, setIsLoading] = useState(true)
@@ -89,10 +80,11 @@ export function ProfileSettingsScreen({ mainLogo }) {
   const [message, setMessage] = useState('')
   const [errorMessage, setErrorMessage] = useState('')
 
+  const [activeTab, setActiveTab] = useState('APLIKASI') // APLIKASI | DATA | BANTUAN
+
   const loadProfile = useCallback(async () => {
     setIsLoading(true)
     setErrorMessage('')
-
     try {
       const data = await fetchProfile()
       setProfileForm({
@@ -138,7 +130,6 @@ export function ProfileSettingsScreen({ mainLogo }) {
           name: profileForm.name,
           email: profileForm.email,
         })
-
         const currentToken = getAuthToken()
         if (currentToken) {
           saveAuthSession(currentToken, {
@@ -147,7 +138,6 @@ export function ProfileSettingsScreen({ mainLogo }) {
             email: data.user.email,
           })
         }
-
         setMessage(tr('Profile updated successfully.', 'Profil berhasil diperbarui.'))
       } catch (error) {
         setErrorMessage(error.message)
@@ -162,14 +152,11 @@ export function ProfileSettingsScreen({ mainLogo }) {
     event.preventDefault()
     setErrorMessage('')
     setMessage('')
-
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
       setErrorMessage(tr('New password and confirmation password must match.', 'Password baru dan konfirmasi harus sama.'))
       return
     }
-
     setIsPasswordSubmitting(true)
-
     try {
       await updatePassword({
         currentPassword: passwordForm.currentPassword,
@@ -187,15 +174,8 @@ export function ProfileSettingsScreen({ mainLogo }) {
   const onToggleSetting = useCallback(
     (field) => {
       setSettings((prev) => {
-        const next = {
-          ...prev,
-          [field]: !prev[field],
-        }
-
-        if (authUser?.id) {
-          saveLocalSettings(authUser.id, next)
-        }
-
+        const next = { ...prev, [field]: !prev[field] }
+        if (authUser?.id) saveLocalSettings(authUser.id, next)
         return next
       })
     },
@@ -205,15 +185,8 @@ export function ProfileSettingsScreen({ mainLogo }) {
   const onConfigChange = useCallback(
     (field, value) => {
       setSettings((prev) => {
-        const next = {
-          ...prev,
-          [field]: value,
-        }
-
-        if (authUser?.id) {
-          saveLocalSettings(authUser.id, next)
-        }
-
+        const next = { ...prev, [field]: value }
+        if (authUser?.id) saveLocalSettings(authUser.id, next)
         return next
       })
       setMessage(tr('Configuration updated.', 'Konfigurasi berhasil diperbarui.'))
@@ -226,17 +199,14 @@ export function ProfileSettingsScreen({ mainLogo }) {
     (event) => {
       event.preventDefault()
       setErrorMessage('')
-
       if (!authUser?.id) {
         setErrorMessage(tr('Unable to save category. Please login again.', 'Tidak bisa menyimpan kategori. Silakan login ulang.'))
         return
       }
-
       if (!categoryForm.label) {
         setErrorMessage(tr('Please enter a category name.', 'Harap masukkan nama kategori.'))
         return
       }
-
       try {
         const next = addCategorySetting(authUser.id, categoryTab, categoryForm.label, categoryForm.icon)
         setSettings(next)
@@ -252,12 +222,10 @@ export function ProfileSettingsScreen({ mainLogo }) {
   const onRemoveCategory = useCallback(
     (type, categoryKey) => {
       setErrorMessage('')
-
       if (!authUser?.id) {
         setErrorMessage(tr('Unable to save category. Please login again.', 'Tidak bisa menyimpan kategori. Silakan login ulang.'))
         return
       }
-
       try {
         const next = removeCategorySetting(authUser.id, type, categoryKey)
         setSettings(next)
@@ -268,6 +236,28 @@ export function ProfileSettingsScreen({ mainLogo }) {
     },
     [authUser?.id, tr]
   )
+
+  const handleExportCSV = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/export/transactions/csv`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (!response.ok) throw new Error("Failed to export data");
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `transactions_${new Date().toISOString().slice(0,10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setMessage(tr("Export successful", "Ekspor berhasil"));
+    } catch (error) {
+      console.error(error);
+      setErrorMessage(tr("Failed to export CSV", "Gagal mengekspor CSV"));
+    }
+  }, [tr]);
 
   const handleLogout = useCallback(() => {
     clearAuthSession()
@@ -283,291 +273,339 @@ export function ProfileSettingsScreen({ mainLogo }) {
           backLink="/home"
         />
       }
-      className="space-y-5 py-5 lg:grid lg:grid-cols-12 lg:gap-6 lg:space-y-0"
+      className="space-y-5 pt-5 lg:space-y-6"
     >
-        <section className="rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-6 shadow-[4px_4px_0_#1c1c13] lg:col-span-12">
-          <p className="text-[11px] font-black uppercase text-[#1c1c13]">Your Account</p>
-          <h2 className="mt-1 text-2xl font-black text-[#1c1c13]">{authUser?.name || 'Student'}</h2>
-          <p className="text-sm font-black text-[#1c1c13]">{authUser?.email || '-'}</p>
-        </section>
+      <div className="flex rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-1 w-full max-w-md mx-auto mb-6 shadow-[2px_2px_0_#1c1c13]">
+        <button
+          className={`flex-1 rounded-lg py-2 text-[10px] font-black uppercase tracking-wide transition-colors ${activeTab === "APLIKASI" ? "bg-[#4648d4] text-white shadow-sm" : "text-[#1c1c13] hover:bg-[#ffc329]"}`}
+          onClick={() => setActiveTab("APLIKASI")}
+        >
+          {tr("Application", "Aplikasi")}
+        </button>
+        <button
+          className={`flex-1 rounded-lg py-2 text-[10px] font-black uppercase tracking-wide transition-colors ${activeTab === "DATA" ? "bg-[#4648d4] text-white shadow-sm" : "text-[#1c1c13] hover:bg-[#ffc329]"}`}
+          onClick={() => setActiveTab("DATA")}
+        >
+          {tr("Data", "Data")}
+        </button>
+        <button
+          className={`flex-1 rounded-lg py-2 text-[10px] font-black uppercase tracking-wide transition-colors ${activeTab === "BANTUAN" ? "bg-[#4648d4] text-white shadow-sm" : "text-[#1c1c13] hover:bg-[#ffc329]"}`}
+          onClick={() => setActiveTab("BANTUAN")}
+        >
+          {tr("Support", "Bantuan")}
+        </button>
+      </div>
 
+      <div className="max-w-4xl mx-auto space-y-6 pb-6">
         {message ? (
-          <div className="lg:col-span-12">
-            <Alert type="success" onClose={() => setMessage('')}>
-              {message}
-            </Alert>
-          </div>
+          <Alert type="success" onClose={() => setMessage('')}>{message}</Alert>
         ) : null}
 
         {errorMessage ? (
-          <div className="lg:col-span-12">
-            <Alert type="error" onClose={() => setErrorMessage('')}>
-              {errorMessage}
-            </Alert>
-          </div>
+          <Alert type="error" onClose={() => setErrorMessage('')}>{errorMessage}</Alert>
         ) : null}
 
-        <section className="rounded-xl border-2 border-[#1c1c13] bg-white p-6 shadow-[4px_4px_0_#1c1c13] lg:col-span-6">
-          <h3 className="mb-4 text-sm font-black uppercase text-[#1c1c13]">Edit Profile</h3>
-          {isLoading ? (
-            <p className="text-sm font-black text-[#1c1c13]">Loading profile...</p>
-          ) : (
-            <form className="space-y-4" onSubmit={onSaveProfile}>
-              <label className="block text-[11px] font-black uppercase text-[#1c1c13]">
-                Full Name
-                <input
-                  type="text"
-                  name="name"
-                  value={profileForm.name}
-                  onChange={onProfileChange}
-                  className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1]"
-                />
-              </label>
+        {activeTab === 'APLIKASI' && (
+          <div className="space-y-6 lg:grid lg:grid-cols-2 lg:gap-6 lg:space-y-0">
+            {/* Account Info */}
+            <section className="rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-6 shadow-[4px_4px_0_#1c1c13] lg:col-span-2 flex justify-between items-center">
+              <div>
+                <p className="text-[11px] font-black uppercase text-[#1c1c13]">{tr('Your Account', 'Akun Anda')}</p>
+                <h2 className="mt-1 text-2xl font-black text-[#1c1c13]">{authUser?.name || 'Student'}</h2>
+                <p className="text-sm font-black text-[#1c1c13]">{authUser?.email || '-'}</p>
+              </div>
+              <div className="h-16 w-16 bg-[#4648d4] rounded-full border-2 border-[#1c1c13] shadow-[2px_2px_0_#1c1c13] flex items-center justify-center">
+                <span className="text-2xl font-black text-white">{authUser?.name?.charAt(0) || 'U'}</span>
+              </div>
+            </section>
 
-              <label className="block text-[11px] font-black uppercase text-[#1c1c13]">
-                Email
-                <input
-                  type="email"
-                  name="email"
-                  value={profileForm.email}
-                  onChange={onProfileChange}
-                  className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1]"
-                />
-              </label>
+            {/* Edit Profile */}
+            <section className="rounded-xl border-2 border-[#1c1c13] bg-white p-6 shadow-[4px_4px_0_#1c1c13]">
+              <h3 className="mb-4 text-sm font-black uppercase text-[#1c1c13]">{tr('Edit Profile', 'Ubah Profil')}</h3>
+              {isLoading ? (
+                <p className="text-sm font-black text-[#1c1c13]">Loading profile...</p>
+              ) : (
+                <form className="space-y-4" onSubmit={onSaveProfile}>
+                  <label className="block text-[11px] font-black uppercase text-[#1c1c13]">
+                    {tr('Full Name', 'Nama Lengkap')}
+                    <input
+                      type="text"
+                      name="name"
+                      value={profileForm.name}
+                      onChange={onProfileChange}
+                      className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1]"
+                    />
+                  </label>
+                  <label className="block text-[11px] font-black uppercase text-[#1c1c13]">
+                    Email
+                    <input
+                      type="email"
+                      name="email"
+                      value={profileForm.email}
+                      onChange={onProfileChange}
+                      className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1]"
+                    />
+                  </label>
+                  <Button type="submit" disabled={isProfileSubmitting} fullWidth>
+                    {isProfileSubmitting ? t('saving', 'Saving...') : t('saveProfile', 'Save Profile')}
+                  </Button>
+                </form>
+              )}
+            </section>
 
-              <Button
-                type="submit"
-                disabled={isProfileSubmitting}
-                fullWidth
-              >
-                  {isProfileSubmitting ? t('saving', 'Saving...') : t('saveProfile', 'Save Profile')}
-              </Button>
-            </form>
-          )}
-        </section>
-
-        <section className="rounded-xl border-2 border-[#1c1c13] bg-white p-6 shadow-[4px_4px_0_#1c1c13] lg:col-span-6">
-          <h3 className="mb-4 text-sm font-black uppercase text-[#1c1c13]">Security</h3>
-          <form className="space-y-4" onSubmit={onSavePassword}>
-            <label className="block text-[11px] font-black uppercase text-[#1c1c13]">
-              Current Password
-              <input
-                type="password"
-                name="currentPassword"
-                value={passwordForm.currentPassword}
-                onChange={onPasswordChange}
-                className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1]"
-              />
-            </label>
-
-            <label className="block text-[11px] font-black uppercase text-[#1c1c13]">
-              New Password
-              <input
-                type="password"
-                name="newPassword"
-                value={passwordForm.newPassword}
-                onChange={onPasswordChange}
-                className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1]"
-              />
-            </label>
-
-            <label className="block text-[11px] font-black uppercase text-[#1c1c13]">
-              Confirm New Password
-              <input
-                type="password"
-                name="confirmPassword"
-                value={passwordForm.confirmPassword}
-                onChange={onPasswordChange}
-                className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1]"
-              />
-            </label>
-
-            <Button
-              type="submit"
-              variant="accent"
-              disabled={isPasswordSubmitting}
-              fullWidth
-            >
-              {isPasswordSubmitting ? t('updating', 'Updating...') : t('updatePassword', 'Update Password')}
-            </Button>
-          </form>
-        </section>
-
-        <section className="rounded-xl border-2 border-[#1c1c13] bg-white p-6 shadow-[4px_4px_0_#1c1c13] lg:col-span-12">
-          <h3 className="mb-4 text-sm font-black uppercase text-[#1c1c13]">{tr('Preferences', 'Preferensi')}</h3>
-          <div className="space-y-3">
-            <ToggleSetting
-              label={tr('Budget Alerts', 'Peringatan Budget')}
-              description={tr('Get red alert when spending runway is low', 'Dapatkan peringatan saat budget harian hampir habis')}
-              checked={settings.budgetAlerts}
-              onChange={() => onToggleSetting('budgetAlerts')}
-            />
-            <ToggleSetting
-              label={tr('Reminder Notifications', 'Notifikasi Pengingat')}
-              description={tr('Receive daily reminders for unpaid split bills', 'Terima pengingat harian untuk split bill yang belum dibayar')}
-              checked={settings.reminderNotifications}
-              onChange={() => onToggleSetting('reminderNotifications')}
-            />
-            <ToggleSetting
-              label={tr('Weekly Summary', 'Ringkasan Mingguan')}
-              description={tr('Send weekly spending summary suggestion', 'Kirim ringkasan pengeluaran mingguan')}
-              checked={settings.weeklySummary}
-              onChange={() => onToggleSetting('weeklySummary')}
-            />
-          </div>
-        </section>
-
-        <section className="rounded-xl border-2 border-[#1c1c13] bg-white p-6 shadow-[4px_4px_0_#1c1c13] lg:col-span-6">
-          <h3 className="mb-4 text-sm font-black uppercase text-[#1c1c13]">{tr('Configuration', 'Konfigurasi')}</h3>
-          <div className="space-y-4">
-            <label className="block text-[11px] font-black uppercase text-[#1c1c13]">
-              {t('currency', 'Currency')}
-              <select
-                value={settings.currency}
-                onChange={(event) => onConfigChange('currency', event.target.value)}
-                className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] cursor-pointer"
-              >
-                {CURRENCY_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            <label className="block text-[11px] font-black uppercase text-[#1c1c13]">
-              {t('language', 'Language')}
-              <select
-                value={settings.language}
-                onChange={(event) => onConfigChange('language', event.target.value)}
-                className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] cursor-pointer"
-              >
-                {LANGUAGE_OPTIONS.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-        </section>
-
-        <section className="rounded-xl border-2 border-[#1c1c13] bg-white p-6 shadow-[4px_4px_0_#1c1c13] lg:col-span-6 flex flex-col">
-          <h3 className="mb-4 text-sm font-black uppercase text-[#1c1c13]">{tr('Manage Categories', 'Kelola Kategori')}</h3>
-
-          {/* Tabs */}
-          <div className="flex gap-2 rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-1 shadow-[2px_2px_0_#1c1c13] mb-5">
-            <button
-              type="button"
-              onClick={() => setCategoryTab('EXPENSE')}
-              className={`flex-1 rounded-lg py-2 text-xs font-black uppercase transition-all ${categoryTab === 'EXPENSE' ? 'bg-[#ef4444] text-white border-2 border-[#1c1c13] shadow-[2px_2px_0_#1c1c13]' : 'bg-transparent text-[#1c1c13] border-2 border-transparent hover:border-[#1c1c13]'}`}
-            >
-              Expense
-            </button>
-            <button
-              type="button"
-              onClick={() => setCategoryTab('INCOME')}
-              className={`flex-1 rounded-lg py-2 text-xs font-black uppercase transition-all ${categoryTab === 'INCOME' ? 'bg-[#22c55e] text-[#1c1c13] border-2 border-[#1c1c13] shadow-[2px_2px_0_#1c1c13]' : 'bg-transparent text-[#1c1c13] border-2 border-transparent hover:border-[#1c1c13]'}`}
-            >
-              Income
-            </button>
-          </div>
-
-          {/* Category Badges */}
-          <div className="mb-6 flex-1">
-            <p className="mb-3 text-[11px] font-black uppercase text-[#1c1c13]">
-              {categoryTab === 'EXPENSE' ? 'Your Expense Categories' : 'Your Income Categories'}
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {(settings.categories?.[categoryTab] || []).map((categoryKey) => {
-                const isDefault = isDefaultCategory(categoryTab, categoryKey)
-
-                return (
-                  <div
-                    key={`${categoryTab}-${categoryKey}`}
-                    className={`inline-flex items-center gap-1.5 rounded-lg border-2 border-[#1c1c13] ${isDefault ? 'bg-gray-100 text-[#1c1c13] opacity-70' : 'bg-[#fffbeb] text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0'} px-3 py-1.5 text-sm font-bold transition-all`}
-                  >
-                    <span className="text-base leading-none">{getCategoryIcon(settings, categoryKey)}</span>
-                    <span>{prettifyCategory(categoryKey)}</span>
-                    {!isDefault && (
-                      <button
-                        type="button"
-                        onClick={() => onRemoveCategory(categoryTab, categoryKey)}
-                        className="ml-1 flex h-5 w-5 items-center justify-center rounded border-2 border-[#1c1c13] bg-[#ef4444] text-white shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0 transition-all"
-                        aria-label={`Remove ${categoryKey}`}
-                      >
-                        <span className="material-symbols-outlined text-[14px] font-black">close</span>
-                      </button>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-
-          {/* Add Form */}
-          <div className="rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-4 shadow-[4px_4px_0_#1c1c13]">
-            <p className="mb-3 text-[11px] font-black uppercase text-[#1c1c13]">
-              + Add {categoryTab} Category
-            </p>
-            <form className="space-y-3" onSubmit={onAddCategory}>
-              <div className="flex gap-3">
-                <label className="flex-1 block text-[10px] font-black uppercase text-[#1c1c13]">
-                  Name
+            {/* Security */}
+            <section className="rounded-xl border-2 border-[#1c1c13] bg-white p-6 shadow-[4px_4px_0_#1c1c13]">
+              <h3 className="mb-4 text-sm font-black uppercase text-[#1c1c13]">{tr('Security', 'Keamanan')}</h3>
+              <form className="space-y-4" onSubmit={onSavePassword}>
+                <label className="block text-[11px] font-black uppercase text-[#1c1c13]">
+                  {tr('Current Password', 'Password Saat Ini')}
                   <input
-                    type="text"
-                    value={categoryForm.label}
-                    onChange={(event) => setCategoryForm((prev) => ({ ...prev, label: event.target.value }))}
+                    type="password"
+                    name="currentPassword"
+                    value={passwordForm.currentPassword}
+                    onChange={onPasswordChange}
                     className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1]"
-                    placeholder={tr('e.g. Side Hustle', 'contoh: Side Hustle')}
                   />
                 </label>
-
-                <label className="w-24 shrink-0 block text-[10px] font-black uppercase text-[#1c1c13]">
-                  Icon (Emoji)
+                <label className="block text-[11px] font-black uppercase text-[#1c1c13]">
+                  {tr('New Password', 'Password Baru')}
                   <input
-                    type="text"
-                    value={categoryForm.icon}
-                    onChange={(event) => setCategoryForm((prev) => ({ ...prev, icon: event.target.value }))}
-                    className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-center text-lg font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1]"
-                    placeholder="🧋"
-                    maxLength={4}
+                    type="password"
+                    name="newPassword"
+                    value={passwordForm.newPassword}
+                    onChange={onPasswordChange}
+                    className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1]"
                   />
                 </label>
-              </div>
+                <label className="block text-[11px] font-black uppercase text-[#1c1c13]">
+                  {tr('Confirm New Password', 'Konfirmasi Password Baru')}
+                  <input
+                    type="password"
+                    name="confirmPassword"
+                    value={passwordForm.confirmPassword}
+                    onChange={onPasswordChange}
+                    className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1]"
+                  />
+                </label>
+                <Button type="submit" variant="accent" disabled={isPasswordSubmitting} fullWidth>
+                  {isPasswordSubmitting ? t('updating', 'Updating...') : t('updatePassword', 'Update Password')}
+                </Button>
+              </form>
+            </section>
 
-              <div className="flex flex-wrap gap-2 pt-1 pb-2">
-                {['🍽️', '🧋', '🎮', '🚌', '🛒', '📦', '💸', '🪙'].map((emoji) => (
-                  <button
-                    key={emoji}
-                    type="button"
-                    onClick={() => setCategoryForm((prev) => ({ ...prev, icon: emoji }))}
-                    className="flex h-8 w-8 items-center justify-center rounded-md border-2 border-[#1c1c13] bg-white text-base shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0 transition-all"
-                    aria-label={`Use ${emoji}`}
+            {/* Config & Local Preferences */}
+            <section className="rounded-xl border-2 border-[#1c1c13] bg-white p-6 shadow-[4px_4px_0_#1c1c13] lg:col-span-2">
+              <h3 className="mb-4 text-sm font-black uppercase text-[#1c1c13]">{tr('Configuration', 'Konfigurasi')}</h3>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <label className="block text-[11px] font-black uppercase text-[#1c1c13]">
+                  {t('currency', 'Currency')}
+                  <select
+                    value={settings.currency}
+                    onChange={(event) => onConfigChange('currency', event.target.value)}
+                    className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] cursor-pointer"
                   >
-                    {emoji}
-                  </button>
-                ))}
+                    {CURRENCY_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </label>
+                <label className="block text-[11px] font-black uppercase text-[#1c1c13]">
+                  {t('language', 'Language')}
+                  <select
+                    value={settings.language}
+                    onChange={(event) => onConfigChange('language', event.target.value)}
+                    className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] cursor-pointer"
+                  >
+                    {LANGUAGE_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>{option.label}</option>
+                    ))}
+                  </select>
+                </label>
+
+                <label className="block text-[11px] font-black uppercase text-[#1c1c13]">
+                  {tr('Daily Limit Mode', 'Mode Batas Harian')}
+                  <select
+                    value={settings.dailyLimitMode || 'AUTO'}
+                    onChange={(event) => onConfigChange('dailyLimitMode', event.target.value)}
+                    className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] cursor-pointer"
+                  >
+                    <option value="AUTO">{tr('Automatic', 'Otomatis')}</option>
+                    <option value="MANUAL">{tr('Manual Set', 'Atur Manual')}</option>
+                  </select>
+                </label>
+
+                {settings.dailyLimitMode === 'MANUAL' && (
+                  <label className="block text-[11px] font-black uppercase text-[#1c1c13]">
+                    {tr('Manual Daily Limit Amount', 'Nominal Batas Harian Manual')}
+                    <input
+                      type="number"
+                      min="1"
+                      value={settings.manualDailyLimit || 100000}
+                      onChange={(event) => onConfigChange('manualDailyLimit', Number(event.target.value))}
+                      className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1]"
+                    />
+                  </label>
+                )}
+              </div>
+            </section>
+          </div>
+        )}
+
+        {activeTab === 'DATA' && (
+          <div className="space-y-6">
+            <section className="rounded-xl border-2 border-[#1c1c13] bg-white p-6 shadow-[4px_4px_0_#1c1c13]">
+              <h3 className="mb-4 text-sm font-black uppercase text-[#1c1c13]">{tr('Manage Categories', 'Kelola Kategori')}</h3>
+              
+              <div className="flex gap-2 rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-1 shadow-[2px_2px_0_#1c1c13] mb-5">
+                <button
+                  type="button"
+                  onClick={() => setCategoryTab('EXPENSE')}
+                  className={`flex-1 rounded-lg py-2 text-xs font-black uppercase transition-all ${categoryTab === 'EXPENSE' ? 'bg-[#ef4444] text-white border-2 border-[#1c1c13] shadow-[2px_2px_0_#1c1c13]' : 'bg-transparent text-[#1c1c13] border-2 border-transparent hover:border-[#1c1c13]'}`}
+                >
+                  Expense
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCategoryTab('INCOME')}
+                  className={`flex-1 rounded-lg py-2 text-xs font-black uppercase transition-all ${categoryTab === 'INCOME' ? 'bg-[#22c55e] text-[#1c1c13] border-2 border-[#1c1c13] shadow-[2px_2px_0_#1c1c13]' : 'bg-transparent text-[#1c1c13] border-2 border-transparent hover:border-[#1c1c13]'}`}
+                >
+                  Income
+                </button>
               </div>
 
-              <Button type="submit" fullWidth>
-                {t('addCategory', 'Add Category')}
-              </Button>
-            </form>
-          </div>
-        </section>
+              <div className="mb-6 flex-1">
+                <p className="mb-3 text-[11px] font-black uppercase text-[#1c1c13]">
+                  {categoryTab === 'EXPENSE' ? 'Your Expense Categories' : 'Your Income Categories'}
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {(settings.categories?.[categoryTab] || []).map((categoryKey) => {
+                    const isDefault = isDefaultCategory(categoryTab, categoryKey)
+                    return (
+                      <div
+                        key={`${categoryTab}-${categoryKey}`}
+                        className={`inline-flex items-center gap-1.5 rounded-lg border-2 border-[#1c1c13] ${isDefault ? 'bg-gray-100 text-[#1c1c13] opacity-70' : 'bg-[#fffbeb] text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0'} px-3 py-1.5 text-sm font-bold transition-all`}
+                      >
+                        <span className="text-base leading-none">{getCategoryIcon(settings, categoryKey)}</span>
+                        <span>{prettifyCategory(categoryKey)}</span>
+                        {!isDefault && (
+                          <button
+                            type="button"
+                            onClick={() => onRemoveCategory(categoryTab, categoryKey)}
+                            className="ml-1 flex h-5 w-5 items-center justify-center rounded border-2 border-[#1c1c13] bg-[#ef4444] text-white shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                            aria-label={`Remove ${categoryKey}`}
+                          >
+                            <span className="material-symbols-outlined text-[14px] font-black">close</span>
+                          </button>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
 
-        <section className="lg:col-span-12 mt-4">
-          <Button
-            type="button"
-            onClick={handleLogout}
-            className="!bg-[#ef4444] text-white hover:!bg-[#dc2626]"
-            fullWidth
-          >
-            <span className="material-symbols-outlined mr-2">logout</span>
-            {t('logout', 'Log Out')}
-          </Button>
-        </section>
+              <div className="rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-4 shadow-[4px_4px_0_#1c1c13]">
+                <p className="mb-3 text-[11px] font-black uppercase text-[#1c1c13]">
+                  + Add {categoryTab} Category
+                </p>
+                <form className="space-y-3" onSubmit={onAddCategory}>
+                  <div className="flex gap-3">
+                    <label className="flex-1 block text-[10px] font-black uppercase text-[#1c1c13]">
+                      Name
+                      <input
+                        type="text"
+                        value={categoryForm.label}
+                        onChange={(event) => setCategoryForm((prev) => ({ ...prev, label: event.target.value }))}
+                        className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1]"
+                        placeholder={tr('e.g. Side Hustle', 'contoh: Side Hustle')}
+                      />
+                    </label>
+                    <label className="w-24 shrink-0 block text-[10px] font-black uppercase text-[#1c1c13]">
+                      Icon (Emoji)
+                      <input
+                        type="text"
+                        value={categoryForm.icon}
+                        onChange={(event) => setCategoryForm((prev) => ({ ...prev, icon: event.target.value }))}
+                        className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-center text-lg font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1]"
+                        placeholder="🧋"
+                        maxLength={4}
+                      />
+                    </label>
+                  </div>
+                  <div className="flex flex-wrap gap-2 pt-1 pb-2">
+                    {['🍽️', '🧋', '🎮', '🚌', '🛒', '📦', '💸', '🪙'].map((emoji) => (
+                      <button
+                        key={emoji}
+                        type="button"
+                        onClick={() => setCategoryForm((prev) => ({ ...prev, icon: emoji }))}
+                        className="flex h-8 w-8 items-center justify-center rounded-md border-2 border-[#1c1c13] bg-white text-base shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0 transition-all"
+                        aria-label={`Use ${emoji}`}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
+                  <Button type="submit" fullWidth>
+                    {t('addCategory', 'Add Category')}
+                  </Button>
+                </form>
+              </div>
+            </section>
+            
+            <section className="rounded-xl border-2 border-[#1c1c13] bg-white p-6 shadow-[4px_4px_0_#1c1c13] flex items-center justify-between">
+              <div>
+                <h3 className="text-sm font-black uppercase text-[#1c1c13]">{tr('Export Data', 'Ekspor Data')}</h3>
+                <p className="text-xs text-gray-500 mt-1">{tr('Download all your transaction data as CSV.', 'Unduh semua data transaksi Anda dalam format CSV.')}</p>
+              </div>
+              <Button variant="outline" onClick={handleExportCSV}>
+                {tr('Export CSV', 'Ekspor CSV')}
+              </Button>
+            </section>
+          </div>
+        )}
+
+        {activeTab === 'BANTUAN' && (
+          <div className="space-y-6">
+            <section className="rounded-xl border-2 border-[#1c1c13] bg-white p-6 shadow-[4px_4px_0_#1c1c13]">
+              <h3 className="mb-4 text-sm font-black uppercase text-[#1c1c13]">{tr('Preferences', 'Preferensi')}</h3>
+              <div className="space-y-3">
+                <ToggleSetting
+                  label={tr('Budget Alerts', 'Peringatan Budget')}
+                  description={tr('Get red alert when spending runway is low', 'Dapatkan peringatan saat budget harian hampir habis')}
+                  checked={settings.budgetAlerts}
+                  onChange={() => onToggleSetting('budgetAlerts')}
+                />
+                <ToggleSetting
+                  label={tr('Reminder Notifications', 'Notifikasi Pengingat')}
+                  description={tr('Receive daily reminders for unpaid split bills', 'Terima pengingat harian untuk split bill yang belum dibayar')}
+                  checked={settings.reminderNotifications}
+                  onChange={() => onToggleSetting('reminderNotifications')}
+                />
+                <ToggleSetting
+                  label={tr('Weekly Summary', 'Ringkasan Mingguan')}
+                  description={tr('Send weekly spending summary suggestion', 'Kirim ringkasan pengeluaran mingguan')}
+                  checked={settings.weeklySummary}
+                  onChange={() => onToggleSetting('weeklySummary')}
+                />
+              </div>
+            </section>
+
+            <section className="rounded-xl border-2 border-[#1c1c13] bg-white p-6 shadow-[4px_4px_0_#1c1c13]">
+               <h3 className="mb-2 text-sm font-black uppercase text-[#1c1c13]">{tr('About LIVO', 'Tentang LIVO')}</h3>
+               <p className="text-sm text-gray-600 mb-6">{tr('Version 1.0.0 (Beta)', 'Versi 1.0.0 (Beta)')}</p>
+               
+               <Button
+                  variant="danger"
+                  fullWidth
+                  className="rounded-xl text-base shadow-[4px_4px_0_#1c1c13] flex justify-center items-center gap-2"
+                  onClick={handleLogout}
+                >
+                  <span className="material-symbols-outlined">logout</span>
+                  {tr('Log Out', 'Keluar')}
+                </Button>
+            </section>
+          </div>
+        )}
+      </div>
     </PageLayout>
   )
 }

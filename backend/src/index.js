@@ -12,6 +12,7 @@ const walletRoutes = require("./routes/walletRoutes");
 const budgetRoutes = require("./routes/budgetRoutes");
 const debtRoutes = require("./routes/debtRoutes");
 const recurringRoutes = require("./routes/recurringRoutes");
+const exportRoutes = require("./routes/exportRoutes");
 const {
   notFoundHandler,
   jsonParseErrorHandler,
@@ -88,6 +89,7 @@ app.use("/api/wallets", walletRoutes);
 app.use("/api/budgets", budgetRoutes);
 app.use("/api/debts", debtRoutes);
 app.use("/api/recurring", recurringRoutes);
+app.use("/api/export", exportRoutes);
 
 app.use(notFoundHandler);
 app.use(globalErrorHandler);

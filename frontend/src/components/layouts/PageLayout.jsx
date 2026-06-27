@@ -3,7 +3,8 @@ import { BottomNavigation } from '../navigation/BottomNavigation'
 
 const desktopNavItems = [
   { to: '/home', icon: 'dashboard', label: 'Dashboard' },
-  { to: '/transactions', icon: 'payments', label: 'Transactions' },
+  { to: '/transactions', icon: 'bar_chart', label: 'Laporan' },
+  { to: '/wallet', icon: 'account_balance_wallet', label: 'Wallet' },
   { to: '/wishlist', icon: 'favorite', label: 'Wishlist' },
   { to: '/profile', icon: 'person', label: 'Profile' },
 ]

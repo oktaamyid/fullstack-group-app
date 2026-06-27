@@ -1,30 +1,63 @@
-import api from './api';
+import { getAuthToken } from './auth'
 
-export const getDebts = async (type, status) => {
-  const params = {};
-  if (type) params.type = type;
-  if (status) params.status = status;
+const BASE_URL = '/api/debts'
+
+async function request(path = '', options = {}) {
+  const token = getAuthToken()
+
+  const response = await fetch(`${BASE_URL}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      ...(options.headers || {}),
+    },
+  })
+
+  const payload = await response.json()
+
+  if (!response.ok || !payload?.success) {
+    throw new Error(payload?.message || 'Request failed')
+  }
+
+  return payload.data
+}
+
+export async function getDebts(type, status) {
+  const query = new URLSearchParams();
+  if (type) query.append('type', type);
+  if (status) query.append('status', status);
   
-  const response = await api.get('/debts', { params });
-  return response.data.debts;
-};
+  const queryString = query.toString();
+  const path = queryString ? `?${queryString}` : '';
+  
+  const data = await request(path);
+  return data.debts || [];
+}
 
-export const createDebt = async (data) => {
-  const response = await api.post('/debts', data);
-  return response.data;
-};
+export async function createDebt(data) {
+  return request('', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
 
-export const updateDebt = async (id, data) => {
-  const response = await api.put(`/debts/${id}`, data);
-  return response.data;
-};
+export async function updateDebt(id, data) {
+  return request(`/${id}`, {
+    method: 'PUT',
+    body: JSON.stringify(data),
+  });
+}
 
-export const deleteDebt = async (id) => {
-  const response = await api.delete(`/debts/${id}`);
-  return response.data;
-};
+export async function deleteDebt(id) {
+  return request(`/${id}`, {
+    method: 'DELETE',
+  });
+}
 
-export const payDebt = async (id, walletId) => {
-  const response = await api.put(`/debts/${id}/pay`, { walletId });
-  return response.data;
-};
+export async function payDebt(id, walletId) {
+  return request(`/${id}/pay`, {
+    method: 'PUT',
+    body: JSON.stringify({ walletId }),
+  });
+}

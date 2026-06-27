@@ -1,562 +1,376 @@
-import { useCallback, useState, useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { createSplitBill } from '../../services/splitBill'
-import { useI18n } from '../../i18n/useI18n'
-import { useProfileSettings } from '../../hooks/useProfileSettings'
-import { NumericPad } from '../ui'
-import { convertToIdr, formatCurrencyValue } from '../../services/currency'
+import { useCallback, useEffect, useState } from "react";
+import { createSplitBill, updateSplitBill } from "../../services/splitBill";
+import { getWallets } from "../../services/wallet";
+import { useI18n } from "../../i18n/useI18n";
+import { useProfileSettings } from "../../hooks/useProfileSettings";
+import { convertFromIdr, convertToIdr, formatCurrencyValue } from "../../services/currency";
+import { ManageWalletModal } from "./ManageWalletModal";
 
-const defaultForm = {
-  title: '',
-  description: '',
-  totalAmount: '',
-  members: [{ friendName: '', amount: '', clientId: '' }],
-  items: [],
-  useItems: false,
+function parseFriends(raw) {
+  return raw
+    .split("\n")
+    .map((name) => name.trim())
+    .filter(Boolean);
 }
 
-function genClientId() {
-  return `c_${Math.random().toString(36).slice(2, 9)}`
-}
+function allocateMembers(totalAmount, friendNames) {
+  const count = friendNames.length;
+  const baseAmount = Math.floor(totalAmount / count);
+  let remainder = totalAmount % count;
 
-function parseAmount(value) {
-  return Number(value) || 0
-}
-
-function amountsMatch(left, right) {
-  return Math.abs(left - right) < 0.01
-}
-
-/**
- * CreateSplitBillModal - Modal for creating split bills
- * Features: 
- * - Dynamic member form with individual amounts
- * - Item-based split (select what each person ordered)
- * - Real-time validation & total calculation
- *
- * @param {Object} props
- * @param {function} props.onClose - Callback when modal closes
- * @param {function} props.onSuccess - Callback when split bill created successfully
- */
-export function CreateSplitBillModal({ onClose, onSuccess }) {
-  const { t, language } = useI18n()
-  const settings = useProfileSettings()
-  const navigate = useNavigate()
-  const [form, setForm] = useState(() => ({
-    ...defaultForm,
-    members: [{ ...defaultForm.members[0], clientId: genClientId() }],
-  }))
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errorMessage, setErrorMessage] = useState('')
-  const [isTotalAmountFocused, setIsTotalAmountFocused] = useState(false)
-
-  const formatAmount = useCallback(
-    (value) => formatCurrencyValue(value, language, settings.currency),
-    [language, settings.currency],
-  )
-
-  // Calculate total from members or items
-  const { totalCalculated, isValid } = useMemo(() => {
-    let total = 0
-
-    if (form.useItems && form.items.length > 0) {
-      // Calculate from items
-      total = form.items.reduce((sum, item) => {
-        const price = parseAmount(item.price)
-        const qty = parseInt(item.quantity, 10) || 1
-        return sum + price * qty
-      }, 0)
-    } else {
-      // Calculate from members
-      total = form.members.reduce((sum, member) => {
-        const amount = parseAmount(member.amount)
-        return sum + amount
-      }, 0)
-    }
-
-    const hasEmptyName = form.members.some((m) => !m.friendName.trim())
-    const inputTotal = parseAmount(form.totalAmount)
-
-    let isFormValid = false
-    if (form.useItems && form.items.length > 0) {
-      // For item-based: all items have name, price, and at least one assigned
-      isFormValid =
-        form.items.every((i) => i.itemName && i.price && (i.assignedTo || []).length > 0) &&
-        !hasEmptyName &&
-        amountsMatch(total, inputTotal) &&
-        inputTotal > 0
-    } else {
-      // For amount-based: members have name and amount
-      const hasEmptyAmount = form.members.some((m) => !m.amount)
-      isFormValid = !hasEmptyName && !hasEmptyAmount && inputTotal > 0 && total === inputTotal
-    }
+  return friendNames.map((friendName) => {
+    const amount = baseAmount + (remainder > 0 ? 1 : 0);
+    if (remainder > 0) remainder -= 1;
 
     return {
-      totalCalculated: total,
-      isValid: isFormValid,
+      friendName,
+      amount,
+    };
+  });
+}
+
+function toInputAmount(value, currency) {
+  const converted = convertFromIdr(value, currency);
+  return Number.isInteger(converted) ? String(converted) : converted.toFixed(2);
+}
+
+function getDefaultSplitBillForm(initialValues = {}, currency = "IDR") {
+  return {
+    title: initialValues.title || "",
+    description: initialValues.description || "",
+    totalAmount: initialValues.totalAmount
+      ? toInputAmount(initialValues.totalAmount, currency)
+      : "",
+    friends: initialValues.members
+      ? initialValues.members.map((member) => member.friendName).join("\n")
+      : "",
+    syncToPersonal: initialValues.syncToPersonal ?? true,
+    walletId: initialValues.transaction?.walletId || "",
+  };
+}
+
+export function CreateSplitBillModal({
+  onClose,
+  onSuccess,
+  initialValues = null,
+  splitBillId = null,
+}) {
+  const { t, language } = useI18n();
+  const settings = useProfileSettings();
+  const tr = useCallback(
+    (en, id) => (language === "id-ID" ? id : en),
+    [language],
+  );
+
+  const isEditingSplit = Boolean(splitBillId);
+
+  const [splitForm, setSplitForm] = useState(() =>
+    getDefaultSplitBillForm(initialValues || {}, settings.currency),
+  );
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [showWalletModal, setShowWalletModal] = useState(false);
+  const [wallets, setWallets] = useState([]);
+
+  useEffect(() => {
+    const fetchWallets = async () => {
+      try {
+        const data = await getWallets();
+        setWallets(data);
+        if (data.length > 0 && !initialValues?.transaction?.walletId) {
+          setSplitForm((prev) => ({ ...prev, walletId: data[0].id }));
+        }
+      } catch (error) {
+        console.error("Failed to fetch wallets:", error);
+      }
+    };
+    void fetchWallets();
+  }, [initialValues]);
+
+  useEffect(() => {
+    const handleKeyDown = (event) => {
+      if (event.key === "Escape" && !isSubmitting) {
+        onClose?.();
+      }
+    };
+
+    document.body.style.overflow = "hidden";
+    window.addEventListener("keydown", handleKeyDown);
+
+    return () => {
+      document.body.style.overflow = "";
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [isSubmitting, onClose]);
+
+  const onSplitChange = useCallback((e) => {
+    const { name, value, type, checked } = e.target;
+    if (name === "walletId" && value === "NEW") {
+      setShowWalletModal(true);
+      return;
     }
-  }, [form.members, form.totalAmount, form.items, form.useItems])
-
-  const onTitleChange = useCallback((e) => {
-    setForm((prev) => ({ ...prev, title: e.target.value }))
-  }, [])
-
-  const onDescriptionChange = useCallback((e) => {
-    setForm((prev) => ({ ...prev, description: e.target.value }))
-  }, [])
-
-  const onTotalAmountChange = useCallback((e) => {
-    const value = e.target.value
-    setForm((prev) => ({ ...prev, totalAmount: value }))
-  }, [])
-
-  const onMemberChange = useCallback((index, field, value) => {
-    setForm((prev) => ({
+    setSplitForm((prev) => ({
       ...prev,
-      members: prev.members.map((member, i) =>
-        i === index ? { ...member, [field]: value } : member
-      ),
-    }))
-  }, [])
-
-  const addMember = useCallback(() => {
-    setForm((prev) => ({
-      ...prev,
-      members: [...prev.members, { friendName: '', amount: '', clientId: genClientId() }],
-    }))
-  }, [])
-
-  const removeMember = useCallback((index) => {
-    setForm((prev) => ({
-      ...prev,
-      members: prev.members.filter((_, i) => i !== index),
-    }))
-  }, [])
-
-  const onItemChange = useCallback((index, field, value) => {
-    setForm((prev) => ({
-      ...prev,
-      items: prev.items.map((item, i) => (i === index ? { ...item, [field]: value } : item)),
-    }))
-  }, [])
-
-  const toggleItemAssignment = useCallback((itemIndex, memberIndex) => {
-    setForm((prev) => ({
-      ...prev,
-      items: prev.items.map((item, i) => {
-        if (i === itemIndex) {
-          const assignedTo = item.assignedTo || []
-          const clientId = prev.members[memberIndex]?.clientId || genClientId()
-          const isAssigned = assignedTo.includes(clientId)
-          return {
-            ...item,
-            assignedTo: isAssigned
-              ? assignedTo.filter((m) => m !== clientId)
-              : [...assignedTo, clientId],
-          }
-        }
-        return item
-      }),
-    }))
-  }, [])
-
-  const addItem = useCallback(() => {
-    setForm((prev) => ({
-      ...prev,
-      items: [...prev.items, { itemName: '', price: '', quantity: '1', assignedTo: [] }],
-    }))
-  }, [])
-
-  const removeItem = useCallback((index) => {
-    setForm((prev) => ({
-      ...prev,
-      items: prev.items.filter((_, i) => i !== index),
-    }))
-  }, [])
-
-  const autoSplitEqual = useCallback(() => {
-    const inputTotal = parseAmount(form.totalAmount)
-    if (inputTotal <= 0) return
-
-    const memberCount = form.members.filter((m) => m.friendName.trim()).length
-    if (memberCount === 0) return
-
-    const amountPerMember = Math.floor((inputTotal / memberCount) * 100) / 100
-    let remainder = Math.round((inputTotal - amountPerMember * memberCount) * 100)
-
-    setForm((prev) => ({
-      ...prev,
-      members: prev.members.map((member, index) => {
-        if (!member.friendName.trim()) return member
-        return {
-          ...member,
-          amount: String(amountPerMember + (index < remainder ? 0.01 : 0)),
-        }
-      }),
-    }))
-  }, [form.totalAmount, form.members])
+      [name]: type === "checkbox" ? checked : (name === "walletId" ? Number(value) : value),
+    }));
+  }, []);
 
   const onSubmit = useCallback(
     async (e) => {
-      e.preventDefault()
-      setErrorMessage('')
-      setIsSubmitting(true)
+      e.preventDefault();
+      setErrorMessage("");
+      setSuccessMessage("");
+      setIsSubmitting(true);
+
+      const parsedTotal = Number(splitForm.totalAmount);
+      const friendNames = parseFriends(splitForm.friends);
+
+      if (
+        !splitForm.title.trim() ||
+        !Number.isFinite(parsedTotal) ||
+        parsedTotal <= 0 ||
+        friendNames.length === 0
+      ) {
+        setErrorMessage(
+          tr(
+            "Complete title, total amount, and friends list.",
+            "Lengkapi judul, total tagihan, dan daftar teman."
+          )
+        );
+        setIsSubmitting(false);
+        return;
+      }
+
+      const totalAmount = convertToIdr(parsedTotal, settings.currency);
+      const members = allocateMembers(totalAmount, friendNames);
+
+      const payload = {
+        title: splitForm.title.trim(),
+        description: splitForm.description,
+        totalAmount,
+        members,
+        syncToPersonal: splitForm.syncToPersonal,
+        walletId: splitForm.syncToPersonal ? Number(splitForm.walletId) : undefined,
+      };
 
       try {
-        const totalAmount = parseAmount(form.totalAmount)
-        if (Number.isNaN(totalAmount) || totalAmount <= 0) {
-          setErrorMessage(t('pleaseEnterValidAmount', 'Please enter a valid amount'))
-          setIsSubmitting(false)
-          return
-        }
-
-        // Validate members
-        const validMembers = form.members.filter((m) => m.friendName.trim())
-        if (validMembers.length === 0) {
-          setErrorMessage(t('pleaseAddAtLeastOneFriend', 'Please add at least one friend'))
-          setIsSubmitting(false)
-          return
-        }
-
-          if (form.useItems) {
-          // Item-based validation
-          const validItems = form.items.filter((i) => i.itemName && i.price)
-          if (validItems.length === 0) {
-            setErrorMessage(t('pleaseAddAtLeastOneItem', 'Please add at least one item'))
-            setIsSubmitting(false)
-            return
-          }
-
-          const itemsTotal = validItems.reduce((sum, i) => sum + parseAmount(i.price) * (parseInt(i.quantity, 10) || 1), 0)
-          if (!amountsMatch(itemsTotal, totalAmount)) {
-            setErrorMessage(`Items total (${itemsTotal}) must equal total amount (${totalAmount})`)
-            setIsSubmitting(false)
-            return
-          }
-
-          const payload = {
-            title: form.title || t('splitExpense', 'Split Expense'),
-            description: form.description,
-            totalAmount: convertToIdr(totalAmount, settings.currency),
-            members: validMembers.map((m) => ({
-              friendName: m.friendName.trim(),
-              amount: 0,
-              clientId: m.clientId || genClientId(),
-            })),
-            items: validItems.map((item) => ({
-              itemName: item.itemName.trim(),
-              price: convertToIdr(parseAmount(item.price), settings.currency),
-              quantity: parseInt(item.quantity, 10) || 1,
-              assignedTo: item.assignedTo || [],
-            })),
-          }
-
-          await createSplitBill(payload)
+        let savedData;
+        if (isEditingSplit && splitBillId) {
+          const result = await updateSplitBill(splitBillId, payload);
+          savedData = result?.splitBill || null;
         } else {
-          // Amount-based validation
-          const memberAmountsTotal = validMembers.reduce((sum, m) => sum + parseAmount(m.amount), 0)
-          if (!amountsMatch(memberAmountsTotal, totalAmount)) {
-            setErrorMessage(
-              t('memberAmountsMustEqualTotal', `Member amounts must equal total (${memberAmountsTotal} ≠ ${totalAmount})`)
-            )
-            setIsSubmitting(false)
-            return
-          }
-
-          const payload = {
-            title: form.title || t('splitExpense', 'Split Expense'),
-            description: form.description,
-            totalAmount: convertToIdr(totalAmount, settings.currency),
-            members: validMembers.map((member) => ({
-              friendName: member.friendName.trim(),
-              amount: convertToIdr(parseAmount(member.amount), settings.currency),
-              clientId: member.clientId || genClientId(),
-            })),
-          }
-
-          await createSplitBill(payload)
+          const result = await createSplitBill(payload);
+          savedData = result?.splitBill || null;
         }
 
-        setForm(() => ({ ...defaultForm, members: [{ ...defaultForm.members[0], clientId: genClientId() }] }))
-        onSuccess?.()
-        navigate('/split-bill')
+        setSuccessMessage(
+          isEditingSplit
+            ? t("splitBillUpdatedSuccessfully", "Split Bill updated successfully!")
+            : t("splitBillCreatedSuccessfully", "Split Bill created successfully!"),
+        );
+
+        if (!savedData) return;
+
+        setTimeout(async () => {
+          try {
+            await onSuccess?.(savedData);
+          } finally {
+            onClose?.();
+          }
+        }, 850);
       } catch (error) {
-        setErrorMessage(error.message || t('failedToCreateSplitBill', 'Failed to create split bill'))
+        setErrorMessage(
+          error.message || t("failedToSave", "Failed to save data")
+        );
       } finally {
-        setIsSubmitting(false)
+        setIsSubmitting(false);
       }
     },
-    [form, navigate, onSuccess, settings.currency, t]
-  )
+    [isEditingSplit, splitBillId, splitForm, settings.currency, t, tr, onClose, onSuccess]
+  );
 
   return (
-    <div className="fixed inset-0 z-40 flex items-end bg-black/50">
-      <div className="w-full rounded-t-3xl border-t border-l border-r border-[#1c1c13] bg-[#fffbeb] p-6 shadow-[0_-4px_0_#1c1c13] max-h-[90vh] flex flex-col">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-black uppercase">{t('createSplit', 'Create Split')}</h2>
-          <button
-            type="button"
-            onClick={onClose}
-            className="text-2xl font-bold text-[#1c1c13]"
-          >
-            ✕
-          </button>
-        </div>
+    <>
+      <div
+        className="fixed inset-0 z-40 bg-[#1c1c13]/40 backdrop-blur-sm"
+        onClick={onClose}
+      />
 
-        {errorMessage && (
-          <div className="mb-3 rounded-xl border border-[#ba1a1a] bg-[#fee2e2] p-3 text-sm font-semibold text-[#ba1a1a]">
-            {errorMessage}
-          </div>
-        )}
-
-        <form onSubmit={onSubmit} className="space-y-3 flex-1 overflow-y-auto">
-          {/* Title */}
-          <label className="block text-[11px] font-bold uppercase">
-            {t('title', 'Title')}
-            <input
-              type="text"
-              value={form.title}
-              onChange={onTitleChange}
-              placeholder="Pizza night"
-              className="mt-1 w-full rounded-2xl border border-black bg-[#fffbeb] px-3 py-2 text-sm"
-            />
-          </label>
-
-          {/* Description */}
-          <label className="block text-[11px] font-bold uppercase">
-            {t('description', 'Description')}
-            <input
-              type="text"
-              value={form.description}
-              onChange={onDescriptionChange}
-              placeholder="Friday hangout at Pizza Hut"
-              className="mt-1 w-full rounded-2xl border border-black bg-[#fffbeb] px-3 py-2 text-sm"
-            />
-          </label>
-
-          {/* Total Amount */}
-          <label className="block text-[11px] font-bold uppercase">
-            {t('totalAmount', 'Total Amount')} ({settings.currency})
-            <input
-              type="number"
-              step="any"
-              value={form.totalAmount}
-              onChange={onTotalAmountChange}
-              placeholder="180000"
-              onFocus={() => setIsTotalAmountFocused(true)}
-              onBlur={() => setIsTotalAmountFocused(false)}
-              className="mt-1 w-full rounded-2xl border border-black bg-[#fffbeb] px-3 py-2 text-sm"
-            />
-            {isTotalAmountFocused ? (
-              <div onMouseDown={(event) => event.preventDefault()}>
-                <NumericPad
-                  className="mt-3"
-                  title={t('numPad', 'Number Pad')}
-                  clearLabel={t('clear', 'Clear')}
-                  helperText={t('tapToEnterAmount', 'Tap the number pad to fill the amount faster.')}
-                  onPress={(value) => {
-                    setForm((prev) => {
-                      const current = String(prev.totalAmount || '')
-
-                      if (value === 'CLEAR') return { ...prev, totalAmount: '' }
-                      if (value === 'BACKSPACE') return { ...prev, totalAmount: current.slice(0, -1) }
-
-                      return {
-                        ...prev,
-                        totalAmount: current === '0' ? String(value) : `${current}${value}`,
-                      }
-                    })
-                  }}
-                />
-              </div>
-            ) : null}
-          </label>
-
-          {/* Toggle between Amount-based and Item-based */}
-          <div className="flex gap-2 pt-2">
+      <div className="fixed inset-x-4 bottom-4 top-4 z-50 flex items-center justify-center lg:inset-0 lg:p-4">
+        <div className="relative flex h-full max-h-[85vh] w-full flex-col rounded-2xl border-4 border-[#1c1c13] bg-[#fffbeb] shadow-[8px_8px_0_#1c1c13] lg:max-h-[90vh] lg:max-w-2xl">
+          {/* Header */}
+          <div className="flex shrink-0 items-center justify-between border-b-4 border-[#1c1c13] p-4 lg:p-6 bg-white rounded-t-[12px]">
+            <h2 className="text-xl font-black uppercase tracking-tight text-[#1c1c13] lg:text-2xl">
+              {isEditingSplit
+                ? t("editSplitBill", "Edit Split Bill")
+                : tr("Create Split Bill", "Buat Tagihan Baru")}
+            </h2>
             <button
-              type="button"
-              onClick={() => setForm((prev) => ({ ...prev, useItems: false }))}
-              className={`flex-1 rounded-2xl border-2 px-3 py-2 text-xs font-bold uppercase ${
-                !form.useItems
-                  ? 'border-[#6366f1] bg-[#6366f1] text-white'
-                  : 'border-[#6366f1] bg-white text-[#6366f1]'
-              }`}
+              onClick={onClose}
+              className="flex h-10 w-10 items-center justify-center rounded-xl border-2 border-[#1c1c13] bg-[#ffc329] text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0 transition-all"
             >
-              {t('byAmount', 'By Amount')}
-            </button>
-            <button
-              type="button"
-              onClick={() => setForm((prev) => ({ ...prev, useItems: true }))}
-              className={`flex-1 rounded-2xl border-2 px-3 py-2 text-xs font-bold uppercase ${
-                form.useItems
-                  ? 'border-[#6366f1] bg-[#6366f1] text-white'
-                  : 'border-[#6366f1] bg-white text-[#6366f1]'
-              }`}
-            >
-              {t('byItems', 'By Items')}
+              <span className="material-symbols-outlined font-black">close</span>
             </button>
           </div>
 
-          {/* Members Section */}
-          <div className="space-y-2 border-t pt-3">
-            <div className="flex items-center justify-between">
-              <label className="text-[11px] font-bold uppercase">{t('members', 'Members')}</label>
-              {!form.useItems && (
-                <button
-                  type="button"
-                  onClick={autoSplitEqual}
-                  disabled={!form.totalAmount || form.members.filter((m) => m.friendName.trim()).length === 0}
-                  className="text-[10px] font-bold uppercase px-2 py-1 rounded-xl border border-[#6366f1] text-[#6366f1] bg-white disabled:opacity-40 disabled:border-gray-300 disabled:text-gray-300"
-                >
-                  {t('autoSplit', 'Auto Split')}
-                </button>
-              )}
-            </div>
-
-            {form.members.map((member, index) => (
-              <div key={index} className="flex gap-2 items-end">
-                <input
-                  type="text"
-                  value={member.friendName}
-                  onChange={(e) => onMemberChange(index, 'friendName', e.target.value)}
-                  placeholder={t('friendName', 'Name')}
-                  className="flex-1 rounded-2xl border border-black bg-[#fffbeb] px-3 py-2 text-sm"
-                />
-                {!form.useItems && (
-                  <input
-                    type="number"
-                    step="any"
-                    value={member.amount}
-                    onChange={(e) => onMemberChange(index, 'amount', e.target.value)}
-                    placeholder={t('amount', 'Amount')}
-                    className="w-24 rounded-2xl border border-black bg-[#fffbeb] px-3 py-2 text-sm"
-                  />
-                )}
-                <button
-                  type="button"
-                  onClick={() => removeMember(index)}
-                  disabled={form.members.length === 1}
-                  className="rounded-2xl border border-[#ba1a1a] bg-[#ffcdd2] px-3 py-2 text-sm font-bold text-[#ba1a1a] disabled:opacity-50"
-                >
-                  −
-                </button>
-              </div>
-            ))}
-
-            <button
-              type="button"
-              onClick={addMember}
-              className="w-full rounded-2xl border border-dashed border-[#6366f1] bg-white px-3 py-2 text-sm font-bold text-[#6366f1] uppercase"
-            >
-              + {t('addMember', 'Add Member')}
-            </button>
-          </div>
-
-          {/* Items Section (shown only if useItems is true) */}
-          {form.useItems && (
-            <div className="space-y-2 border-t pt-3">
-              <label className="text-[11px] font-bold uppercase">{t('items', 'Items')}</label>
-
-              {form.items.map((item, itemIndex) => (
-                <div key={itemIndex} className="space-y-2 rounded-2xl border border-black p-3 bg-white">
-                  <div className="flex gap-2">
-                    <input
-                      type="text"
-                      value={item.itemName}
-                      onChange={(e) => onItemChange(itemIndex, 'itemName', e.target.value)}
-                      placeholder={t('itemName', 'Item name')}
-                      className="flex-1 rounded-2xl border border-black bg-[#fffbeb] px-2 py-1 text-sm"
-                    />
-                    <input
-                      type="number"
-                      step="any"
-                      value={item.price}
-                      onChange={(e) => onItemChange(itemIndex, 'price', e.target.value)}
-                      placeholder={t('price', 'Price')}
-                      className="w-20 rounded-2xl border border-black bg-[#fffbeb] px-2 py-1 text-sm"
-                    />
-                    <input
-                      type="number"
-                      value={item.quantity}
-                      onChange={(e) => onItemChange(itemIndex, 'quantity', e.target.value)}
-                      placeholder="1"
-                      className="w-16 rounded-2xl border border-black bg-[#fffbeb] px-2 py-1 text-sm"
-                    />
-                    <button
-                      type="button"
-                      onClick={() => removeItem(itemIndex)}
-                      className="rounded-2xl border border-[#ba1a1a] bg-[#ffcdd2] px-2 py-1 text-sm font-bold text-[#ba1a1a]"
-                    >
-                      ✕
-                    </button>
-                  </div>
-
-                  {/* Item Assignment Checklist */}
-                  <div className="space-y-1 border-t pt-2">
-                    <label className="text-[10px] font-bold uppercase">{t('orderedBy', 'Ordered by')}:</label>
-                    <div className="flex flex-wrap gap-2">
-                      {form.members.map((member, memberIndex) => (
-                        <button
-                          key={memberIndex}
-                          type="button"
-                          onClick={() => toggleItemAssignment(itemIndex, memberIndex)}
-                          className={`rounded-full px-2 py-1 text-[10px] font-bold border ${
-                            (item.assignedTo || []).includes(member.clientId)
-                              ? 'bg-[#6366f1] border-[#6366f1] text-white'
-                              : 'bg-white border-[#6366f1] text-[#6366f1]'
-                          }`}
-                        >
-                          {member.friendName || `Person ${memberIndex + 1}`}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+          {/* Messages */}
+          {(errorMessage || successMessage) && (
+            <div className="shrink-0 p-4 pb-0 lg:p-6 lg:pb-0">
+              {errorMessage && (
+                <div className="rounded-xl border-2 border-[#1c1c13] bg-[#fef2f2] p-4 shadow-[4px_4px_0_#ef4444]">
+                  <p className="text-sm font-bold text-[#ef4444]">{errorMessage}</p>
                 </div>
-              ))}
-
-              <button
-                type="button"
-                onClick={addItem}
-                className="w-full rounded-2xl border border-dashed border-[#6366f1] bg-white px-3 py-2 text-sm font-bold text-[#6366f1] uppercase"
-              >
-                + {t('addItem', 'Add Item')}
-              </button>
+              )}
+              {successMessage && (
+                <div className="rounded-xl border-2 border-[#1c1c13] bg-[#f0fdf4] p-4 shadow-[4px_4px_0_#22c55e]">
+                  <p className="text-sm font-bold text-[#22c55e]">{successMessage}</p>
+                </div>
+              )}
             </div>
           )}
 
-          {/* Summary */}
-          <div className="rounded-2xl border border-black bg-white px-3 py-2 text-sm">
-            <div className="flex justify-between font-bold">
-              <span>{t('total', 'Total')}:</span>
-              <span>{formatAmount(totalCalculated)}</span>
-            </div>
-            {form.totalAmount && !amountsMatch(totalCalculated, parseAmount(form.totalAmount)) && (
-              <div className="text-[11px] text-[#ba1a1a] font-semibold mt-1">
-                {t('difference', 'Difference')}: {formatAmount(Math.abs(totalCalculated - parseAmount(form.totalAmount)))}
-              </div>
-            )}
-          </div>
+          {/* Form */}
+          <div className="flex-1 overflow-y-auto p-4 lg:p-6">
+            <form onSubmit={onSubmit} className="space-y-6">
+              <div className="rounded-xl border-2 border-[#1c1c13] bg-white p-5 shadow-[4px_4px_0_#1c1c13]">
+                <div className="mb-4">
+                  <label className="mb-2 block text-[11px] font-black uppercase tracking-wide text-[#1c1c13]">
+                    {tr("Title", "Judul Tagihan")}
+                  </label>
+                  <input
+                    name="title"
+                    value={splitForm.title}
+                    onChange={onSplitChange}
+                    placeholder={tr("Example: Dinner with classmates", "Contoh: Makan bareng kelas")}
+                    className="min-h-12 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] transition-all"
+                  />
+                </div>
 
-          {/* Action Buttons */}
-          <div className="grid grid-cols-2 gap-2 pt-2 sticky bottom-0 bg-[#fffbeb]">
-            <button
-              type="submit"
-              disabled={isSubmitting || !isValid}
-              className="rounded-2xl border border-black bg-[#6366f1] px-3 py-2 text-xs font-black uppercase text-white shadow-[2px_2px_0_#1c1c13] disabled:opacity-60"
-            >
-              {isSubmitting ? t('creating', 'Creating...') : t('createSplit', 'Create Split')}
-            </button>
-            <button
-              type="button"
-              onClick={onClose}
-              className="rounded-2xl border border-black bg-white px-3 py-2 text-xs font-black uppercase shadow-[2px_2px_0_#1c1c13]"
-            >
-              {t('cancel', 'Cancel')}
-            </button>
+                <div className="mb-4">
+                  <label className="mb-2 block text-[11px] font-black uppercase tracking-wide text-[#1c1c13]">
+                    {tr("Total Amount", "Total Nominal")} ({settings.currency})
+                  </label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="any"
+                    name="totalAmount"
+                    value={splitForm.totalAmount}
+                    onChange={onSplitChange}
+                    placeholder="0"
+                    className="min-h-12 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] transition-all"
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="mb-2 block text-[11px] font-black uppercase tracking-wide text-[#1c1c13]">
+                    {tr("Friends", "Teman")} (1 per {tr("line", "baris")})
+                  </label>
+                  <textarea
+                    name="friends"
+                    value={splitForm.friends}
+                    onChange={onSplitChange}
+                    placeholder={tr("Andi\nBudi\nCitra", "Andi\nBudi\nCitra")}
+                    rows={4}
+                    className="w-full resize-y rounded-lg border-2 border-[#1c1c13] bg-white p-4 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] transition-all"
+                  />
+                </div>
+
+                <div className="mb-4">
+                  <label className="mb-2 block text-[11px] font-black uppercase tracking-wide text-[#1c1c13]">
+                    {t("note", "Note (Optional)")}
+                  </label>
+                  <textarea
+                    name="description"
+                    value={splitForm.description}
+                    onChange={onSplitChange}
+                    placeholder={tr("Dinner after midterms", "Makan malam habis UTS")}
+                    className="min-h-12 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 py-3 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] transition-all"
+                  />
+                </div>
+
+                <div className="flex items-center gap-3 mt-4">
+                  <input
+                    type="checkbox"
+                    id="syncToPersonal"
+                    name="syncToPersonal"
+                    checked={splitForm.syncToPersonal}
+                    onChange={onSplitChange}
+                    className="h-5 w-5 rounded border-2 border-[#1c1c13] accent-[#6366f1] shadow-[2px_2px_0_#1c1c13]"
+                  />
+                  <label htmlFor="syncToPersonal" className="text-sm font-bold text-[#1c1c13]">
+                    {tr(
+                      "Add my share as personal expense",
+                      "Tambahkan porsi saya ke pengeluaran personal"
+                    )}
+                  </label>
+                </div>
+
+                {splitForm.syncToPersonal && (
+                  <div className="mt-4 pt-4 border-t-2 border-dashed border-gray-300">
+                    <label className="mb-2 block text-[11px] font-black uppercase tracking-wide text-[#1c1c13]">
+                      {tr("Deduct from Wallet", "Potong dari Dompet")}
+                    </label>
+                    <select
+                      name="walletId"
+                      value={splitForm.walletId}
+                      onChange={onSplitChange}
+                      className="min-h-12 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] transition-all"
+                    >
+                      <option value="" disabled>
+                        {tr("Select Wallet", "Pilih Dompet")}
+                      </option>
+                      {wallets.map((w) => (
+                        <option key={w.id} value={w.id}>
+                          {w.name} ({formatCurrencyValue(w.balance, language, settings.currency)})
+                        </option>
+                      ))}
+                      <option value="NEW">+ {tr("Add New Wallet", "Tambah Dompet Baru")}</option>
+                    </select>
+                  </div>
+                )}
+              </div>
+
+              {/* Actions */}
+              <div className="flex gap-4">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  disabled={isSubmitting}
+                  className="min-h-12 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 font-black text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none"
+                >
+                  {t("cancel", "Cancel")}
+                </button>
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  className="min-h-12 w-full rounded-lg border-2 border-[#1c1c13] bg-[#6366f1] px-4 font-black text-white shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none"
+                >
+                  {isSubmitting ? t("saving", "Saving...") : t("save", "Save")}
+                </button>
+              </div>
+            </form>
           </div>
-        </form>
+        </div>
       </div>
-    </div>
-  )
+
+      {showWalletModal && (
+        <ManageWalletModal
+          onClose={() => setShowWalletModal(false)}
+          onSuccess={(wallet) => {
+            setShowWalletModal(false);
+            const fetchWallets = async () => {
+              const data = await getWallets();
+              setWallets(data);
+            };
+            fetchWallets();
+            setSplitForm((prev) => ({ ...prev, walletId: wallet.id }));
+          }}
+          wallets={wallets}
+        />
+      )}
+    </>
+  );
 }

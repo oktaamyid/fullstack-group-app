@@ -1,21 +1,49 @@
-import api from './api';
+import { getAuthToken } from './auth'
 
-export const getRecurring = async () => {
-  const response = await api.get('/recurring');
-  return response.data.recurrings;
-};
+const BASE_URL = '/api/recurring'
 
-export const createRecurring = async (data) => {
-  const response = await api.post('/recurring', data);
-  return response.data;
-};
+async function request(path = '', options = {}) {
+  const token = getAuthToken()
 
-export const updateRecurringStatus = async (id, status) => {
-  const response = await api.put(`/recurring/${id}/status`, { status });
-  return response.data;
-};
+  const response = await fetch(`${BASE_URL}${path}`, {
+    ...options,
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+      ...(options.headers || {}),
+    },
+  })
 
-export const deleteRecurring = async (id) => {
-  const response = await api.delete(`/recurring/${id}`);
-  return response.data;
-};
+  const payload = await response.json()
+
+  if (!response.ok || !payload?.success) {
+    throw new Error(payload?.message || 'Request failed')
+  }
+
+  return payload.data
+}
+
+export async function getRecurring() {
+  const data = await request();
+  return data.recurrings || [];
+}
+
+export async function createRecurring(data) {
+  return request('', {
+    method: 'POST',
+    body: JSON.stringify(data),
+  });
+}
+
+export async function updateRecurringStatus(id, status) {
+  return request(`/${id}/status`, {
+    method: 'PUT',
+    body: JSON.stringify({ status }),
+  });
+}
+
+export async function deleteRecurring(id) {
+  return request(`/${id}`, {
+    method: 'DELETE',
+  });
+}

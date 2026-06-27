@@ -21,6 +21,7 @@ const createSplitBillSchema = z.object({
   items: z.array(splitBillItemSchema).optional(),
   divisionMethod: z.enum(['EQUAL', 'CUSTOM', 'ITEM_BASED']).optional().default('CUSTOM'),
   syncToPersonal: z.boolean().optional().default(false),
+  walletId: z.coerce.number().int().positive('Invalid walletId').optional(),
 });
 
 const updateSplitBillSchema = z.object({
@@ -31,6 +32,7 @@ const updateSplitBillSchema = z.object({
   items: z.array(splitBillItemSchema).optional(),
   divisionMethod: z.enum(['EQUAL', 'CUSTOM', 'ITEM_BASED']).optional(),
   syncToPersonal: z.boolean().optional(),
+  walletId: z.coerce.number().int().positive('Invalid walletId').optional(),
 });
 
 const updateMemberStatusSchema = z.object({

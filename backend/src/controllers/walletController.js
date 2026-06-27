@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
+const { sendSuccess, sendError } = require("../utils/apiResponse");
 
 // Create a new wallet
 exports.createWallet = async (req, res) => {
@@ -8,7 +9,7 @@ exports.createWallet = async (req, res) => {
     const { name, balance, type } = req.body
 
     if (!name) {
-      return res.status(400).json({ error: 'Name is required' })
+      return sendError(res, 'Name is required', 400)
     }
 
     const wallet = await prisma.wallet.create({
@@ -20,10 +21,10 @@ exports.createWallet = async (req, res) => {
       }
     })
 
-    res.status(201).json({ message: 'Wallet created successfully', wallet })
+    sendSuccess(res, { wallet }, 'Wallet created successfully', 201)
   } catch (error) {
     console.error('Error creating wallet:', error)
-    res.status(500).json({ error: 'Internal server error' })
+    sendError(res, 'Internal server error', 500)
   }
 }
 
@@ -35,10 +36,10 @@ exports.getWallets = async (req, res) => {
       where: { userId },
       orderBy: { createdAt: 'asc' }
     })
-    res.json({ wallets })
+    sendSuccess(res, { wallets }, 'Wallets retrieved successfully')
   } catch (error) {
     console.error('Error getting wallets:', error)
-    res.status(500).json({ error: 'Internal server error' })
+    sendError(res, 'Internal server error', 500)
   }
 }
 
@@ -54,7 +55,7 @@ exports.updateWallet = async (req, res) => {
     })
 
     if (!existingWallet) {
-      return res.status(404).json({ error: 'Wallet not found' })
+      return sendError(res, 'Wallet not found', 404)
     }
 
     const updatedWallet = await prisma.wallet.update({
@@ -66,10 +67,10 @@ exports.updateWallet = async (req, res) => {
       }
     })
 
-    res.json({ message: 'Wallet updated successfully', wallet: updatedWallet })
+    sendSuccess(res, { wallet: updatedWallet }, 'Wallet updated successfully')
   } catch (error) {
     console.error('Error updating wallet:', error)
-    res.status(500).json({ error: 'Internal server error' })
+    sendError(res, 'Internal server error', 500)
   }
 }
 
@@ -84,7 +85,7 @@ exports.deleteWallet = async (req, res) => {
     })
 
     if (!existingWallet) {
-      return res.status(404).json({ error: 'Wallet not found' })
+      return sendError(res, 'Wallet not found', 404)
     }
 
     // Check if user has more than 1 wallet
@@ -93,17 +94,17 @@ exports.deleteWallet = async (req, res) => {
     })
 
     if (walletCount <= 1) {
-      return res.status(400).json({ error: 'Cannot delete the only wallet you have' })
+      return sendError(res, 'Cannot delete the only wallet you have', 400)
     }
 
     await prisma.wallet.delete({
       where: { id: parseInt(id) }
     })
 
-    res.json({ message: 'Wallet deleted successfully' })
+    sendSuccess(res, null, 'Wallet deleted successfully')
   } catch (error) {
     console.error('Error deleting wallet:', error)
-    res.status(500).json({ error: 'Internal server error' })
+    sendError(res, 'Internal server error', 500)
   }
 }
 
@@ -114,12 +115,12 @@ exports.transferBalance = async (req, res) => {
     const { fromWalletId, toWalletId, amount } = req.body
 
     if (!fromWalletId || !toWalletId || !amount) {
-      return res.status(400).json({ error: 'fromWalletId, toWalletId, and amount are required' })
+      return sendError(res, 'fromWalletId, toWalletId, and amount are required', 400)
     }
 
     const parsedAmount = parseInt(amount)
-    if (parsedAmount <= 0) {
-      return res.status(400).json({ error: 'Amount must be greater than 0' })
+    if (parsedAmount <= 1) {
+      return sendError(res, 'Amount must be greater than 0', 400)
     }
 
     // Use transaction to ensure both wallets are updated or neither is
@@ -174,9 +175,9 @@ exports.transferBalance = async (req, res) => {
       })
     })
 
-    res.json({ message: 'Transfer successful' })
+    sendSuccess(res, null, 'Transfer successful')
   } catch (error) {
     console.error('Error transferring balance:', error)
-    res.status(400).json({ error: error.message || 'Error transferring balance' })
+    sendError(res, error.message || 'Error transferring balance', 400)
   }
 }

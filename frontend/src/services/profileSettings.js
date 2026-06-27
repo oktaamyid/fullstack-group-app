@@ -38,6 +38,8 @@ const DEFAULT_SETTINGS = {
   language: "id-ID",
   categories: DEFAULT_TRANSACTION_CATEGORIES,
   categoryIcons: DEFAULT_CATEGORY_ICONS,
+  dailyLimitMode: "AUTO",
+  manualDailyLimit: 100000,
 };
 
 function sanitizeCategoryKey(label = "") {
@@ -88,6 +90,14 @@ function normalizeSettings(input = {}) {
     typeof input?.currency === "string" && input.currency.trim()
       ? input.currency.trim().toUpperCase()
       : DEFAULT_SETTINGS.currency;
+      
+  const dailyLimitMode = ["AUTO", "MANUAL"].includes(input?.dailyLimitMode) 
+    ? input.dailyLimitMode 
+    : DEFAULT_SETTINGS.dailyLimitMode;
+    
+  const manualDailyLimit = typeof input?.manualDailyLimit === "number" && input.manualDailyLimit > 0
+    ? input.manualDailyLimit
+    : DEFAULT_SETTINGS.manualDailyLimit;
 
   return {
     ...DEFAULT_SETTINGS,
@@ -110,6 +120,8 @@ function normalizeSettings(input = {}) {
       ),
     },
     categoryIcons: normalizeCategoryIcons(categoryIcons),
+    dailyLimitMode,
+    manualDailyLimit,
   };
 }
 

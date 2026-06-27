@@ -110,9 +110,11 @@ export function LandingPage({ mainLogo }) {
 
   useEffect(() => {
     if (location.state?.showLogin) {
-      setIsLoginOpen(true)
-      // Clean up the state so it doesn't re-trigger on reload
-      navigate('/', { replace: true, state: {} })
+      setTimeout(() => {
+        setIsLoginOpen(true)
+        // Clean up the state so it doesn't re-trigger on reload
+        navigate('/', { replace: true, state: {} })
+      }, 0)
     }
   }, [location.state, navigate])
 
@@ -248,7 +250,7 @@ export function LandingPage({ mainLogo }) {
               </div>
 
               {/* Transaction success toast mockup */}
-              <div className="rounded-2xl bg-white p-3 sm:p-4 shadow-lg border border-gray-100 transform -rotate-3 absolute -bottom-6 -left-4 sm:-left-8 w-[240px] sm:w-[260px] hover:rotate-0 transition-transform">
+              <div className="rounded-2xl bg-white p-3 sm:p-4 shadow-lg border border-gray-100 transform -rotate-3 absolute -bottom-6 -left-4 sm:-left-8 w-60 sm:w-65 hover:rotate-0 transition-transform">
                 <div className="flex gap-3 sm:gap-4 items-center">
                   <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#4ade80]/20 text-[#4ade80] flex items-center justify-center">
                     <span className="material-symbols-outlined font-black text-xl sm:text-2xl">payments</span>

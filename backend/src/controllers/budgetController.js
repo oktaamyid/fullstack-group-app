@@ -1,5 +1,6 @@
 const { PrismaClient } = require('@prisma/client')
 const prisma = new PrismaClient()
+const { sendSuccess, sendError } = require("../utils/apiResponse");
 
 // Set a new budget for a category in a specific month/year
 exports.setBudget = async (req, res) => {
@@ -8,7 +9,7 @@ exports.setBudget = async (req, res) => {
     const { category, amount, month, year } = req.body
 
     if (!category || !amount || !month || !year) {
-      return res.status(400).json({ error: 'category, amount, month, and year are required' })
+      return sendError(res, 'category, amount, month, and year are required', 400)
     }
 
     const parsedMonth = parseInt(month)
@@ -16,7 +17,7 @@ exports.setBudget = async (req, res) => {
     const parsedAmount = parseInt(amount)
 
     if (parsedMonth < 1 || parsedMonth > 12) {
-      return res.status(400).json({ error: 'Month must be between 1 and 12' })
+      return sendError(res, 'Month must be between 1 and 12', 400)
     }
 
     // Upsert budget to avoid duplicates
@@ -41,10 +42,10 @@ exports.setBudget = async (req, res) => {
       }
     })
 
-    res.status(200).json({ message: 'Budget set successfully', budget })
+    sendSuccess(res, { budget }, 'Budget set successfully', 200)
   } catch (error) {
     console.error('Error setting budget:', error)
-    res.status(500).json({ error: 'Internal server error' })
+    sendError(res, 'Internal server error', 500)
   }
 }
 
@@ -62,10 +63,10 @@ exports.getBudgets = async (req, res) => {
       where: whereClause,
       orderBy: { category: 'asc' }
     })
-    res.json({ budgets })
+    sendSuccess(res, { budgets }, 'Budgets retrieved successfully')
   } catch (error) {
     console.error('Error getting budgets:', error)
-    res.status(500).json({ error: 'Internal server error' })
+    sendError(res, 'Internal server error', 500)
   }
 }
 
@@ -80,17 +81,17 @@ exports.deleteBudget = async (req, res) => {
     })
 
     if (!existingBudget) {
-      return res.status(404).json({ error: 'Budget not found' })
+      return sendError(res, 'Budget not found', 404)
     }
 
     await prisma.budget.delete({
       where: { id: parseInt(id) }
     })
 
-    res.json({ message: 'Budget deleted successfully' })
+    sendSuccess(res, null, 'Budget deleted successfully')
   } catch (error) {
     console.error('Error deleting budget:', error)
-    res.status(500).json({ error: 'Internal server error' })
+    sendError(res, 'Internal server error', 500)
   }
 }
 
@@ -156,9 +157,9 @@ exports.getBudgetProgress = async (req, res) => {
       }
     }
 
-    res.json({ month, year, progress })
+    sendSuccess(res, { month, year, progress }, 'Budget progress retrieved successfully')
   } catch (error) {
     console.error('Error getting budget progress:', error)
-    res.status(500).json({ error: 'Internal server error' })
+    sendError(res, 'Internal server error', 500)
   }
 }

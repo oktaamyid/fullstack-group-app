@@ -108,7 +108,11 @@ async function createSplitBill(req, res) {
     });
   }
 
-  const { title, description, totalAmount, members, items, syncToPersonal } = validation.data;
+  const { title, description, totalAmount, members, items, syncToPersonal, walletId } = validation.data;
+
+  if (syncToPersonal && !walletId) {
+    return sendError(res, 'Wallet ID is required when syncing to personal expenses', 400);
+  }
 
   let memberData;
   let divisionMethod;
@@ -132,9 +136,16 @@ async function createSplitBill(req, res) {
             amount: totalAmount,
             category: title || 'Shared Expense',
             note: description || null,
+            walletId: walletId,
           },
         });
         transactionId = transaction.id;
+
+        // Decrease wallet balance
+        await tx.wallet.update({
+          where: { id: walletId },
+          data: { balance: { decrement: totalAmount } }
+        });
       }
 
       // Create split bill (without nested members/items)
@@ -513,6 +524,7 @@ async function updateSplitBillMemberStatus(req, res) {
       },
       include: {
         members: true,
+        transaction: true,
       },
     });
 
@@ -541,6 +553,9 @@ async function updateSplitBillMemberStatus(req, res) {
 
       // If syncToPersonal is enabled and member was just marked PAID, create an INCOME transaction
       if (refreshed.syncToPersonal && status === 'PAID') {
+        const originalTx = splitBill.transaction;
+        const targetWalletId = originalTx ? originalTx.walletId : null;
+
         await tx.transaction.create({
           data: {
             userId: req.user.id,
@@ -548,8 +563,16 @@ async function updateSplitBillMemberStatus(req, res) {
             amount: member.amount,
             category: 'Split Bill Payment',
             note: `Payment from ${member.friendName} for ${refreshed.title}`,
+            walletId: targetWalletId,
           },
         });
+
+        if (targetWalletId) {
+          await tx.wallet.update({
+            where: { id: targetWalletId },
+            data: { balance: { increment: member.amount } }
+          });
+        }
       }
 
       const billStatus = resolveBillStatus(refreshed.members);

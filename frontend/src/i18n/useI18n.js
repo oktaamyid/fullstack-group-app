@@ -45,7 +45,7 @@ const translations = {
     weeklySpend: 'Belanja Mingguan',
     recentReports: 'Laporan Terbaru',
     all: 'Semua',
-    category: 'kategori',
+    category: 'Kategori',
     noReportsYet: 'Belum ada laporan. Tambahkan split bill untuk melihat analytics.',
     noReportsInCategory: 'Tidak ada laporan pada kategori',
     noData: 'Belum ada data',
@@ -128,7 +128,6 @@ const translations = {
     price: 'Harga',
     addTransactionModalTitle: 'Tambah Transaksi',
     type: 'Tipe',
-    category: 'Kategori',
     amount: 'Jumlah',
     descriptionOptional: 'Deskripsi (opsional)',
     date: 'Tanggal',
@@ -174,14 +173,13 @@ export function useI18n() {
     }
   }, [])
 
-  const locale = translations[language] || {}
-  const fallbackEnglish = translations['en-US'] || {}
-
   const t = useCallback(
     (key, fallback = '') => {
+      const locale = translations[language] || translations['id-ID']
+      const fallbackEnglish = translations['en-US'] || {}
       return locale[key] || fallbackEnglish[key] || fallback || key
     },
-    [fallbackEnglish, locale]
+    [language]
   )
 
   return { language, t }

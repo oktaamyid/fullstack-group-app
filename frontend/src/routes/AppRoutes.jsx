@@ -6,13 +6,15 @@ import { LandingPage } from '../components/screens/LandingPage'
 import { ProfileSettingsScreen } from '../components/screens/ProfileSettingsScreen'
 import { TransactionScreen } from '../components/screens/TransactionScreen'
 import { WishlistScreen } from '../components/screens/WishlistScreen'
-import { AnalyticsTrendsScreen } from '../components/screens/AnalyticsTrendsScreen'
+import { WalletBudgetScreen } from '../components/screens/WalletBudgetScreen'
 import { initialStatus } from '../constants/connectionStatus'
 import { useConnectionCheck } from '../hooks/useConnectionCheck'
 import { getAnalyticsOverview } from '../services/analytics'
 import { clearAuthSession, getAuthUser, isAuthenticated } from '../services/auth'
 import { getSplitBills } from '../services/splitBill'
 import { getTransactions } from '../services/transaction'
+import { getWallets } from '../services/wallet'
+import { getBudgets } from '../services/budget'
 import mainLogo from '../stitch/main-logo/main-logo.png'
 import mascotImage from '../stitch/main-logo/main-logo.png'
 
@@ -30,6 +32,8 @@ function HomeRoute() {
     transactionSummary: { totalIncome: 0, totalExpense: 0, netBalance: 0 },
     recentTransactions: [],
     analytics: null,
+    wallets: [],
+    budgets: [],
   })
 
   if (!isAuthenticated()) {
@@ -49,10 +53,13 @@ function HomeRoute() {
 
   const loadFinanceData = useCallback(async () => {
     try {
-      const [splitData, analyticsData, transactionData] = await Promise.all([
+      const currentDate = new Date()
+      const [splitData, analyticsData, transactionData, walletsData, budgetsData] = await Promise.all([
         getSplitBills(),
         getAnalyticsOverview(),
         getTransactions(),
+        getWallets(),
+        getBudgets(currentDate.getMonth() + 1, currentDate.getFullYear())
       ])
 
       setFinanceData({
@@ -64,6 +71,8 @@ function HomeRoute() {
         },
         recentTransactions: transactionData.transactions || [],
         analytics: analyticsData,
+        wallets: walletsData || [],
+        budgets: budgetsData || [],
       })
     } catch {
       setFinanceData({
@@ -71,6 +80,8 @@ function HomeRoute() {
         transactionSummary: { totalIncome: 0, totalExpense: 0, netBalance: 0 },
         recentTransactions: [],
         analytics: null,
+        wallets: [],
+        budgets: [],
       })
     }
   }, [])
@@ -156,12 +167,13 @@ function ProfileRoute() {
   return <ProfileSettingsScreen mainLogo={mainLogo} />
 }
 
-function AnalyticsRoute() {
+
+function WalletRoute() {
   if (!isAuthenticated()) {
     return <Navigate to="/login" replace />
   }
 
-  return <AnalyticsTrendsScreen mainLogo={mainLogo} />
+  return <WalletBudgetScreen mainLogo={mainLogo} />
 }
 
 export function AppRoutes() {
@@ -172,7 +184,8 @@ export function AppRoutes() {
       <Route path="/transactions" element={<TransactionRoute />} />
       <Route path="/wishlist" element={<WishlistRoute />} />
       <Route path="/profile" element={<ProfileRoute />} />
-      <Route path="/analytics" element={<AnalyticsRoute />} />
+      <Route path="/wallet" element={<WalletRoute />} />
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   )

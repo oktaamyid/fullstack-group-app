@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { createTransaction, updateTransaction } from "../../services/transaction";
-import { createSplitBill, updateSplitBill } from "../../services/splitBill";
+
+import { getWallets } from "../../services/wallet";
+import { createRecurring } from "../../services/recurring";
 import { useI18n } from "../../i18n/useI18n";
 import { useProfileSettings } from "../../hooks/useProfileSettings";
 import { NumericPad } from "../ui";
@@ -9,6 +11,7 @@ import {
   convertToIdr,
   formatCurrencyValue,
 } from "../../services/currency";
+import { ManageWalletModal } from "./ManageWalletModal";
 
 const DEFAULT_TYPE = "EXPENSE";
 const DEFAULT_CATEGORY = "FOOD";
@@ -42,28 +45,7 @@ const CATEGORY_LABELS = {
   OTHER: "📌 Other",
 };
 
-function parseFriends(raw) {
-  return raw
-    .split("\n")
-    .map((name) => name.trim())
-    .filter(Boolean);
-}
 
-function allocateMembers(totalAmount, friendNames) {
-  const count = friendNames.length;
-  const baseAmount = Math.floor(totalAmount / count);
-  let remainder = totalAmount % count;
-
-  return friendNames.map((friendName) => {
-    const amount = baseAmount + (remainder > 0 ? 1 : 0);
-    if (remainder > 0) remainder -= 1;
-
-    return {
-      friendName,
-      amount,
-    };
-  });
-}
 
 function toInputAmount(value, currency) {
   const converted = convertFromIdr(value, currency);
@@ -85,24 +67,15 @@ function getDefaultTransactionForm(initialValues = {}, currency = "IDR") {
     amount: initialValues.amount ? toInputAmount(initialValues.amount, currency) : "",
     note: initialValues.note || initialValues.description || "",
     date: sourceDate,
+    walletId: initialValues.walletId || "",
+    isRecurring: false,
+    recurringInterval: "MONTHLY",
     receiptImage: initialValues.receiptImage || "",
     receiptImageName: initialValues.receiptImageName || "",
   };
 }
 
-function getDefaultSplitBillForm(initialValues = {}, currency = "IDR") {
-  return {
-    title: initialValues.title || "",
-    description: initialValues.description || "",
-    totalAmount: initialValues.totalAmount
-      ? toInputAmount(initialValues.totalAmount, currency)
-      : "",
-    friends: initialValues.members
-      ? initialValues.members.map((member) => member.friendName).join("\n")
-      : "",
-    syncToPersonal: initialValues.syncToPersonal ?? true,
-  };
-}
+
 
 function fileToDataUrl(file) {
   return new Promise((resolve, reject) => {
@@ -126,10 +99,8 @@ function fileToDataUrl(file) {
 export function CreateTransactionModal({
   onClose,
   onSuccess,
-  initialMode = "PERSONAL", // "PERSONAL" or "SPLIT_BILL"
   initialValues = null,
   transactionId = null,
-  splitBillId = null,
 }) {
   const { t, language } = useI18n();
   const settings = useProfileSettings();
@@ -143,33 +114,40 @@ export function CreateTransactionModal({
   );
 
   const isEditingTx = Boolean(transactionId);
-  const isEditingSplit = Boolean(splitBillId);
-  const isEditing = isEditingTx || isEditingSplit;
-
-  const [activeTab, setActiveTab] = useState(
-    isEditingSplit ? "SPLIT_BILL" : isEditingTx ? "PERSONAL" : initialMode
-  );
 
   const [txForm, setTxForm] = useState(() =>
     getDefaultTransactionForm(initialValues || {}, settings.currency),
   );
-  const [splitForm, setSplitForm] = useState(() =>
-    getDefaultSplitBillForm(initialValues || {}, settings.currency),
-  );
-  
+
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isReadingImage, setIsReadingImage] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [isAmountFocused, setIsAmountFocused] = useState(false);
+  const [showWalletModal, setShowWalletModal] = useState(false);
+
+  const [wallets, setWallets] = useState([]);
 
   useEffect(() => {
-    if (activeTab === "PERSONAL") {
-      setTxForm(getDefaultTransactionForm(initialValues || {}, settings.currency));
-    } else {
-      setSplitForm(getDefaultSplitBillForm(initialValues || {}, settings.currency));
-    }
-  }, [initialValues, activeTab, settings.currency]);
+    const fetchWallets = async () => {
+      try {
+        const data = await getWallets();
+        setWallets(data);
+        if (data.length > 0) {
+          if (!initialValues?.walletId) {
+            setTxForm((prev) => ({ ...prev, walletId: data[0].id }));
+          }
+        }
+      } catch (error) {
+        console.error("Failed to fetch wallets:", error);
+      }
+    };
+    void fetchWallets();
+  }, [initialValues]);
+
+  useEffect(() => {
+    setTxForm(getDefaultTransactionForm(initialValues || {}, settings.currency));
+  }, [initialValues, settings.currency]);
 
   useEffect(() => {
     const handleKeyDown = (event) => {
@@ -188,9 +166,13 @@ export function CreateTransactionModal({
   }, [isReadingImage, isSubmitting, onClose]);
 
   const onTxChange = useCallback((e) => {
-    const { name, value } = e.target;
+    const { name, value, type, checked } = e.target;
+    if (name === "walletId" && value === "NEW") {
+      setShowWalletModal(true);
+      return;
+    }
     setTxForm((prev) => {
-      const updated = { ...prev, [name]: value };
+      const updated = { ...prev, [name]: type === "checkbox" ? checked : (name === "walletId" ? Number(value) : value) };
       // Reset category if type changed
       if (name === "type" && !CATEGORIES[value].includes(prev.category)) {
         updated.category = CATEGORIES[value][0];
@@ -199,13 +181,6 @@ export function CreateTransactionModal({
     });
   }, []);
 
-  const onSplitChange = useCallback((e) => {
-    const { name, value, type, checked } = e.target;
-    setSplitForm((prev) => ({ 
-      ...prev, 
-      [name]: type === "checkbox" ? checked : value 
-    }));
-  }, []);
 
   const onReceiptChange = useCallback(
     async (event) => {
@@ -277,11 +252,17 @@ export function CreateTransactionModal({
       return;
     }
 
+    if (!txForm.walletId) {
+      setErrorMessage(tr("Please select a wallet", "Silakan pilih dompet"));
+      return;
+    }
+
     const payload = {
       type: txForm.type,
       category: txForm.category,
       amount: convertToIdr(amount, settings.currency),
       note: txForm.note.trim(),
+      walletId: Number(txForm.walletId),
       createdAt: txForm.date ? new Date(txForm.date).toISOString() : undefined,
       receiptImage: txForm.receiptImage || "",
       receiptImageName: txForm.receiptImageName || "",
@@ -294,6 +275,23 @@ export function CreateTransactionModal({
     } else {
       const result = await createTransaction(payload);
       savedData = result?.transaction || null;
+
+      // Handle recurring creation if checked
+      if (txForm.isRecurring) {
+        try {
+          await createRecurring({
+            walletId: Number(txForm.walletId),
+            type: txForm.type,
+            amount: convertToIdr(amount, settings.currency),
+            category: txForm.category,
+            interval: txForm.recurringInterval,
+            note: txForm.note.trim(),
+            startDate: txForm.date ? new Date(txForm.date).toISOString() : new Date().toISOString()
+          });
+        } catch (error) {
+          console.error("Failed to setup recurring transaction", error);
+        }
+      }
     }
 
     setSuccessMessage(
@@ -303,55 +301,9 @@ export function CreateTransactionModal({
     );
 
     return savedData;
-  }, [isEditingTx, settings.currency, t, transactionId, txForm]);
+  }, [isEditingTx, settings.currency, t, tr, transactionId, txForm]);
 
-  const submitSplitBill = useCallback(async () => {
-    const parsedTotal = Number(splitForm.totalAmount);
-    const friendNames = parseFriends(splitForm.friends);
 
-    if (
-      !splitForm.title.trim() ||
-      !Number.isFinite(parsedTotal) ||
-      parsedTotal <= 0 ||
-      friendNames.length === 0
-    ) {
-      setErrorMessage(
-        tr(
-          "Complete title, total amount, and friends list.",
-          "Lengkapi judul, total tagihan, dan daftar teman."
-        )
-      );
-      return;
-    }
-
-    const totalAmount = convertToIdr(parsedTotal, settings.currency);
-    const members = allocateMembers(totalAmount, friendNames);
-
-    const payload = {
-      title: splitForm.title.trim(),
-      description: splitForm.description,
-      totalAmount,
-      members,
-      syncToPersonal: splitForm.syncToPersonal,
-    };
-
-    let savedData;
-    if (isEditingSplit && splitBillId) {
-      const result = await updateSplitBill(splitBillId, payload);
-      savedData = result?.splitBill || null;
-    } else {
-      const result = await createSplitBill(payload);
-      savedData = result?.splitBill || null;
-    }
-
-    setSuccessMessage(
-      isEditingSplit
-        ? t("splitBillUpdatedSuccessfully", "Split Bill updated successfully!")
-        : t("splitBillCreatedSuccessfully", "Split Bill created successfully!"),
-    );
-
-    return savedData;
-  }, [isEditingSplit, settings.currency, splitBillId, splitForm, t, tr]);
 
   const onSubmit = useCallback(
     async (e) => {
@@ -361,12 +313,7 @@ export function CreateTransactionModal({
       setIsSubmitting(true);
 
       try {
-        let savedData = null;
-        if (activeTab === "PERSONAL") {
-          savedData = await submitPersonal();
-        } else {
-          savedData = await submitSplitBill();
-        }
+        const savedData = await submitPersonal();
 
         if (!savedData) return; // Errored inside
 
@@ -385,12 +332,12 @@ export function CreateTransactionModal({
         setIsSubmitting(false);
       }
     },
-    [activeTab, onClose, onSuccess, submitPersonal, submitSplitBill, t],
+    [onClose, onSuccess, submitPersonal, t],
   );
 
-  const dialogTitle = isEditing
-    ? (activeTab === "PERSONAL" ? t("editTransaction", "Edit Transaction") : t("editSplitBill", "Edit Split Bill"))
-    : (activeTab === "PERSONAL" ? t("addTransactionModalTitle", "Add Transaction") : t("newSplitBill", "New Split Bill"));
+  const dialogTitle = isEditingTx
+    ? t("editTransaction", "Edit Transaction")
+    : t("addTransactionModalTitle", "Add Transaction");
 
   return (
     <div
@@ -411,7 +358,7 @@ export function CreateTransactionModal({
             <div className="flex items-start justify-between gap-3 border-b-2 border-[#1c1c13] pb-4">
               <div>
                 <p className="text-[11px] font-black uppercase tracking-[0.2em] text-[#1c1c13]">
-                  {isEditing ? t("edit", "Edit") : t("add", "Add")}
+                  {isEditingTx ? t("edit", "Edit") : t("add", "Add")}
                 </p>
                 <h3
                   id="transaction-dialog-title"
@@ -443,36 +390,6 @@ export function CreateTransactionModal({
                 {successMessage}
               </div>
             )}
-
-            {/* Tab Switcher - Only show if not editing, or if we really want them to switch (usually locked in edit) */}
-            {!isEditing && (
-              <div className="flex gap-2 rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-1 shadow-[2px_2px_0_#1c1c13]">
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("PERSONAL")}
-                  className={`flex-1 rounded-lg py-2 text-xs font-black uppercase transition-all ${
-                    activeTab === "PERSONAL"
-                      ? "bg-[#6366f1] text-white border-2 border-[#1c1c13] shadow-[2px_2px_0_#1c1c13]"
-                      : "bg-transparent text-[#1c1c13] border-2 border-transparent hover:border-[#1c1c13]"
-                  }`}
-                >
-                  {t("personal", "Personal")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setActiveTab("SPLIT_BILL")}
-                  className={`flex-1 rounded-lg py-2 text-xs font-black uppercase transition-all ${
-                    activeTab === "SPLIT_BILL"
-                      ? "bg-[#6366f1] text-white border-2 border-[#1c1c13] shadow-[2px_2px_0_#1c1c13]"
-                      : "bg-transparent text-[#1c1c13] border-2 border-transparent hover:border-[#1c1c13]"
-                  }`}
-                >
-                  {t("splitBill", "Split Bill")}
-                </button>
-              </div>
-            )}
-
-            {activeTab === "PERSONAL" ? (
               <div className="grid gap-4 sm:grid-cols-2">
                 {/* Type Selection */}
                 <div className="sm:col-span-2">
@@ -483,7 +400,7 @@ export function CreateTransactionModal({
                     {TRANSACTION_TYPES.map((type) => (
                       <label
                         key={type}
-                        className={`flex min-h-[3rem] cursor-pointer items-center justify-center gap-2 rounded-lg border-2 transition-all ${
+                        className={`flex min-h-12 cursor-pointer items-center justify-center gap-2 rounded-lg border-2 transition-all ${
                           txForm.type === type 
                             ? "border-[#1c1c13] bg-[#6366f1] text-white shadow-[2px_2px_0_#1c1c13]" 
                             : "border-[#1c1c13] bg-white text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0"
@@ -520,7 +437,7 @@ export function CreateTransactionModal({
                     name="category"
                     value={txForm.category}
                     onChange={onTxChange}
-                    className="min-h-[3rem] w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] transition-all"
+                    className="min-h-12 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] transition-all"
                   >
                     {CATEGORIES[txForm.type].map((cat) => (
                       <option key={cat} value={cat}>
@@ -550,7 +467,7 @@ export function CreateTransactionModal({
                     inputMode="numeric"
                     onFocus={() => setIsAmountFocused(true)}
                     onBlur={() => setIsAmountFocused(false)}
-                    className={`min-h-[3rem] w-full rounded-lg border-2 bg-white px-4 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none transition-all ${
+                    className={`min-h-12 w-full rounded-lg border-2 bg-white px-4 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none transition-all ${
                       isAmountFocused ? "border-[#6366f1]" : "border-[#1c1c13]"
                     }`}
                   />
@@ -584,10 +501,39 @@ export function CreateTransactionModal({
                   ) : null}
                 </div>
 
-                {/* Note */}
+                {/* Wallet Selection */}
+                <div className="sm:col-span-2">
+                  <label
+                    htmlFor="walletId"
+                    className="mb-2 block text-[10px] font-black uppercase text-[#1c1c13]"
+                  >
+                    {tr("Wallet", "Dompet")}
+                  </label>
+                  <select
+                    id="walletId"
+                    name="walletId"
+                    value={txForm.walletId}
+                    onChange={onTxChange}
+                    className="min-h-12 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] transition-all"
+                  >
+                    <option value="" disabled>
+                      {tr("Select Wallet", "Pilih Dompet")}
+                    </option>
+                    <option value="NEW" className="font-black text-[#6366f1]">
+                      + {tr("Create New Wallet", "Buat Dompet Baru")}
+                    </option>
+                    {wallets.map((w) => (
+                      <option key={w.id} value={w.id}>
+                        {w.name} ({formatCurrencyValue(w.balance, language, settings.currency)})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Note / Title */}
                 <div className="sm:col-span-2">
                   <label htmlFor="note" className="mb-2 block text-[10px] font-black uppercase text-[#1c1c13]">
-                    {t("descriptionOptional", "Description (optional)")}
+                    {tr("Title / Description", "Judul / Catatan")}
                   </label>
                   <input
                     id="note"
@@ -595,11 +541,8 @@ export function CreateTransactionModal({
                     name="note"
                     value={txForm.note}
                     onChange={onTxChange}
-                    placeholder={t(
-                      "whatTransactionAbout",
-                      "What is this transaction about?",
-                    )}
-                    className="min-h-[3rem] w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] transition-all"
+                    placeholder={tr("e.g. Nasi Goreng, Rent", "misal: Nasi Goreng, Bayar Kos")}
+                    className="min-h-12 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] transition-all"
                   />
                 </div>
 
@@ -614,9 +557,45 @@ export function CreateTransactionModal({
                     name="date"
                     value={txForm.date}
                     onChange={onTxChange}
-                    className="min-h-[3rem] w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] transition-all"
+                    className="min-h-12 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] transition-all"
                   />
                 </div>
+
+                {/* Recurring Options */}
+                {!isEditingTx && (
+                  <div className="sm:col-span-2 rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-4 shadow-[4px_4px_0_#1c1c13]">
+                    <label className="flex items-center gap-3 cursor-pointer mb-3">
+                      <input
+                        type="checkbox"
+                        name="isRecurring"
+                        checked={txForm.isRecurring}
+                        onChange={onTxChange}
+                        className="h-5 w-5 rounded border-2 border-[#1c1c13] text-[#6366f1] focus:ring-[#6366f1] shadow-[2px_2px_0_#1c1c13]"
+                      />
+                      <span className="text-sm font-black text-[#1c1c13]">
+                        {tr("Make this a recurring transaction", "Jadikan transaksi berulang")}
+                      </span>
+                    </label>
+                    {txForm.isRecurring && (
+                      <div>
+                        <label className="mb-2 block text-[10px] font-black uppercase text-[#1c1c13]">
+                          {tr("Interval", "Interval")}
+                        </label>
+                        <select
+                          name="recurringInterval"
+                          value={txForm.recurringInterval}
+                          onChange={onTxChange}
+                          className="min-h-12 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] transition-all"
+                        >
+                          <option value="DAILY">{tr("Daily", "Harian")}</option>
+                          <option value="WEEKLY">{tr("Weekly", "Mingguan")}</option>
+                          <option value="MONTHLY">{tr("Monthly", "Bulanan")}</option>
+                          <option value="YEARLY">{tr("Yearly", "Tahunan")}</option>
+                        </select>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {/* Receipt Image */}
                 <div className="sm:col-span-2">
@@ -681,119 +660,8 @@ export function CreateTransactionModal({
                   </div>
                 </div>
               </div>
-            ) : (
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div className="sm:col-span-2">
-                  <div className="mb-4 rounded-xl border-2 border-[#1c1c13] bg-[#fffbeb] p-4 shadow-[4px_4px_0_#1c1c13]">
-                    <label className="flex items-start gap-3 cursor-pointer">
-                      <div className="flex h-6 items-center">
-                        <input
-                          type="checkbox"
-                          name="syncToPersonal"
-                          checked={splitForm.syncToPersonal}
-                          onChange={onSplitChange}
-                          className="h-5 w-5 rounded border-2 border-[#1c1c13] text-[#6366f1] focus:ring-[#6366f1] shadow-[2px_2px_0_#1c1c13]"
-                        />
-                      </div>
-                      <div>
-                        <p className="text-sm font-black text-[#1c1c13]">
-                          {tr("Auto-record to Personal Expense", "Catat otomatis ke Pengeluaran Personal")}
-                        </p>
-                        <p className="text-xs font-bold text-[#1c1c13] mt-1">
-                          {tr(
-                            "Creates an Expense transaction for the total amount, and records Income when friends pay you back.",
-                            "Membuat transaksi pengeluaran sebesar total tagihan, dan mencatat pemasukan tiap kali teman membayar."
-                          )}
-                        </p>
-                      </div>
-                    </label>
-                  </div>
-                </div>
 
-                <div className="sm:col-span-2">
-                  <label className="mb-2 block text-[10px] font-black uppercase text-[#1c1c13]">
-                    {tr("Title", "Judul")}
-                  </label>
-                  <input
-                    name="title"
-                    value={splitForm.title}
-                    onChange={onSplitChange}
-                    placeholder={tr("Example: Dinner with classmates", "Contoh: Makan bareng kelas")}
-                    className="min-h-[3rem] w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] transition-all"
-                  />
-                </div>
 
-                <div>
-                  <label className="mb-2 block text-[10px] font-black uppercase text-[#1c1c13]">
-                    {t("totalAmount", "Total Amount")} ({settings.currency})
-                  </label>
-                  <input
-                    name="totalAmount"
-                    type="number"
-                    step="any"
-                    min="1"
-                    value={splitForm.totalAmount}
-                    onChange={onSplitChange}
-                    placeholder="0"
-                    className="min-h-[3rem] w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] transition-all"
-                  />
-                  {splitForm.totalAmount ? (
-                    <p className="mt-1.5 text-xs font-black text-[#1c1c13]">
-                      {formatAmount(splitForm.totalAmount)}
-                    </p>
-                  ) : null}
-                  <NumericPad
-                    className="mt-3"
-                    title={tr("Number Pad", "Papan Angka")}
-                    clearLabel={t("clear", "Clear")}
-                    helperText={tr("Tap the pad to fill the split total faster.", "Ketuk papan angka untuk mengisi total split lebih cepat.")}
-                    onPress={(value) => {
-                      setSplitForm((prev) => {
-                        const current = String(prev.totalAmount || "");
-
-                        if (value === "CLEAR") return { ...prev, totalAmount: "" };
-                        if (value === "BACKSPACE") return { ...prev, totalAmount: current.slice(0, -1) };
-
-                        return {
-                          ...prev,
-                          totalAmount: current === "0" ? String(value) : `${current}${value}`,
-                        };
-                      });
-                    }}
-                  />
-                </div>
-
-                <div>
-                  <label className="mb-2 block text-[10px] font-black uppercase text-[#1c1c13]">
-                    {t("descriptionOptional", "Description (optional)")}
-                  </label>
-                  <input
-                    name="description"
-                    value={splitForm.description}
-                    onChange={onSplitChange}
-                    placeholder={tr("Dinner after midterms", "Makan malam habis UTS")}
-                    className="min-h-[3rem] w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] transition-all"
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label className="mb-2 block text-[10px] font-black uppercase text-[#1c1c13]">
-                    {tr("Friends List (1 name per line)", "Daftar Teman (1 nama per baris)")}
-                  </label>
-                  <textarea
-                    name="friends"
-                    value={splitForm.friends}
-                    onChange={onSplitChange}
-                    rows={4}
-                    placeholder={tr("Alex\nSam\nRina", "Bagas\nSiska\nDini")}
-                    className="w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 py-3 font-bold text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] transition-all"
-                  />
-                  <p className="mt-2 text-xs font-black text-[#1c1c13]">
-                    {tr("Amount will be split equally across friends.", "Total tagihan akan dibagi rata otomatis ke semua teman.")}
-                  </p>
-                </div>
-              </div>
-            )}
 
             {/* Submit Button */}
             <div className="pt-4 flex gap-3">
@@ -801,14 +669,14 @@ export function CreateTransactionModal({
                 type="button"
                 onClick={onClose}
                 disabled={isSubmitting || isReadingImage}
-                className="min-h-[3rem] w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 font-black text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none"
+                className="min-h-12 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 font-black text-[#1c1c13] shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none"
               >
                 {t("cancel", "Cancel")}
               </button>
               <button
                 type="submit"
                 disabled={isSubmitting || isReadingImage}
-                className="min-h-[3rem] w-full rounded-lg border-2 border-[#1c1c13] bg-[#6366f1] px-4 font-black text-white shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none"
+                className="min-h-12 w-full rounded-lg border-2 border-[#1c1c13] bg-[#6366f1] px-4 font-black text-white shadow-[2px_2px_0_#1c1c13] hover:-translate-y-0.5 active:translate-y-0 transition-all disabled:opacity-50 disabled:translate-y-0 disabled:shadow-none"
               >
                 {isSubmitting ? t("saving", "Saving...") : t("save", "Save")}
               </button>
@@ -816,6 +684,22 @@ export function CreateTransactionModal({
           </form>
         </div>
       </div>
+
+      {showWalletModal && (
+        <ManageWalletModal
+          wallets={wallets}
+          onClose={() => setShowWalletModal(false)}
+          onSuccess={async () => {
+            const data = await getWallets();
+            setWallets(data);
+            if (data.length > 0) {
+              const newWallet = data[data.length - 1];
+              setTxForm(prev => ({ ...prev, walletId: newWallet.id }));
+            }
+          }}
+        />
+      )}
     </div>
   );
 }
+

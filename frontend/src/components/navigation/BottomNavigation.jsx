@@ -29,9 +29,10 @@ export function BottomNavigation() {
 
   return (
     <>
-      <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-[#1c1c13] bg-[#fffbeb] px-3 pt-3 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-[0px_-4px_0px_0px_rgba(28,28,19,1)] lg:hidden">
+      <nav className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around border-t border-[#1c1c13] bg-[#fffbeb] px-2 pt-3 pb-[calc(env(safe-area-inset-bottom)+1rem)] shadow-[0px_-4px_0px_0px_rgba(28,28,19,1)] lg:hidden">
         <NavItem icon="home" label={t('home', 'Home')} active={isActive('/home')} onClick={() => navigate('/home')} />
-        <NavItem icon="payments" label={t('transactions', 'Transactions')} active={isActive('/transactions')} onClick={() => navigate('/transactions')} />
+        <NavItem icon="bar_chart" label={t('reports', 'Laporan')} active={isActive('/transactions')} onClick={() => navigate('/transactions')} />
+        <NavItem icon="account_balance_wallet" label={t('wallet', 'Wallet')} active={isActive('/wallet')} onClick={() => navigate('/wallet')} />
         <NavItem icon="favorite" label={t('wishlist', 'Wishlist')} active={isActive('/wishlist')} onClick={() => navigate('/wishlist')} />
         <NavItem icon="person" label={t('profile', 'Profile')} active={isActive('/profile')} onClick={() => navigate('/profile')} />
       </nav>
