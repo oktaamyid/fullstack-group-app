@@ -2,6 +2,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { prisma } = require("../config/prisma");
 const { sendSuccess, sendError } = require("../utils/apiResponse");
+const { processRecurringTransactions } = require("./recurringController");
 
 function signToken(user) {
   return jwt.sign(
@@ -71,6 +72,9 @@ async function login(req, res) {
     if (!isPasswordMatch) {
       return sendError(res, "Invalid email or password", 401);
     }
+
+    // Process any pending recurring transactions
+    await processRecurringTransactions(user.id);
 
     const token = signToken(user);
 

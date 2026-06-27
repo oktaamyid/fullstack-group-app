@@ -140,9 +140,73 @@ async function deleteWishlist(req, res) {
   }
 }
 
+async function addSavings(req, res) {
+  const wishlistId = Number(req.params.id);
+  if (Number.isNaN(wishlistId)) {
+    return sendError(res, 'Invalid wishlist id', 400);
+  }
+
+  const { amount, walletId } = req.body;
+  if (!amount || !walletId) {
+    return sendError(res, 'amount and walletId are required', 400);
+  }
+
+  try {
+    const existing = await prisma.wishlist.findFirst({
+      where: {
+        id: wishlistId,
+        userId: req.user.id,
+      },
+    });
+
+    if (!existing) {
+      return sendError(res, 'Wishlist item not found', 404);
+    }
+
+    const result = await prisma.$transaction(async (tx) => {
+      // Create transaction for savings
+      await tx.transaction.create({
+        data: {
+          userId: req.user.id,
+          type: 'EXPENSE',
+          amount: Number(amount),
+          category: 'Savings',
+          note: `Savings for ${existing.item}`,
+          walletId: Number(walletId)
+        }
+      });
+
+      // Update wallet balance
+      await tx.wallet.update({
+        where: { id: Number(walletId) },
+        data: {
+          balance: { decrement: Number(amount) }
+        }
+      });
+
+      // Update wishlist currentSaved
+      const wishlist = await tx.wishlist.update({
+        where: { id: wishlistId },
+        data: {
+          currentSaved: { increment: Number(amount) }
+        }
+      });
+
+      return wishlist;
+    });
+
+    return sendSuccess(res, { wishlist: result }, 'Savings added successfully');
+  } catch (error) {
+    return sendError(res, 'Failed to add savings', 500, {
+      error: error.message,
+    });
+  }
+}
+
 module.exports = {
   listWishlists,
   createWishlist,
   updateWishlist,
   deleteWishlist,
+  addSavings,
 };

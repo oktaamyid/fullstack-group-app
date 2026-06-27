@@ -8,6 +8,10 @@ const analyticsRoutes = require("./routes/analyticsRoutes");
 const wishlistRoutes = require("./routes/wishlistRoutes");
 const contactRoutes = require("./routes/contactRoutes");
 const transactionRoutes = require("./routes/transactionRoutes");
+const walletRoutes = require("./routes/walletRoutes");
+const budgetRoutes = require("./routes/budgetRoutes");
+const debtRoutes = require("./routes/debtRoutes");
+const recurringRoutes = require("./routes/recurringRoutes");
 const {
   notFoundHandler,
   jsonParseErrorHandler,
@@ -80,6 +84,10 @@ app.use("/api/transactions", transactionRoutes);
 app.use("/api/analytics", analyticsRoutes);
 app.use("/api/wishlists", wishlistRoutes);
 app.use("/api/contact", contactRoutes);
+app.use("/api/wallets", walletRoutes);
+app.use("/api/budgets", budgetRoutes);
+app.use("/api/debts", debtRoutes);
+app.use("/api/recurring", recurringRoutes);
 
 app.use(notFoundHandler);
 app.use(globalErrorHandler);

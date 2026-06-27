@@ -18,6 +18,10 @@ model User {
   splitBills SplitBill[]
   wishlists Wishlist[]
   transactions Transaction[]
+  wallets    Wallet[]
+  budgets    Budget[]
+  recurringTransactions RecurringTransaction[]
+  debts      Debt[]
 }
 
 model Transaction {
@@ -29,9 +33,11 @@ model Transaction {
   note      String?
   receiptImage String?
   receiptImageName String?
+  walletId  Int?
   createdAt DateTime        @default(now())
   updatedAt DateTime        @updatedAt
   user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet    Wallet?         @relation(fields: [walletId], references: [id], onDelete: SetNull)
   splitBills SplitBill[]
 
   @@index([userId, createdAt])
@@ -43,6 +49,7 @@ model Wishlist {
   userId        Int
   item          String
   price         Int
+  currentSaved  Int      @default(0)
   priorityScore Int      @default(3)
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
@@ -148,3 +155,95 @@ enum TransactionType {
   SHARED_EXPENSE
 }
 
+model Wallet {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  name      String
+  balance   Int      @default(0)
+  type      WalletType @default(CASH)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  recurringTransactions RecurringTransaction[]
+
+  @@index([userId])
+}
+
+model Budget {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  category  String
+  amount    Int
+  month     Int      
+  year      Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, month, year])
+  @@unique([userId, category, month, year])
+}
+
+model RecurringTransaction {
+  id            Int      @id @default(autoincrement())
+  userId        Int
+  walletId      Int
+  type          TransactionType
+  amount        Int
+  category      String?
+  note          String?
+  interval      RecurringInterval
+  nextOccurrence DateTime
+  status        RecurringStatus @default(ACTIVE)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  wallet        Wallet   @relation(fields: [walletId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([status, nextOccurrence])
+}
+
+model Debt {
+  id          Int      @id @default(autoincrement())
+  userId      Int
+  personName  String
+  amount      Int
+  type        DebtType
+  status      DebtStatus @default(UNPAID)
+  dueDate     DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, status])
+}
+
+enum WalletType {
+  CASH
+  BANK
+  EWALLET
+}
+
+enum RecurringInterval {
+  DAILY
+  WEEKLY
+  MONTHLY
+  YEARLY
+}
+
+enum RecurringStatus {
+  ACTIVE
+  PAUSED
+}
+
+enum DebtType {
+  DEBT
+  LOAN
+}
+
+enum DebtStatus {
+  UNPAID
+  PAID
+}

@@ -1,6 +1,6 @@
 const { z } = require("zod");
 
-const transactionTypeSchema = z.enum(["INCOME", "EXPENSE"]);
+const transactionTypeSchema = z.enum(["INCOME", "EXPENSE", "SHARED_EXPENSE"]);
 
 const createTransactionSchema = z.object({
   type: transactionTypeSchema,
@@ -19,6 +19,7 @@ const createTransactionSchema = z.object({
     .optional()
     .or(z.literal("")),
   createdAt: z.coerce.date().optional(),
+  walletId: z.coerce.number().int().positive("Invalid walletId"),
 });
 
 const updateTransactionSchema = z.object({
@@ -42,6 +43,7 @@ const updateTransactionSchema = z.object({
     .optional()
     .or(z.literal("")),
   createdAt: z.coerce.date().optional(),
+  walletId: z.coerce.number().int().positive("Invalid walletId").optional(),
 });
 
 module.exports = {
