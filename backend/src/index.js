@@ -112,4 +112,9 @@ async function startServer() {
   }
 }
 
-startServer();
+// Automatically start server in local dev, but export app for Vercel
+if (process.env.NODE_ENV !== "production") {
+  startServer();
+}
+
+module.exports = app;
