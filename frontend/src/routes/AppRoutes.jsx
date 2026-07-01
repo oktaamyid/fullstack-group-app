@@ -7,6 +7,7 @@ import { ProfileSettingsScreen } from '../components/screens/ProfileSettingsScre
 import { TransactionScreen } from '../components/screens/TransactionScreen'
 import { WishlistScreen } from '../components/screens/WishlistScreen'
 import { WalletBudgetScreen } from '../components/screens/WalletBudgetScreen'
+import { PublicSplitBillScreen } from '../components/screens/PublicSplitBillScreen'
 import { initialStatus } from '../constants/connectionStatus'
 import { useConnectionCheck } from '../hooks/useConnectionCheck'
 import { getAnalyticsOverview } from '../services/analytics'
@@ -185,6 +186,8 @@ export function AppRoutes() {
       <Route path="/wishlist" element={<WishlistRoute />} />
       <Route path="/profile" element={<ProfileRoute />} />
       <Route path="/wallet" element={<WalletRoute />} />
+      
+      <Route path="/split/:id" element={<PublicSplitBillScreen />} />
 
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

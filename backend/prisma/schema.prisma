@@ -39,6 +39,7 @@ model Transaction {
   user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
   wallet    Wallet?         @relation(fields: [walletId], references: [id], onDelete: SetNull)
   splitBills SplitBill[]
+  memberPayments SplitBillMember[] @relation("PaymentTransaction")
 
   @@index([userId, createdAt])
   @@index([userId, type])
@@ -85,11 +86,14 @@ model SplitBillMember {
   friendName  String
   amount      Int
   status      SplitBillMemberStatus @default(UNPAID)
+  isUser      Boolean               @default(false)
   paidAt      DateTime?
   createdAt   DateTime              @default(now())
   updatedAt   DateTime              @updatedAt
   splitBill   SplitBill             @relation(fields: [splitBillId], references: [id], onDelete: Cascade)
   itemAssignments SplitBillItemAssignment[]
+  paymentTxId Int?
+  paymentTx   Transaction?          @relation("PaymentTransaction", fields: [paymentTxId], references: [id], onDelete: SetNull)
 
   @@index([splitBillId, status])
 }

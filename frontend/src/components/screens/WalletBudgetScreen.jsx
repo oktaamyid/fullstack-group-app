@@ -5,7 +5,7 @@ import { useI18n } from "../../i18n/useI18n";
 import { useProfileSettings } from "../../hooks/useProfileSettings";
 import { getWallets } from "../../services/wallet";
 
-import { getSplitBills, deleteSplitBill, updateSplitBillMemberStatus } from "../../services/splitBill";
+import { getSplitBills, deleteSplitBill } from "../../services/splitBill";
 import { getBudgetProgress } from "../../services/budget";
 import { formatCurrency } from "../../services/currency";
 import { ManageWalletModal } from "../modals/ManageWalletModal";
@@ -36,7 +36,6 @@ export function WalletBudgetScreen({ mainLogo }) {
   const [budgets, setBudgets] = useState([]);
 
   const [splitBills, setSplitBills] = useState([]);
-  const [splitSummary, setSplitSummary] = useState({ total: 0, paid: 0, unpaid: 0 });
   
   const [showWalletModal, setShowWalletModal] = useState(false);
   const [showSplitBillModal, setShowSplitBillModal] = useState(false);
@@ -58,7 +57,6 @@ export function WalletBudgetScreen({ mainLogo }) {
       ]);
       setWallets(walletsData || []);
       setSplitBills(splitData.splitBills || []);
-      setSplitSummary(splitData.summary || { total: 0, paid: 0, unpaid: 0 });
       setBudgets(budgetData?.progress || []);
     } catch (error) {
       console.error(error);
@@ -76,15 +74,7 @@ export function WalletBudgetScreen({ mainLogo }) {
     [wallets]
   );
 
-  const handleUpdateSplitStatus = async (billId, memberId, status) => {
-    try {
-      await updateSplitBillMemberStatus(billId, memberId, status);
-      await loadData();
-    } catch (error) {
-      console.error(error);
-      setErrorMessage(tr("Failed to update status", "Gagal memperbarui status"));
-    }
-  };
+
 
   const handleDeleteSplitBill = async (id) => {
     setConfirmDialog({
@@ -313,10 +303,10 @@ export function WalletBudgetScreen({ mainLogo }) {
                   <div className="rounded-2xl border-2 border-[#1c1c13] bg-white p-6 shadow-[4px_4px_0_#1c1c13] flex justify-between items-center">
                     <div>
                       <p className="text-xs font-bold uppercase tracking-wide text-gray-500">
-                        {tr("Total Unpaid Bills", "Total Tagihan Belum Lunas")}
+                        {tr("Split Bills List", "Daftar Tagihan Patungan")}
                       </p>
-                      <p className="text-3xl font-black text-[#ba1a1a]">
-                        {formatCurrency(splitSummary.unpaid, language, settings.currency)}
+                      <p className="text-3xl font-black text-[#1c1c13]">
+                        {splitBills.length} {tr("Bills", "Tagihan")}
                       </p>
                     </div>
                     <button
@@ -339,26 +329,34 @@ export function WalletBudgetScreen({ mainLogo }) {
                             <p className="text-lg font-black text-[#1c1c13]">
                               {formatCurrency(bill.totalAmount, language, settings.currency)}
                             </p>
-                            <button onClick={() => handleDeleteSplitBill(bill.id)} className="text-xs font-bold text-red-600 hover:underline">
-                              {tr("Delete", "Hapus")}
-                            </button>
+                            <div className="flex gap-2 justify-end mt-1">
+                              <button onClick={() => handleDeleteSplitBill(bill.id)} className="text-xs font-bold text-red-600 hover:underline">
+                                {tr("Delete", "Hapus")}
+                              </button>
+                            </div>
                           </div>
                         </div>
                         <div className="space-y-2">
                           {bill.members.map(m => (
                             <div key={m.id} className="flex justify-between items-center border-t border-gray-100 pt-2">
-                              <span className="text-sm font-bold">{m.name}</span>
-                              <div className="flex items-center gap-3">
-                                <span className="text-sm font-black">{formatCurrency(m.amount, language, settings.currency)}</span>
-                                <button
-                                  onClick={() => handleUpdateSplitStatus(bill.id, m.id, m.status === 'PAID' ? 'UNPAID' : 'PAID')}
-                                  className={`rounded-full px-3 py-1 text-[10px] font-black tracking-wide uppercase transition-colors ${m.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}
-                                >
-                                  {m.status}
-                                </button>
-                              </div>
+                              <span className="text-sm font-bold">{m.friendName} {m.isUser && "(Saya)"}</span>
+                              <span className="text-sm font-black text-[#6366f1]">{formatCurrency(m.amount, language, settings.currency)}</span>
                             </div>
                           ))}
+                        </div>
+                        <div className="mt-4 border-t-2 border-dashed border-gray-300 pt-4 flex gap-2">
+                          <button
+                            onClick={() => {
+                              const shareId = (bill.id * 792384).toString(36);
+                              const url = `${window.location.origin}/split/${shareId}`;
+                              navigator.clipboard.writeText(url);
+                              alert(tr("Link copied to clipboard!", "Link berhasil disalin!"));
+                            }}
+                            className="flex-1 rounded-xl border-2 border-[#1c1c13] bg-[#fdf9e9] py-2 text-xs font-black uppercase text-[#1c1c13] transition-colors hover:bg-gray-100 flex items-center justify-center gap-1"
+                          >
+                            <span className="material-symbols-outlined text-[14px]">share</span>
+                            {tr("Share Link", "Bagikan Link")}
+                          </button>
                         </div>
                       </article>
                     ))
@@ -384,7 +382,9 @@ export function WalletBudgetScreen({ mainLogo }) {
 
       {showSplitBillModal && (
         <CreateSplitBillModal
-          onClose={() => setShowSplitBillModal(false)}
+          onClose={() => {
+            setShowSplitBillModal(false);
+          }}
           onSuccess={loadData}
         />
       )}
