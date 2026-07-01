@@ -31,7 +31,8 @@ const allowedOrigins = [
   "http://127.0.0.1:5173",
   "http://localhost:5174",
   "http://127.0.0.1:5174",
-  "https://livo-eight.vercel.app"
+  "https://livo-eight.vercel.app",
+  "https://livo.oktaa.my.id"
 ];
 
 app.use(
