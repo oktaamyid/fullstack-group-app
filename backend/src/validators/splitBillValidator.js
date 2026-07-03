@@ -4,6 +4,7 @@ const splitBillMemberSchema = z.object({
   friendName: z.string().min(2, 'Friend name must be at least 2 characters').max(100, 'Friend name is too long'),
   clientId: z.string().optional(),
   amount: z.number().int().positive('Amount must be positive').optional(),
+  isUser: z.boolean().optional(),
 });
 
 const splitBillItemSchema = z.object({
