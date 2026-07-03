@@ -1,9 +1,33 @@
 const IDR_PER_CURRENCY = {
   IDR: 1,
-  USD: 17900,
-  SGD: 13800,
-  EUR: 20300,
+  USD: 16000,
+  SGD: 11800,
+  EUR: 17200,
 };
+
+let fetchPromise = null;
+
+export async function fetchLatestExchangeRates() {
+  if (fetchPromise) return fetchPromise;
+
+  fetchPromise = fetch("https://cdn.jsdelivr.net/npm/@fawazahmed0/currency-api@latest/v1/currencies/usd.json")
+    .then((res) => res.json())
+    .then((data) => {
+      if (data && data.usd) {
+        IDR_PER_CURRENCY.USD = Math.round(data.usd.idr);
+        IDR_PER_CURRENCY.SGD = Math.round(data.usd.idr / data.usd.sgd);
+        IDR_PER_CURRENCY.EUR = Math.round(data.usd.idr / data.usd.eur);
+      }
+      return IDR_PER_CURRENCY;
+    })
+    .catch((error) => {
+      console.error("Failed to fetch exchange rates:", error);
+      fetchPromise = null;
+      return IDR_PER_CURRENCY;
+    });
+
+  return fetchPromise;
+}
 
 export function normalizeCurrency(currency = "IDR") {
   return Object.hasOwn(IDR_PER_CURRENCY, currency) ? currency : "IDR";

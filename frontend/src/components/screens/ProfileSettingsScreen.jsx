@@ -13,6 +13,7 @@ import {
     updatePassword,
     updateProfile,
 } from '../../services/profileSettings'
+import { fetchLatestExchangeRates, IDR_PER_CURRENCY } from '../../services/currency'
 import { PageLayout } from '../layouts/PageLayout'
 import { PageHeader } from '../headers/PageHeader'
 import { Alert } from '../ui/Alert'
@@ -28,11 +29,6 @@ const CURRENCY_LABELS = {
     SGD: 'SGD - Singapore Dollar',
     EUR: 'EUR - Euro',
 }
-
-const CURRENCY_OPTIONS = SUPPORTED_CURRENCIES.map((currency) => ({
-    value: currency,
-    label: CURRENCY_LABELS[currency] || currency,
-}))
 
 const LANGUAGE_OPTIONS = [
     { value: 'id-ID', label: 'Bahasa Indonesia' },
@@ -79,6 +75,7 @@ export function ProfileSettingsScreen({ mainLogo }) {
     const [categoryTab, setCategoryTab] = useState('EXPENSE')
     const [message, setMessage] = useState('')
     const [errorMessage, setErrorMessage] = useState('')
+    const [currencyRates, setCurrencyRates] = useState(IDR_PER_CURRENCY)
 
     const [activeTab, setActiveTab] = useState('APLIKASI') // APLIKASI | DATA | BANTUAN
 
@@ -106,6 +103,9 @@ export function ProfileSettingsScreen({ mainLogo }) {
 
     useEffect(() => {
         void loadProfile()
+        fetchLatestExchangeRates().then(rates => {
+            if (rates) setCurrencyRates({ ...rates })
+        })
     }, [loadProfile])
 
     const onProfileChange = useCallback((event) => {
@@ -404,9 +404,16 @@ export function ProfileSettingsScreen({ mainLogo }) {
                                         onChange={(event) => onConfigChange('currency', event.target.value)}
                                         className="mt-1.5 min-h-11 w-full rounded-lg border-2 border-[#1c1c13] bg-white px-4 text-sm font-bold shadow-[2px_2px_0_#1c1c13] outline-none focus:border-[#6366f1] cursor-pointer"
                                     >
-                                        {CURRENCY_OPTIONS.map((option) => (
-                                            <option key={option.value} value={option.value}>{option.label}</option>
-                                        ))}
+                                        {SUPPORTED_CURRENCIES.map((currency) => {
+                                            let label = CURRENCY_LABELS[currency] || currency;
+                                            if (currency !== 'IDR' && currencyRates[currency]) {
+                                                const rate = currencyRates[currency].toLocaleString('id-ID');
+                                                label = `${label} (1 ${currency} = IDR ${rate})`;
+                                            }
+                                            return (
+                                                <option key={currency} value={currency}>{label}</option>
+                                            )
+                                        })}
                                     </select>
                                 </label>
                                 <label className="block text-[11px] font-black uppercase text-[#1c1c13]">

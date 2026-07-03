@@ -1,4 +1,6 @@
 const { PrismaClient } = require('@prisma/client');
+const { Pool } = require('pg');
+const { PrismaPg } = require('@prisma/adapter-pg');
 
 function buildDatabaseUrl() {
   const dbHost = process.env.DB_HOST || 'localhost';
@@ -14,7 +16,9 @@ if (!process.env.DATABASE_URL) {
   process.env.DATABASE_URL = buildDatabaseUrl();
 }
 
-const prisma = new PrismaClient();
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const adapter = new PrismaPg(pool);
+const prisma = new PrismaClient({ adapter });
 
 async function initializeDatabase() {
   try {
