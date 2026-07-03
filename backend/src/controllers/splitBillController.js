@@ -105,8 +105,9 @@ function resolveBillStatus(members) {
 async function createSplitBill(req, res) {
     const validation = createSplitBillSchema.safeParse(req.body);
     if (!validation.success) {
-        return sendError(res, 'Validation failed', 422, {
-            errors: validation.error.flatten().fieldErrors,
+        const fieldErrors = validation.error.flatten().fieldErrors;
+        return sendError(res, `Validation failed: ${JSON.stringify(fieldErrors)}`, 422, {
+            errors: fieldErrors,
         });
     }
 

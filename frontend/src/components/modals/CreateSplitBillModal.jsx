@@ -158,6 +158,12 @@ export function CreateSplitBillModal({
     setIsSubmitting(true);
     setErrorMessage("");
 
+    if (syncToPersonal && (!walletId || walletId === "")) {
+      setErrorMessage(t("pleaseSelectWallet", "Silakan pilih dompet terlebih dahulu."));
+      setIsSubmitting(false);
+      return;
+    }
+
     const totalAmount = convertToIdr(calculatedTotal, settings.currency);
     const descriptionStr = JSON.stringify({ note: note.trim(), paymentInfo: paymentInfo.trim() });
 
